@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { functions } from '@/lib/appwrite';
-import { ExecutionMethod } from 'appwrite';
+
 import type { AIMode } from '@/types';
 
 const HOSTED_AI_FUNCTION_ID = import.meta.env.VITE_APPWRITE_FUNCTION_ID || '';
@@ -63,20 +63,33 @@ export function useOpenRouter() {
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
           temperature,
           maxTokens,
-        }),
-        false, // async = false (wait for response)
-        '/', // path
-        ExecutionMethod.POST, // method
-        { 'Content-Type': 'application/json' } // headers
+        })
       );
 
+      console.log('[Hosted AI] Execution result:', result);
+
       if (result.responseStatusCode >= 400) {
-        const errorBody = JSON.parse(result.responseBody);
-        onError(errorBody.message || 'Hosted AI request failed.');
+        let errorMsg = 'Hosted AI request failed.';
+        try {
+          const errorBody = JSON.parse(result.responseBody);
+          errorMsg = errorBody.error || errorBody.message || errorMsg;
+        } catch {
+          errorMsg = result.responseBody || errorMsg;
+        }
+        console.error('[Hosted AI] Function error:', errorMsg, result);
+        onError(errorMsg);
         return;
       }
 
-      const body = JSON.parse(result.responseBody);
+      let body;
+      try {
+        body = JSON.parse(result.responseBody);
+      } catch {
+        console.error('[Hosted AI] Invalid JSON response:', result.responseBody);
+        onError('Invalid response from AI server.');
+        return;
+      }
+
       if (body.error) {
         onError(body.error);
         return;
@@ -105,6 +118,7 @@ export function useOpenRouter() {
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       const msg = (err as Error).message || 'Hosted AI request failed.';
+      console.error('[Hosted AI] Exception:', err);
       onError(msg);
     } finally {
       setIsStreaming(false);
