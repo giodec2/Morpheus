@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Morpheus — AI Co-Writer for Storytellers</title>
+    <meta name="description" content="Morpheus is a local-first AI co-writer for novelists and storytellers. Plan worlds, develop characters, and write with AI that learns your voice.">
+    <meta name="keywords" content="AI writing, novel writing, creative writing, AI co-writer, story planner, character development, writing assistant, fiction writing, AI storytelling">
+    <meta name="author" content="Morpheus">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Morpheus — AI Co-Writer for Storytellers">
+    <meta property="og:description" content="The AI co-writer that learns your voice. Plan worlds, develop characters, and never stare at a blank page again.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://morpheus.app">
+    <meta property="og:image" content="https://morpheus.app/og-image.png">
+    <meta property="og:site_name" content="Morpheus">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Morpheus — AI Co-Writer for Storytellers">
+    <meta name="twitter:description" content="The AI co-writer that learns your voice. Plan worlds, develop characters, and never stare at a blank page again.">
+    <meta name="twitter:image" content="https://morpheus.app/og-image.png">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://morpheus.app">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Morpheus",
+      "description": "A local-first AI co-writer for novelists and storytellers. Plan worlds, develop characters, and write with AI that learns your voice.",
+      "applicationCategory": "CreativeWorkApplication",
+      "operatingSystem": "Web",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Free",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        {
+          "@type": "Offer",
+          "name": "Scribe",
+          "price": "9",
+          "priceCurrency": "USD",
+          "priceValidUntil": "2026-12-31"
+        },
+        {
+          "@type": "Offer",
+          "name": "Novelist",
+          "price": "19",
+          "priceCurrency": "USD",
+          "priceValidUntil": "2026-12-31"
+        },
+        {
+          "@type": "Offer",
+          "name": "Architect",
+          "price": "49",
+          "priceCurrency": "USD",
+          "priceValidUntil": "2026-12-31"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "128"
+      }
+    }
+    </script>
+
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('morpheus-settings');
+          var theme = 'light';
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            theme = parsed.state?.theme || 'light';
+          }
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Skip to content</a>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
