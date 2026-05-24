@@ -1,4 +1,4 @@
-import { Client, Databases, ID } from 'node-appwrite';
+import { Client, Databases } from 'node-appwrite';
 
 // Simple token estimation: characters / 4 (rough approximation)
 function estimateTokens(text) {
@@ -8,8 +8,13 @@ function estimateTokens(text) {
 
 export default async ({ req, res, log, error }) => {
   try {
-    const payload = JSON.parse(req.body || '{}');
+    log('--- Function started ---');
+    log(`req.body type: ${typeof req.body}`);
+
+    const payload = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const { model, messages, temperature, maxTokens } = payload;
+
+    log(`Model: ${model}, Messages count: ${messages?.length}`);
 
     if (!model || !messages || !Array.isArray(messages)) {
       return res.json({ error: 'Missing required fields: model, messages' }, 400);
@@ -17,6 +22,7 @@ export default async ({ req, res, log, error }) => {
 
     // Get authenticated user ID from Appwrite context
     const userId = req.headers['x-appwrite-user-id'];
+    log(`User ID: ${userId}`);
     if (!userId) {
       return res.json({ error: 'Authentication required' }, 401);
     }
@@ -35,7 +41,9 @@ export default async ({ req, res, log, error }) => {
     let profile;
     try {
       profile = await databases.getDocument(databaseId, profilesCollection, userId);
-    } catch {
+      log(`Profile loaded. Tier: ${profile.subscriptionTier}`);
+    } catch (err) {
+      error(`Profile fetch failed: ${err.message || err}`);
       return res.json({ error: 'User profile not found' }, 404);
     }
 
@@ -84,8 +92,10 @@ export default async ({ req, res, log, error }) => {
     // Call OpenRouter
     const openRouterKey = process.env.OPENROUTER_API_KEY;
     if (!openRouterKey) {
+      error('Missing OPENROUTER_API_KEY env var');
       return res.json({ error: 'Hosted AI not configured. Operator API key missing.' }, 500);
     }
+    log('Calling OpenRouter...');
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -105,9 +115,10 @@ export default async ({ req, res, log, error }) => {
 
     if (!response.ok) {
       const errBody = await response.text();
-      error(`OpenRouter error: ${errBody}`);
+      error(`OpenRouter error ${response.status}: ${errBody}`);
       return res.json({ error: 'AI provider error. Please try again later.' }, 502);
     }
+    log('OpenRouter responded OK');
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
@@ -120,8 +131,9 @@ export default async ({ req, res, log, error }) => {
       await databases.updateDocument(databaseId, profilesCollection, userId, {
         weeklyTokensUsed: weeklyUsed + actualTokens,
       });
+      log(`Token usage updated: +${actualTokens}`);
     } catch (err) {
-      error(`Failed to update token usage: ${err.message}`);
+      error(`Failed to update token usage: ${err.message || err}`);
     }
 
     return res.json({
