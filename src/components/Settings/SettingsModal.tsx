@@ -112,7 +112,18 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               {/* Single toggle */}
               <button
                 type="button"
-                onClick={() => setAiMode(aiMode === 'hosted' ? 'byok' : 'hosted')}
+                onClick={() => {
+                  const next = aiMode === 'hosted' ? 'byok' : 'hosted';
+                  if (next === 'hosted' && modelTier === 'premium') {
+                    const tier = profile?.subscriptionTier || 'free';
+                    const allowsPremium = tier === 'novelist' || tier === 'architect';
+                    if (!allowsPremium) {
+                      setModelTier('standard');
+                      setDefaultModel(DEFAULT_STANDARD_MODEL);
+                    }
+                  }
+                  setAiMode(next);
+                }}
                 className={`relative w-12 h-7 rounded-full transition-colors mx-3 shrink-0 ${
                   aiMode === 'hosted' ? 'bg-primary-500' : 'bg-amber-500'
                 }`}

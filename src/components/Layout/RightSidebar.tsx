@@ -48,7 +48,7 @@ export default function RightSidebar() {
     setStreamContent, appendStreamContent, setContextInfo,
   } = useChatStore();
 
-  const { openRouterKey, defaultModel, temperature: _temperature, maxTokens, advancedMode, language, setTemperature } = useSettingsStore();
+  const { openRouterKey, defaultModel, temperature: _temperature, maxTokens, advancedMode, language, aiMode, setTemperature } = useSettingsStore();
   const { sendMessage } = useOpenRouter();
 
   const [input, setInput] = useState('');
@@ -141,7 +141,7 @@ export default function RightSidebar() {
 
   const handleSend = async () => {
     if (!input.trim() || !activeBook || !activeChapter || isStreaming) return;
-    if (!openRouterKey) {
+    if (aiMode === 'byok' && !openRouterKey) {
       toast('Please set your OpenRouter API key in Settings.', 'error');
       return;
     }
