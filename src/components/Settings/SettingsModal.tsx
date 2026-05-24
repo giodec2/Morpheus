@@ -29,7 +29,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [isValidating, setIsValidating] = useState(false);
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
-  const canUsePremium = subscriptionTier === 'novelist' || subscriptionTier === 'architect';
+  const canUsePremium = aiMode === 'byok' || subscriptionTier === 'novelist' || subscriptionTier === 'architect';
 
   const handleConnect = async () => {
     if (!apiInput.trim()) return;
@@ -96,51 +96,41 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
           <hr className="border-gray-200 dark:border-slate-800" />
 
-          {/* AI Mode */}
+          {/* AI Provider */}
           <section>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">AI Provider</h3>
             <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Cloud className="w-4 h-4 text-primary-500" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Hosted AI</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">We pay for tokens. Limited by your tier.</p>
+              {/* Hosted AI label */}
+              <div className="flex items-center gap-2 min-w-0">
+                <Cloud className={`w-4 h-4 shrink-0 ${aiMode === 'hosted' ? 'text-primary-500' : 'text-gray-400 dark:text-gray-600'}`} />
+                <div className="min-w-0">
+                  <p className={`text-sm font-medium truncate ${aiMode === 'hosted' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-500'}`}>Hosted AI</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500 truncate">Tier-based limits</p>
                 </div>
               </div>
+
+              {/* Single toggle */}
               <button
                 type="button"
                 onClick={() => setAiMode(aiMode === 'hosted' ? 'byok' : 'hosted')}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
-                  aiMode === 'hosted' ? 'bg-primary-500' : 'bg-gray-300 dark:bg-slate-600'
+                className={`relative w-12 h-7 rounded-full transition-colors mx-3 shrink-0 ${
+                  aiMode === 'hosted' ? 'bg-primary-500' : 'bg-amber-500'
                 }`}
                 aria-label="Toggle AI mode"
               >
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                <span className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
                   aiMode === 'byok' ? 'translate-x-5' : ''
                 }`} />
               </button>
-            </div>
 
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg mt-2">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">BYOK</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Bring your own OpenRouter key.</p>
+              {/* BYOK label */}
+              <div className="flex items-center gap-2 min-w-0 text-right">
+                <div className="min-w-0">
+                  <p className={`text-sm font-medium truncate ${aiMode === 'byok' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-500'}`}>BYOK</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500 truncate">Your own key</p>
                 </div>
+                <Zap className={`w-4 h-4 shrink-0 ${aiMode === 'byok' ? 'text-amber-500' : 'text-gray-400 dark:text-gray-600'}`} />
               </div>
-              <button
-                type="button"
-                onClick={() => setAiMode(aiMode === 'byok' ? 'hosted' : 'byok')}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
-                  aiMode === 'byok' ? 'bg-amber-500' : 'bg-gray-300 dark:bg-slate-600'
-                }`}
-                aria-label="Toggle AI mode"
-              >
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                  aiMode === 'byok' ? 'translate-x-5' : ''
-                }`} />
-              </button>
             </div>
 
             {aiMode === 'hosted' && (

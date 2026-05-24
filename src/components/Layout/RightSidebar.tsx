@@ -482,13 +482,13 @@ export default function RightSidebar() {
 /* ---------- AI Settings ---------- */
 function AISettings() {
   const {
-    defaultModel, temperature, maxTokens, advancedMode, modelTier,
+    defaultModel, temperature, maxTokens, advancedMode, modelTier, aiMode,
     setDefaultModel, setTemperature, setMaxTokens, setAdvancedMode, setModelTier,
   } = useSettingsStore();
   const { profile } = useAuthStore();
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
-  const canUsePremium = subscriptionTier === 'novelist' || subscriptionTier === 'architect';
+  const canUsePremium = aiMode === 'byok' || subscriptionTier === 'novelist' || subscriptionTier === 'architect';
 
   const currentTierModels = modelTier === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS;
 
