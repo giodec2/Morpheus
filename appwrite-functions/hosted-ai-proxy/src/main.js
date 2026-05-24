@@ -1,0 +1,136 @@
+import { Client, Databases, ID } from 'node-appwrite';
+
+// Simple token estimation: characters / 4 (rough approximation)
+function estimateTokens(text) {
+  if (!text) return 0;
+  return Math.ceil(text.length / 4);
+}
+
+export default async ({ req, res, log, error }) => {
+  try {
+    const payload = JSON.parse(req.body || '{}');
+    const { model, messages, temperature, maxTokens } = payload;
+
+    if (!model || !messages || !Array.isArray(messages)) {
+      return res.json({ error: 'Missing required fields: model, messages' }, 400);
+    }
+
+    // Get authenticated user ID from Appwrite context
+    const userId = req.headers['x-appwrite-user-id'];
+    if (!userId) {
+      return res.json({ error: 'Authentication required' }, 401);
+    }
+
+    // Admin client to read/update profiles
+    const client = new Client()
+      .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
+      .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+      .setKey(process.env.APPWRITE_API_KEY);
+
+    const databases = new Databases(client);
+    const databaseId = process.env.APPWRITE_DATABASE_ID;
+    const profilesCollection = process.env.APPWRITE_COLLECTION_PROFILES;
+
+    // Fetch user profile
+    let profile;
+    try {
+      profile = await databases.getDocument(databaseId, profilesCollection, userId);
+    } catch {
+      return res.json({ error: 'User profile not found' }, 404);
+    }
+
+    // Tier defaults
+    const tierDefaults = {
+      free: { maxBooks: 1, maxWeeklyTokensStandard: 100_000, maxWeeklyTokensPremium: 0 },
+      scribe: { maxBooks: 3, maxWeeklyTokensStandard: 1_000_000, maxWeeklyTokensPremium: 0 },
+      novelist: { maxBooks: 10, maxWeeklyTokensStandard: 2_000_000, maxWeeklyTokensPremium: 100_000 },
+      architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
+    };
+
+    const tier = profile.subscriptionTier || 'free';
+    const defaults = tierDefaults[tier] || tierDefaults.free;
+
+    // Determine if model is standard or premium
+    const premiumModels = [
+      'deepseek/deepseek-v4-pro',
+      'z-ai/glm-5.1',
+      'openai/gpt-5.4-mini',
+      'x-ai/grok-4.3',
+      'moonshotai/kimi-k2.5',
+    ];
+    const isPremium = premiumModels.some((m) => model.includes(m));
+
+    // Check tier allows this model type
+    if (isPremium && defaults.maxWeeklyTokensPremium === 0) {
+      return res.json({ error: 'Premium models require Novelist tier or above.' }, 403);
+    }
+
+    // Calculate estimated tokens for this request
+    const inputText = messages.map((m) => m.content).join(' ');
+    const estimatedInputTokens = estimateTokens(inputText);
+    const estimatedOutputTokens = maxTokens || 2048;
+    const estimatedTotal = estimatedInputTokens + estimatedOutputTokens;
+
+    // Check token limits
+    const weeklyUsed = profile.weeklyTokensUsed || 0;
+    const weeklyLimit = isPremium ? defaults.maxWeeklyTokensPremium : defaults.maxWeeklyTokensStandard;
+
+    if (weeklyUsed + estimatedTotal > weeklyLimit) {
+      return res.json({
+        error: `Token limit reached. Used ${weeklyUsed.toLocaleString()} / ${weeklyLimit.toLocaleString()} tokens this week.`,
+      }, 429);
+    }
+
+    // Call OpenRouter
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+    if (!openRouterKey) {
+      return res.json({ error: 'Hosted AI not configured. Operator API key missing.' }, 500);
+    }
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${openRouterKey}`,
+        'HTTP-Referer': process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://morpheus.app',
+        'X-Title': 'Morpheus AI Co-Writer',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 2048,
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      error(`OpenRouter error: ${errBody}`);
+      return res.json({ error: 'AI provider error. Please try again later.' }, 502);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    // Count actual tokens used (from OpenRouter response or estimate)
+    const actualTokens = data.usage?.total_tokens || estimateTokens(content) + estimatedInputTokens;
+
+    // Update profile token usage
+    try {
+      await databases.updateDocument(databaseId, profilesCollection, userId, {
+        weeklyTokensUsed: weeklyUsed + actualTokens,
+      });
+    } catch (err) {
+      error(`Failed to update token usage: ${err.message}`);
+    }
+
+    return res.json({
+      content,
+      tokensUsed: actualTokens,
+      model,
+    });
+  } catch (err) {
+    error(`Unhandled error: ${err.message}`);
+    return res.json({ error: 'Internal server error' }, 500);
+  }
+};

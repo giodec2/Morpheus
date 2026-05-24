@@ -3,9 +3,12 @@ import { persist } from 'zustand/middleware';
 import { DEFAULT_STANDARD_MODEL } from '@/lib/models';
 import type { AppSettings } from '@/types';
 
+type AIMode = 'byok' | 'hosted';
+
 interface SettingsState extends AppSettings {
   isConnected: boolean;
   modelTier: 'standard' | 'premium';
+  aiMode: AIMode;
   setOpenRouterKey: (key: string) => void;
   setDefaultModel: (model: string) => void;
   setTemperature: (temp: number) => void;
@@ -15,6 +18,7 @@ interface SettingsState extends AppSettings {
   setLanguage: (language: 'english' | 'italian') => void;
   setIsConnected: (connected: boolean) => void;
   setModelTier: (tier: 'standard' | 'premium') => void;
+  setAiMode: (mode: AIMode) => void;
   loadSettings: (settings: AppSettings) => void;
 }
 
@@ -31,6 +35,7 @@ export const useSettingsStore = create<SettingsState>()(
       language: 'english',
       isConnected: false,
       modelTier: 'standard',
+      aiMode: 'hosted',
 
       setOpenRouterKey: (key) => set({ openRouterKey: key }),
       setDefaultModel: (model) => set({ defaultModel: model }),
@@ -44,6 +49,7 @@ export const useSettingsStore = create<SettingsState>()(
       setLanguage: (language) => set({ language }),
       setIsConnected: (connected) => set({ isConnected: connected }),
       setModelTier: (tier) => set({ modelTier: tier }),
+      setAiMode: (mode) => set({ aiMode: mode }),
       loadSettings: (settings) => set({ ...settings }),
     }),
     {
@@ -57,6 +63,7 @@ export const useSettingsStore = create<SettingsState>()(
         advancedMode: state.advancedMode,
         language: state.language,
         modelTier: state.modelTier,
+        aiMode: state.aiMode,
       }),
     }
   )

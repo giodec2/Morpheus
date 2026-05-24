@@ -73,6 +73,7 @@ export interface AppSettings {
   advancedMode: boolean;
   language: 'english' | 'italian';
   modelTier: 'standard' | 'premium';
+  aiMode: 'byok' | 'hosted';
 }
 
 export type SidebarView = 'chapters' | 'characters' | 'loreBible' | 'settings';

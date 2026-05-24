@@ -1,12 +1,20 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
 import OpenAI from 'openai';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
+import { functions } from '@/lib/appwrite';
+import { ExecutionMethod } from 'appwrite';
 import type { AIMode } from '@/types';
 
+const HOSTED_AI_FUNCTION_ID = import.meta.env.VITE_APPWRITE_FUNCTION_ID || '';
+
 export function useOpenRouter() {
-  const { openRouterKey, defaultModel, temperature, maxTokens } = useSettingsStore();
+  const { openRouterKey, defaultModel, temperature, maxTokens, aiMode } = useSettingsStore();
+  const { user } = useAuthStore();
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  const isByok = aiMode === 'byok';
 
   const client = useMemo(() => {
     if (!openRouterKey) return null;
@@ -29,12 +37,86 @@ export function useOpenRouter() {
     }
   }, [openRouterKey]);
 
-  const sendMessage = useCallback(async (
+  const sendMessageHosted = useCallback(async (
     systemPrompt: string,
     messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
     onChunk: (chunk: string) => void,
     onError: (error: string) => void,
-    _mode: AIMode
+  ): Promise<void> => {
+    if (!user) {
+      onError('Please sign in to use Hosted AI.');
+      return;
+    }
+    if (!HOSTED_AI_FUNCTION_ID) {
+      onError('Hosted AI is not configured. Please add your own API key (BYOK) in Settings.');
+      return;
+    }
+
+    setIsStreaming(true);
+    abortRef.current = new AbortController();
+
+    try {
+      const result = await functions.createExecution(
+        HOSTED_AI_FUNCTION_ID,
+        JSON.stringify({
+          model: defaultModel,
+          messages: [{ role: 'system', content: systemPrompt }, ...messages],
+          temperature,
+          maxTokens,
+        }),
+        false, // async = false (wait for response)
+        '/', // path
+        ExecutionMethod.POST, // method
+        { 'Content-Type': 'application/json' } // headers
+      );
+
+      if (result.responseStatusCode >= 400) {
+        const errorBody = JSON.parse(result.responseBody);
+        onError(errorBody.message || 'Hosted AI request failed.');
+        return;
+      }
+
+      const body = JSON.parse(result.responseBody);
+      if (body.error) {
+        onError(body.error);
+        return;
+      }
+
+      // Simulate streaming by yielding characters one by one
+      const content = body.content || '';
+      const delay = Math.max(5, Math.min(30, 500 / content.length));
+      for (let i = 0; i < content.length; i++) {
+        if (abortRef.current?.signal.aborted) return;
+        onChunk(content[i]);
+        if (content.length > 100) {
+          await new Promise((r) => setTimeout(r, delay));
+        }
+      }
+
+      if (body.tokensUsed) {
+        const { profile, setProfile } = useAuthStore.getState();
+        if (profile) {
+          setProfile({
+            ...profile,
+            weeklyTokensUsed: (profile.weeklyTokensUsed || 0) + body.tokensUsed,
+          });
+        }
+      }
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      const msg = (err as Error).message || 'Hosted AI request failed.';
+      onError(msg);
+    } finally {
+      setIsStreaming(false);
+      abortRef.current = null;
+    }
+  }, [user, defaultModel, temperature, maxTokens]);
+
+  const sendMessageByok = useCallback(async (
+    systemPrompt: string,
+    messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
+    onChunk: (chunk: string) => void,
+    onError: (error: string) => void,
   ): Promise<void> => {
     if (!openRouterKey || !client) {
       onError('Please set your OpenRouter API key in Settings.');
@@ -71,6 +153,20 @@ export function useOpenRouter() {
       abortRef.current = null;
     }
   }, [openRouterKey, client, defaultModel, temperature, maxTokens]);
+
+  const sendMessage = useCallback(async (
+    systemPrompt: string,
+    messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
+    onChunk: (chunk: string) => void,
+    onError: (error: string) => void,
+    _mode: AIMode
+  ): Promise<void> => {
+    if (isByok) {
+      await sendMessageByok(systemPrompt, messages, onChunk, onError);
+    } else {
+      await sendMessageHosted(systemPrompt, messages, onChunk, onError);
+    }
+  }, [isByok, sendMessageByok, sendMessageHosted]);
 
   const abort = useCallback(() => {
     abortRef.current?.abort();

@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  Compass, Search, Network, Sparkles, Send, Bot, User,
+  Compass, Search, Network, Sparkles, Send, Bot, User, Lock,
   Loader2, Plus, Trash2, MessageSquare, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
 import { buildContextPacket } from '@/lib/contextEngine';
@@ -484,10 +485,18 @@ function AISettings() {
     defaultModel, temperature, maxTokens, advancedMode, modelTier,
     setDefaultModel, setTemperature, setMaxTokens, setAdvancedMode, setModelTier,
   } = useSettingsStore();
+  const { profile } = useAuthStore();
+
+  const subscriptionTier = profile?.subscriptionTier || 'free';
+  const canUsePremium = subscriptionTier === 'novelist' || subscriptionTier === 'architect';
 
   const currentTierModels = modelTier === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS;
 
   const handleTierChange = (tier: 'standard' | 'premium') => {
+    if (tier === 'premium' && !canUsePremium) {
+      toast('Premium models are reserved for Novelist tier and above.', 'error');
+      return;
+    }
     setModelTier(tier);
     const models = tier === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS;
     const stillValid = models.some((m) => m.value === defaultModel);
@@ -502,7 +511,7 @@ function AISettings() {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
           AI Settings
         </h3>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 relative group">
           <span className={`text-xs font-medium transition-colors ${
             modelTier === 'standard' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-600'
           }`}>
@@ -513,8 +522,9 @@ function AISettings() {
             onClick={() => handleTierChange(modelTier === 'standard' ? 'premium' : 'standard')}
             className={`relative w-9 h-5 rounded-full transition-colors ${
               modelTier === 'standard' ? 'bg-emerald-500' : 'bg-purple-500'
-            }`}
+            } ${!canUsePremium ? 'opacity-60 cursor-not-allowed' : ''}`}
             aria-label="Toggle model tier"
+            disabled={!canUsePremium && modelTier === 'standard'}
           >
             <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
               modelTier === 'premium' ? 'translate-x-4' : ''
@@ -525,8 +535,23 @@ function AISettings() {
           }`}>
             Premium
           </span>
+
+          {!canUsePremium && (
+            <div className="absolute -top-7 right-0 px-2 py-0.5 bg-gray-800 dark:bg-gray-700 text-white text-[9px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+              Premium models reserved for Novelist+
+            </div>
+          )}
         </div>
       </div>
+
+      {!canUsePremium && modelTier === 'premium' && (
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <Lock className="w-3 h-3 text-amber-500" />
+          <span className="text-[10px] text-amber-700 dark:text-amber-400">
+            Premium locked. Upgrade to Novelist to unlock.
+          </span>
+        </div>
+      )}
 
       <div className="space-y-2">
         <CustomSelect

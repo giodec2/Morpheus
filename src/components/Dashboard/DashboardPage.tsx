@@ -7,6 +7,7 @@ import { toast } from '@/components/common/Toast';
 import AuthModal from '@/components/Auth/AuthModal';
 import UpgradeModal from '@/components/common/UpgradeModal';
 import TierSelectorModal from '@/components/common/TierSelectorModal';
+import ConfirmModal from '@/components/common/ConfirmModal';
 import { getAllBooks, createBook, deleteBook } from '@/db/books';
 import { TIER_DEFAULTS } from '@/services/auth';
 import { getChaptersByBook } from '@/db/chapters';
@@ -28,13 +29,14 @@ export default function DashboardPage() {
   const [chapterCounts, setChapterCounts] = useState<Record<string, number>>({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-  const { theme, setTheme, openRouterKey, setOpenRouterKey, setIsConnected } = useSettingsStore();
+  const { theme, setTheme, openRouterKey, setOpenRouterKey, setIsConnected, setAiMode } = useSettingsStore();
   const { user, isSyncing, lastSyncAt, profile } = useAuthStore();
   const [apiInput, setApiInput] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showTierSelector, setShowTierSelector] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState<string | null>(null);
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -79,8 +81,13 @@ export default function DashboardPage() {
   };
 
   const handleDeleteBook = async (id: string) => {
-    if (!confirm('Delete this book and all its chapters? This cannot be undone.')) return;
-    await deleteBook(id);
+    setBookToDelete(id);
+  };
+
+  const confirmDeleteBook = async () => {
+    if (!bookToDelete) return;
+    await deleteBook(bookToDelete);
+    setBookToDelete(null);
     loadBooks();
     toast('Book deleted', 'info');
   };
@@ -98,7 +105,8 @@ export default function DashboardPage() {
       if (response.ok) {
         setOpenRouterKey(apiInput.trim());
         setIsConnected(true);
-        toast('API key saved and verified!', 'success');
+        setAiMode('byok');
+        toast('API key saved! Switched to BYOK mode.', 'success');
         setApiInput('');
       } else {
         toast('Invalid API key. Please check and try again.', 'error');
@@ -289,6 +297,23 @@ export default function DashboardPage() {
           currentTier={profile.subscriptionTier}
           onClose={() => setShowTierSelector(false)}
         />
+      )}
+
+      {bookToDelete && (
+        (() => {
+          const book = books.find((b) => b.id === bookToDelete);
+          if (!book) return null;
+          return (
+            <ConfirmModal
+              title="Delete Book"
+              description={`This will permanently delete "${book.title}" and all its chapters. This action cannot be undone.`}
+              itemName={book.title}
+              confirmLabel="Delete Book"
+              onConfirm={confirmDeleteBook}
+              onClose={() => setBookToDelete(null)}
+            />
+          );
+        })()
       )}
 
       {/* Create Modal */}
