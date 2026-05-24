@@ -1,4 +1,4 @@
-import { X, ArrowUpRight, BookOpen } from 'lucide-react';
+import { X, ArrowUpRight, BookOpen, Crown, Star, Sparkles, Zap } from 'lucide-react';
 import { Link } from 'wouter';
 import type { UserProfile } from '@/stores/authStore';
 
@@ -11,18 +11,61 @@ interface UpgradeModalProps {
 
 const tierOrder: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'novelist', 'architect'];
 
-const tierNames: Record<string, string> = {
-  free: 'Free',
-  scribe: 'Scribe',
-  novelist: 'Novelist',
-  architect: 'Architect',
-};
-
-const tierPrices: Record<string, string> = {
-  free: 'Free',
-  scribe: '$9/mo',
-  novelist: '$19/mo',
-  architect: '$49/mo',
+const tierMeta: Record<string, {
+  name: string;
+  icon: typeof Zap;
+  color: string;
+  accentBg: string;
+  accentBorder: string;
+  accentText: string;
+  btnBg: string;
+  dotColor: string;
+  gradient: string;
+}> = {
+  free: {
+    name: 'Free',
+    icon: Zap,
+    color: 'text-gray-600 dark:text-gray-400',
+    accentBg: 'bg-gray-50 dark:bg-slate-800/50',
+    accentBorder: 'border-gray-200 dark:border-slate-700',
+    accentText: 'text-gray-500 dark:text-gray-400',
+    btnBg: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
+    dotColor: 'bg-gray-400',
+    gradient: 'from-gray-400 to-gray-300',
+  },
+  scribe: {
+    name: 'Scribe',
+    icon: Sparkles,
+    color: 'text-primary-600 dark:text-primary-400',
+    accentBg: 'bg-primary-50 dark:bg-primary-900/20',
+    accentBorder: 'border-primary-200 dark:border-primary-800',
+    accentText: 'text-primary-600 dark:text-primary-400',
+    btnBg: 'bg-primary-600 hover:bg-primary-700 text-white',
+    dotColor: 'bg-primary-500',
+    gradient: 'from-primary-500 to-teal-400',
+  },
+  novelist: {
+    name: 'Novelist',
+    icon: Star,
+    color: 'text-amber-600 dark:text-amber-400',
+    accentBg: 'bg-amber-50 dark:bg-amber-900/20',
+    accentBorder: 'border-amber-200 dark:border-amber-800',
+    accentText: 'text-amber-600 dark:text-amber-400',
+    btnBg: 'bg-amber-500 hover:bg-amber-600 text-white',
+    dotColor: 'bg-amber-500',
+    gradient: 'from-amber-500 to-orange-400',
+  },
+  architect: {
+    name: 'Architect',
+    icon: Crown,
+    color: 'text-purple-600 dark:text-purple-400',
+    accentBg: 'bg-purple-50 dark:bg-purple-900/20',
+    accentBorder: 'border-purple-200 dark:border-purple-800',
+    accentText: 'text-purple-600 dark:text-purple-400',
+    btnBg: 'bg-purple-600 hover:bg-purple-700 text-white',
+    dotColor: 'bg-purple-500',
+    gradient: 'from-purple-500 to-pink-400',
+  },
 };
 
 const nextTierBenefits: Record<string, string[]> = {
@@ -32,18 +75,31 @@ const nextTierBenefits: Record<string, string[]> = {
   architect: [],
 };
 
+const discountedPrices: Record<string, string> = {
+  scribe: '$4.50',
+  novelist: '$9.50',
+  architect: '$24.50',
+};
+
+const originalPrices: Record<string, string> = {
+  scribe: '$9',
+  novelist: '$19',
+  architect: '$49',
+};
+
 export default function UpgradeModal({ currentTier, currentCount, maxCount, onClose }: UpgradeModalProps) {
   const currentIndex = tierOrder.indexOf(currentTier);
-  const nextTier = currentIndex < tierOrder.length - 1 ? tierOrder[currentIndex + 1] : null;
-  const benefits = nextTier ? nextTierBenefits[nextTier] : [];
+  const nextTierKey = currentIndex < tierOrder.length - 1 ? tierOrder[currentIndex + 1] : null;
+  const benefits = nextTierKey ? nextTierBenefits[nextTierKey] : [];
+  const nextMeta = nextTierKey ? tierMeta[nextTierKey] : null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <div className={`w-10 h-10 rounded-xl ${tierMeta[currentTier].accentBg} ${tierMeta[currentTier].accentBorder} border flex items-center justify-center`}>
+              <BookOpen className={`w-5 h-5 ${tierMeta[currentTier].accentText}`} />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Book Limit Reached</h3>
@@ -60,51 +116,56 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
           </button>
         </div>
 
-        <div className={`p-4 rounded-xl mb-6 ${
-          currentTier === 'free'
-            ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800'
-            : 'bg-gray-50 dark:bg-slate-800/50'
-        }`}>
+        <div className={`p-4 rounded-xl mb-6 ${tierMeta[currentTier].accentBg} ${tierMeta[currentTier].accentBorder} border`}>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-            You're writing up a storm! <span className="inline-block">🌪️</span>
+            You're writing up a storm! 🌪️
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Your <strong className="text-gray-700 dark:text-gray-300">{tierNames[currentTier]}</strong> plan includes{' '}
+            Your <strong className="text-gray-700 dark:text-gray-300">{tierMeta[currentTier].name}</strong> plan includes{' '}
             <strong className="text-gray-700 dark:text-gray-300">{maxCount}</strong> book{maxCount > 1 ? 's' : ''}.
           </p>
         </div>
 
-        {nextTier && benefits.length > 0 && (
+        {nextTierKey && nextMeta && benefits.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-              Upgrade to <span className="text-primary-600 dark:text-primary-400">{tierNames[nextTier]}</span>:
-            </p>
-            <ul className="space-y-2">
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${nextMeta.gradient} flex items-center justify-center`}>
+                <nextMeta.icon className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                Upgrade to <span className={nextMeta.color}>{nextMeta.name}</span>:
+              </p>
+            </div>
+            <ul className="space-y-2 mb-4">
               {benefits.map((benefit) => (
                 <li key={benefit} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                  <div className={`w-1.5 h-1.5 rounded-full ${nextMeta.dotColor}`} />
                   {benefit}
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-sm font-semibold text-gray-900 dark:text-white">
-              {tierPrices[nextTier]}{' '}
-              <span className="text-xs font-normal text-gray-500 dark:text-gray-400 line-through">
-                {nextTier === 'scribe' ? '$9' : nextTier === 'novelist' ? '$19' : '$49'}/mo
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-black text-gray-900 dark:text-white">
+                {discountedPrices[nextTierKey]}/mo
               </span>
-              {' '}<span className="text-xs font-normal text-primary-600 dark:text-primary-400">50% off first month</span>
-            </p>
+              <span className="text-sm text-gray-400 line-through">
+                {originalPrices[nextTierKey]}/mo
+              </span>
+              <span className={`text-[10px] px-2 py-0.5 ${nextMeta.accentBg} ${nextMeta.accentText} rounded-full font-bold uppercase tracking-wider`}>
+                50% off first month
+              </span>
+            </div>
           </div>
         )}
 
         <div className="flex flex-col gap-2">
-          {nextTier ? (
+          {nextTierKey && nextMeta ? (
             <Link href="/#pricing">
               <button
                 onClick={onClose}
-                className="w-full btn-primary flex items-center justify-center gap-2 py-2.5"
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 ${nextMeta.btnBg}`}
               >
-                Upgrade to {tierNames[nextTier]}
+                Upgrade to {nextMeta.name}
                 <ArrowUpRight className="w-4 h-4" />
               </button>
             </Link>
@@ -115,7 +176,7 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
           )}
           <button
             onClick={onClose}
-            className="w-full btn-secondary py-2.5 text-sm"
+            className="w-full btn-secondary py-3 text-sm font-bold"
           >
             Maybe Later
           </button>

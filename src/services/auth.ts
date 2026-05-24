@@ -14,6 +14,17 @@ export const TIER_DEFAULTS: Record<UserProfile['subscriptionTier'], { maxBooks: 
   architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
 };
 
+export function normalizeProfile(profile: UserProfile): UserProfile {
+  const tier = profile.subscriptionTier;
+  const defaults = TIER_DEFAULTS[tier] || TIER_DEFAULTS.free;
+  return {
+    ...profile,
+    maxBooks: defaults.maxBooks,
+    maxWeeklyTokensStandard: defaults.maxWeeklyTokensStandard,
+    maxWeeklyTokensPremium: defaults.maxWeeklyTokensPremium,
+  };
+}
+
 export async function getCurrentUser(): Promise<Models.User<Models.Preferences> | null> {
   try {
     return await account.get();
@@ -76,7 +87,9 @@ async function fetchOrCreateProfile(user: Models.User<Models.Preferences>): Prom
       appwriteConfig.collections.profiles,
       user.$id
     );
-    return doc as unknown as UserProfile;
+    const rawProfile = doc as unknown as UserProfile;
+    // Normalize limits based on current tier — fixes manual tier changes in Appwrite Console
+    return normalizeProfile(rawProfile);
   } catch {
     return createProfile(user);
   }
@@ -118,5 +131,6 @@ export async function updateProfile(updates: Partial<Omit<UserProfile, '$id'>>):
     updates
   );
 
-  setProfile({ ...profile, ...updates });
+  const updated = { ...profile, ...updates };
+  setProfile(normalizeProfile(updated));
 }

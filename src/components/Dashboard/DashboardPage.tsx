@@ -8,6 +8,7 @@ import AuthModal from '@/components/Auth/AuthModal';
 import UpgradeModal from '@/components/common/UpgradeModal';
 import TierSelectorModal from '@/components/common/TierSelectorModal';
 import { getAllBooks, createBook, deleteBook } from '@/db/books';
+import { TIER_DEFAULTS } from '@/services/auth';
 import { getChaptersByBook } from '@/db/chapters';
 import { createLoreBible } from '@/db/loreBibles';
 import { createChapter } from '@/db/chapters';
@@ -56,7 +57,8 @@ export default function DashboardPage() {
     setChapterCounts(counts);
   }
 
-  const maxBooks = profile?.maxBooks ?? Infinity;
+  const tierDefaults = profile ? TIER_DEFAULTS[profile.subscriptionTier] : null;
+  const maxBooks = tierDefaults?.maxBooks ?? profile?.maxBooks ?? Infinity;
   const canCreateBook = books.length < maxBooks;
 
   const handleCreateBook = async () => {
