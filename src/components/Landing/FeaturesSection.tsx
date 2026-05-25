@@ -1,5 +1,6 @@
 import { MessageSquare, Users, Shield, Zap } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
+import { useState, useEffect } from 'react';
 
 const features = [
   {
@@ -38,17 +39,27 @@ const features = [
 
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.15 });
+  const [entered, setEntered] = useState(false);
   const Icon = feature.icon;
+
+  useEffect(() => {
+    if (isInView && !entered) {
+      const timer = setTimeout(() => setEntered(true), index * 150);
+      return () => clearTimeout(timer);
+    }
+    if (!isInView && entered) {
+      setEntered(false);
+    }
+  }, [isInView, entered, index]);
 
   return (
     <div
       ref={ref}
       className={`group relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${feature.shadow} ${
-        isInView
+        isInView && entered
           ? 'opacity-100 translate-y-0'
           : 'opacity-0 translate-y-10'
       }`}
-      style={isInView ? undefined : { transitionDelay: `${index * 150}ms` }}
     >
       {/* Top gradient bar */}
       <div className={`absolute top-0 left-4 right-4 h-1 rounded-b-full bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />

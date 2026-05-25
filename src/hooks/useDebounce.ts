@@ -5,6 +5,10 @@ export function useDebounce(
   delay: number
 ) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const callbackRef = useRef(callback);
+
+  // Keep callback ref up to date to avoid stale closure
+  callbackRef.current = callback;
 
   useEffect(() => {
     return () => {
@@ -14,6 +18,6 @@ export function useDebounce(
 
   return () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => callback(), delay);
+    timeoutRef.current = setTimeout(() => callbackRef.current(), delay);
   };
 }

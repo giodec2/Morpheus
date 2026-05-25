@@ -14,7 +14,7 @@ export const TIER_DEFAULTS: Record<UserProfile['subscriptionTier'], { maxBooks: 
   architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
 };
 
-export function normalizeProfile(profile: UserProfile): UserProfile {
+function normalizeProfile(profile: UserProfile): UserProfile {
   const tier = profile.subscriptionTier;
   const defaults = TIER_DEFAULTS[tier] || TIER_DEFAULTS.free;
   return {
@@ -33,18 +33,21 @@ export async function getCurrentUser(): Promise<Models.User<Models.Preferences> 
   }
 }
 
+async function postAuthSetup(user: Models.User<Models.Preferences>): Promise<void> {
+  await fetchOrCreateProfile(user);
+  const localBooks = await getAllBooks();
+  await syncToCloud(localBooks);
+  await syncFromCloud(localBooks, putBook, putChapter, putCharacter, putLoreBible);
+}
+
 export async function initAuth(): Promise<void> {
-  const { setUser, setProfile, setIsLoading } = useAuthStore.getState();
+  const { setUser, setIsLoading } = useAuthStore.getState();
   setIsLoading(true);
   try {
     const user = await getCurrentUser();
     setUser(user);
     if (user) {
-      const profile = await fetchOrCreateProfile(user);
-      setProfile(profile);
-      const localBooks = await getAllBooks();
-      await syncToCloud(localBooks);
-      await syncFromCloud(localBooks, putBook, putChapter, putCharacter, putLoreBible);
+      await postAuthSetup(user);
     }
   } finally {
     setIsLoading(false);
@@ -52,15 +55,11 @@ export async function initAuth(): Promise<void> {
 }
 
 export async function login(email: string, password: string): Promise<void> {
-  const { setUser, setProfile } = useAuthStore.getState();
+  const { setUser } = useAuthStore.getState();
   await account.createEmailPasswordSession(email, password);
   const user = await account.get();
   setUser(user);
-  const profile = await fetchOrCreateProfile(user);
-  setProfile(profile);
-  const localBooks = await getAllBooks();
-  await syncToCloud(localBooks);
-  await syncFromCloud(localBooks, putBook, putChapter, putCharacter, putLoreBible);
+  await postAuthSetup(user);
 }
 
 export async function register(email: string, password: string, name: string): Promise<void> {

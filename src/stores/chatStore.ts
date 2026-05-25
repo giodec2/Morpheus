@@ -22,7 +22,6 @@ interface ChatState {
   setStreamContent: (content: string) => void;
   appendStreamContent: (chunk: string) => void;
   setContextInfo: (info: ChatState['contextInfo']) => void;
-  clearMessages: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -53,5 +52,4 @@ export const useChatStore = create<ChatState>((set) => ({
   setStreamContent: (streamContent) => set({ streamContent }),
   appendStreamContent: (chunk) => set((state) => ({ streamContent: state.streamContent + chunk })),
   setContextInfo: (contextInfo) => set({ contextInfo }),
-  clearMessages: () => set({ messages: [] }),
 }));

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -9,7 +9,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
@@ -22,7 +22,6 @@ export default function TiptapEditor() {
   const { activeChapter, saveStatus } = useEditorStore();
   const { characters } = useBookStore();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const [editorError, setEditorError] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -43,25 +42,7 @@ export default function TiptapEditor() {
         class: 'editor-content focus:outline-none min-h-[500px] px-10 py-8',
       },
     },
-    onCreate: ({ editor }) => {
-      if (activeChapter && editor.isEmpty) {
-        editor.commands.setContent(activeChapter.content);
-      }
-    },
   });
-
-  // Handle editor errors
-  useEffect(() => {
-    if (!editor && activeChapter) {
-      const timer = setTimeout(() => {
-        setEditorError('Editor failed to initialize. Try refreshing the page.');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-    if (editor) {
-      setEditorError(null);
-    }
-  }, [editor, activeChapter]);
 
   useAutoSave(editor);
 
@@ -71,24 +52,6 @@ export default function TiptapEditor() {
         <div className="text-center">
           <p className="text-lg font-medium mb-2">No chapter selected</p>
           <p className="text-sm">Create a new chapter from the sidebar to start writing</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (editorError) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center p-8">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Editor Error</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{editorError}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn-primary"
-          >
-            Reload Page
-          </button>
         </div>
       </div>
     );

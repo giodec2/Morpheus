@@ -35,7 +35,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
 
         {/* Blob 1 - top right */}
         <div
-          className="absolute -top-20 -right-20 w-[500px] h-[500px] opacity-20 dark:opacity-15"
+          className="absolute -top-20 -right-20 w-[500px] h-[500px] opacity-20 dark:opacity-[0.15]"
           style={{
             background: 'radial-gradient(circle, rgba(20,184,166,0.5) 0%, transparent 70%)',
             animation: 'blob 20s ease-in-out infinite',
@@ -43,7 +43,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
         />
         {/* Blob 2 - bottom left */}
         <div
-          className="absolute -bottom-32 -left-32 w-[600px] h-[600px] opacity-15 dark:opacity-10"
+          className="absolute -bottom-32 -left-32 w-[600px] h-[600px] opacity-[0.15] dark:opacity-[0.10]"
           style={{
             background: 'radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%)',
             animation: 'blob 25s ease-in-out infinite reverse',
@@ -51,7 +51,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
         />
         {/* Blob 3 - center blur */}
         <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] opacity-10 dark:opacity-8"
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] opacity-[0.10] dark:opacity-[0.08]"
           style={{
             background: 'radial-gradient(circle, rgba(245,158,11,0.3) 0%, transparent 70%)',
             animation: 'blob 18s ease-in-out infinite 2s',

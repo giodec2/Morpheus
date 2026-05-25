@@ -7,6 +7,7 @@ import { useOpenRouter } from '@/hooks/useOpenRouter';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { updateChapter } from '@/db/chapters';
 import { buildSummaryPrompt } from '@/lib/prompts/summaryGenerator';
+import { extractTextFromContent } from '@/lib/tiptap';
 import type { Chapter } from '@/types';
 
 interface ChapterHeaderProps {
@@ -38,7 +39,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
     if (!openRouterKey || isGenerating) return;
 
     setIsGenerating(true);
-    const text = extractTextFromContent(chapter.content);
+    const text = extractTextFromContent(chapter.content, { addSpaces: true });
     const targetWords = Math.max(20, Math.round(text.split(/\s+/).length * 0.05));
     const prompt = buildSummaryPrompt(text, targetWords);
 
@@ -145,18 +146,4 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
   );
 }
 
-function extractTextFromContent(content: Record<string, unknown>): string {
-  let text = '';
-  function traverse(node: unknown) {
-    if (typeof node !== 'object' || node === null) return;
-    const n = node as Record<string, unknown>;
-    if (n.type === 'text' && typeof n.text === 'string') {
-      text += n.text + ' ';
-    }
-    if (Array.isArray(n.content)) {
-      n.content.forEach(traverse);
-    }
-  }
-  traverse(content);
-  return text.trim();
-}
+

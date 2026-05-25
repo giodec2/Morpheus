@@ -28,9 +28,10 @@ export default function ExportModal({ onClose }: ExportModalProps) {
 
   const exportHTML = async () => {
     setExporting(true);
-    const chapters = await getChaptersByBook(activeBook.id);
+    try {
+      const chapters = await getChaptersByBook(activeBook.id);
 
-    let html = `<!DOCTYPE html>
+      let html = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -47,38 +48,49 @@ p { margin: 1em 0; }
 <h1>${escapeHtml(activeBook.title)}</h1>
 `;
 
-    for (const chapter of chapters.sort((a, b) => a.order - b.order)) {
-      html += `<div class="chapter"><h2>${escapeHtml(chapter.title)}</h2>\n`;
-      html += tiptapToHtml(chapter.content);
-      html += `</div>\n`;
+      for (const chapter of chapters.sort((a, b) => a.order - b.order)) {
+        html += `<div class="chapter"><h2>${escapeHtml(chapter.title)}</h2>\n`;
+        html += tiptapToHtml(chapter.content);
+        html += `</div>\n`;
+      }
+
+      html += `</body></html>`;
+
+      downloadFile(html, `${sanitizeFilename(activeBook.title)}.html`, 'text/html');
+      toast('HTML exported successfully', 'success');
+    } catch (err) {
+      console.error(err);
+      toast('Failed to export HTML', 'error');
+    } finally {
+      setExporting(false);
     }
-
-    html += `</body></html>`;
-
-    downloadFile(html, `${sanitizeFilename(activeBook.title)}.html`, 'text/html');
-    setExporting(false);
-    toast('HTML exported successfully', 'success');
   };
 
   const exportJSON = async () => {
     setExporting(true);
-    const [chapters, characters, lore] = await Promise.all([
-      getChaptersByBook(activeBook.id),
-      getCharactersByBook(activeBook.id),
-      getLoreBibleByBook(activeBook.id),
-    ]);
+    try {
+      const [chapters, characters, lore] = await Promise.all([
+        getChaptersByBook(activeBook.id),
+        getCharactersByBook(activeBook.id),
+        getLoreBibleByBook(activeBook.id),
+      ]);
 
-    const data = {
-      book: activeBook,
-      chapters: chapters.sort((a, b) => a.order - b.order),
-      characters,
-      loreBible: lore,
-      exportedAt: Date.now(),
-    };
+      const data = {
+        book: activeBook,
+        chapters: chapters.sort((a, b) => a.order - b.order),
+        characters,
+        loreBible: lore,
+        exportedAt: Date.now(),
+      };
 
-    downloadFile(JSON.stringify(data, null, 2), `${sanitizeFilename(activeBook.title)}.json`, 'application/json');
-    setExporting(false);
-    toast('JSON backup exported', 'success');
+      downloadFile(JSON.stringify(data, null, 2), `${sanitizeFilename(activeBook.title)}.json`, 'application/json');
+      toast('JSON backup exported', 'success');
+    } catch (err) {
+      console.error(err);
+      toast('Failed to export JSON', 'error');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const exportDOCX = async () => {
@@ -570,15 +582,7 @@ function extractTextRuns(content: unknown, TextRun: any, UnderlineType: any): an
 }
 
 function downloadFile(content: string, filename: string, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  downloadBlob(new Blob([content], { type: mimeType }), filename);
 }
 
 function downloadBlob(blob: Blob, filename: string) {

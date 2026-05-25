@@ -1,6 +1,6 @@
 import { Check, X, Sparkles, Star, Crown, Zap } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const tiers = [
   {
@@ -118,6 +118,7 @@ const comparisonFeatures = [
 function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) {
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
   const [hovered, setHovered] = useState(false);
+  const [entered, setEntered] = useState(false);
 
   const tierIcons: Record<string, typeof Sparkles> = {
     Free: Zap,
@@ -126,6 +127,16 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
     Architect: Crown,
   };
   const TierIcon = tierIcons[tier.name] || Zap;
+
+  useEffect(() => {
+    if (isInView && !entered) {
+      const timer = setTimeout(() => setEntered(true), index * 150);
+      return () => clearTimeout(timer);
+    }
+    if (!isInView && entered) {
+      setEntered(false);
+    }
+  }, [isInView, entered, index]);
 
   return (
     <div
@@ -136,10 +147,9 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
         tier.highlight
           ? 'border-primary-400 dark:border-primary-600 shadow-2xl shadow-primary-500/15 scale-[1.03] z-10'
           : tier.price > 0
-          ? `border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-xl hover:shadow-${tier.name === 'Novelist' ? 'amber' : 'purple'}-500/10`
+          ? `border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 ${tier.name === 'Novelist' ? 'hover:shadow-amber-500/10' : tier.name === 'Architect' ? 'hover:shadow-purple-500/10' : ''}`
           : 'border-gray-200 dark:border-slate-700'
-      } ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-      style={isInView ? undefined : { transitionDelay: `${index * 150}ms` }}
+      } ${isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
     >
       {/* Badge ribbon */}
       {tier.badge && (

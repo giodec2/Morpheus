@@ -55,13 +55,16 @@ export function useAutoSave(editor: Editor | null) {
     };
   }, [editor, activeChapter, setIsDirty, setSaveStatus, save]);
 
-  // Save on unmount
+  // Save on true unmount only
+  const saveRef = useRef(save);
+  saveRef.current = save;
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      save();
+      saveRef.current();
     };
-  }, [save]);
+  }, []);
 
   return { save };
 }

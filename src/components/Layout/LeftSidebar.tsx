@@ -11,6 +11,7 @@ import { createChapter, deleteChapter, updateChapter, reorderChapters } from '@/
 import { createCharacter, deleteCharacter, updateCharacter } from '@/db/characters';
 import { updateLoreBible } from '@/db/loreBibles';
 import { toast } from '@/components/common/Toast';
+import { extractTextFromContent, buildTiptapFromText } from '@/lib/tiptap';
 import type { Chapter, Character } from '@/types';
 
 interface LeftSidebarProps {
@@ -239,7 +240,6 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
             toast('Character deleted', 'info');
             if (activeCharacterId === id) setActiveCharacterId(null);
           }}
-          allCharacters={characters}
         />
       )}
 
@@ -256,7 +256,7 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
 /* ---------- Character Panel ---------- */
 function CharacterPanel({
   characters, activeCharacterId, setActiveCharacterId,
-  onCreate, onUpdate, onDelete, allCharacters,
+  onCreate, onUpdate, onDelete,
 }: {
   characters: Character[];
   activeCharacterId: string | null;
@@ -264,7 +264,6 @@ function CharacterPanel({
   onCreate: (name: string) => void;
   onUpdate: (id: string, updates: Partial<Character>) => void;
   onDelete: (id: string) => void;
-  allCharacters: Character[];
 }) {
   const [newName, setNewName] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -283,7 +282,7 @@ function CharacterPanel({
           character={activeChar}
           onUpdate={onUpdate}
           onDelete={onDelete}
-          allCharacters={allCharacters}
+          allCharacters={characters}
         />
       </div>
     );
@@ -483,26 +482,6 @@ function CharacterDetail({
 }
 
 /* ---------- Lore Panel ---------- */
-function extractTextFromContent(content: Record<string, unknown>): string {
-  let text = '';
-  function traverse(node: unknown) {
-    if (typeof node !== 'object' || node === null) return;
-    const n = node as Record<string, unknown>;
-    if (n.type === 'text' && typeof n.text === 'string') text += n.text;
-    if (Array.isArray(n.content)) n.content.forEach(traverse);
-  }
-  traverse(content);
-  return text;
-}
-
-function buildTiptapFromText(text: string): Record<string, unknown> {
-  const paragraphs = text.split('\n').map(line => ({
-    type: 'paragraph',
-    content: line.trim() ? [{ type: 'text', text: line }] : [],
-  }));
-  return { type: 'doc', content: paragraphs };
-}
-
 function LorePanel({ loreBible, onUpdate }: { loreBible: { content: Record<string, unknown> }; onUpdate: (content: Record<string, unknown>) => void }) {
   const [text, setText] = useState(extractTextFromContent(loreBible.content));
 

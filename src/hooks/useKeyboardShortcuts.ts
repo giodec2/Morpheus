@@ -6,14 +6,13 @@ import { createChapter } from '@/db/chapters';
 import { toast } from '@/components/common/Toast';
 
 export function useKeyboardShortcuts() {
-  const { saveStatus } = useEditorStore();
+  const { saveStatus, setActiveChapter } = useEditorStore();
   const { activeBook, chapters, addChapter } = useBookStore();
-  const { setActiveChapter } = useEditorStore();
   const { theme, setTheme } = useSettingsStore();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Ctrl+S: Force save
+      // Ctrl+S: Show save feedback (auto-save handles the actual save)
       if (e.ctrlKey && e.key === 's') {
         e.preventDefault();
         if (saveStatus === 'idle' || saveStatus === 'error') {

@@ -2,18 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, FileText } from 'lucide-react';
 import { useBookStore } from '@/stores/bookStore';
 import { useLocation } from 'wouter';
-
-function extractTextFromContent(content: Record<string, unknown>): string {
-  let text = '';
-  function traverse(node: unknown) {
-    if (typeof node !== 'object' || node === null) return;
-    const n = node as Record<string, unknown>;
-    if (n.type === 'text' && typeof n.text === 'string') text += n.text + ' ';
-    if (Array.isArray(n.content)) n.content.forEach(traverse);
-  }
-  traverse(content);
-  return text;
-}
+import { extractTextFromContent } from '@/lib/tiptap';
 
 export default function SearchBar() {
   const { chapters, activeBook } = useBookStore();
@@ -28,12 +17,12 @@ export default function SearchBar() {
     const q = query.toLowerCase();
     return chapters
       .map((ch) => {
-        const text = extractTextFromContent(ch.content).toLowerCase();
+        const fullText = extractTextFromContent(ch.content, { addSpaces: true });
+        const text = fullText.toLowerCase();
         const titleMatch = ch.title.toLowerCase().includes(q);
         const contentMatch = text.includes(q);
         if (!titleMatch && !contentMatch) return null;
         // Find snippet around match
-        const fullText = extractTextFromContent(ch.content);
         const idx = fullText.toLowerCase().indexOf(q);
         const snippet = idx >= 0
           ? fullText.slice(Math.max(0, idx - 40), idx + 80)

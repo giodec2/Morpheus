@@ -3,12 +3,12 @@ import { persist } from 'zustand/middleware';
 import { DEFAULT_STANDARD_MODEL } from '@/lib/models';
 import type { AppSettings } from '@/types';
 
-type AIMode = 'byok' | 'hosted';
+type AIProviderMode = 'byok' | 'hosted';
 
 interface SettingsState extends AppSettings {
   isConnected: boolean;
   modelTier: 'standard' | 'premium';
-  aiMode: AIMode;
+  aiMode: AIProviderMode;
   setOpenRouterKey: (key: string) => void;
   setDefaultModel: (model: string) => void;
   setTemperature: (temp: number) => void;
@@ -18,7 +18,7 @@ interface SettingsState extends AppSettings {
   setLanguage: (language: 'english' | 'italian') => void;
   setIsConnected: (connected: boolean) => void;
   setModelTier: (tier: 'standard' | 'premium') => void;
-  setAiMode: (mode: AIMode) => void;
+  setAiMode: (mode: AIProviderMode) => void;
   loadSettings: (settings: AppSettings) => void;
 }
 

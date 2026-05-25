@@ -34,12 +34,13 @@ export async function updateBook(id: string, updates: Partial<Book>): Promise<vo
 }
 
 export async function deleteBook(id: string): Promise<void> {
-  await db.transaction('rw', [db.books, db.chapters, db.characters, db.loreBibles, db.chatHistory], async () => {
+  await db.transaction('rw', [db.books, db.chapters, db.characters, db.loreBibles, db.chatHistory, db.chatSessions], async () => {
     await db.books.delete(id);
     await db.chapters.where('bookId').equals(id).delete();
     await db.characters.where('bookId').equals(id).delete();
     await db.loreBibles.where('bookId').equals(id).delete();
     await db.chatHistory.where('bookId').equals(id).delete();
+    await db.chatSessions.where('bookId').equals(id).delete();
   });
   deleteBookCloud(id).catch(() => {});
 }

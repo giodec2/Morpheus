@@ -15,7 +15,6 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [, navigate] = useLocation();
 
   const isDark = theme === 'dark';
@@ -31,11 +30,6 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
     if (onNavigate) {
       onNavigate(hash);
     }
-  };
-
-  const openAuth = (mode: 'login' | 'register') => {
-    setAuthMode(mode);
-    setShowAuth(true);
   };
 
   return (
@@ -86,10 +80,10 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
               </Link>
             ) : (
               <>
-                <button onClick={() => openAuth('login')} className="btn-ghost text-sm font-medium">
+                <button onClick={() => setShowAuth(true)} className="btn-ghost text-sm font-medium">
                   Sign In
                 </button>
-                <button onClick={() => openAuth('register')} className="btn-primary text-sm">
+                <button onClick={() => setShowAuth(true)} className="btn-primary text-sm">
                   Get Started
                 </button>
               </>
@@ -119,8 +113,8 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
                 </Link>
               ) : (
                 <>
-                  <button onClick={() => { openAuth('login'); setMobileOpen(false); }} className="btn-secondary w-full">Sign In</button>
-                  <button onClick={() => { openAuth('register'); setMobileOpen(false); }} className="btn-primary w-full">Get Started</button>
+                  <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-secondary w-full">Sign In</button>
+                  <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-primary w-full">Get Started</button>
                 </>
               )}
             </div>
@@ -131,13 +125,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
       {showAuth && (
         <AuthModal
           onClose={() => setShowAuth(false)}
-          onSuccess={() => {
-            if (authMode === 'register') {
-              navigate('/app');
-            } else {
-              navigate('/app');
-            }
-          }}
+          onSuccess={() => navigate('/app')}
         />
       )}
     </>

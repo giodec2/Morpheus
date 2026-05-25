@@ -5,8 +5,8 @@ export async function getChatSessionsByBook(bookId: string): Promise<ChatSession
   return db.chatSessions
     .where('bookId')
     .equals(bookId)
-    .reverse()
-    .sortBy('updatedAt');
+    .sortBy('updatedAt')
+    .then(sessions => sessions.reverse());
 }
 
 export async function createChatSession(bookId: string, title = 'New Chat'): Promise<ChatSession> {
