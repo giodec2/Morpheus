@@ -99,7 +99,7 @@ const faqs: FAQItem[] = [
   {
     category: 'AI & Technology',
     question: 'What AI models does Morpheus use?',
-    answer: 'Morpheus connects to multiple state-of-the-art language models through OpenRouter, including models from OpenAI (GPT-4o), Anthropic (Claude), Google (Gemini), and others. This gives you flexibility to choose the AI that best fits your writing style and needs.',
+    answer: 'Morpheus connects to multiple state-of-the-art language models through OpenRouter, including GPT models from OpenAI, Google (Gemini), and others. This gives you flexibility to choose the AI that best fits your writing style and needs.',
   },
   {
     category: 'AI & Technology',
