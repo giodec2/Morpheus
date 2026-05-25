@@ -9,6 +9,12 @@ import AppShell from '@/components/Layout/AppShell';
 import DashboardPage from '@/components/Dashboard/DashboardPage';
 import EditorPage from '@/components/Editor/EditorPage';
 import LandingPage from '@/components/Landing/LandingPage';
+import CookieBanner from '@/components/Legal/CookieBanner';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfService from '@/pages/TermsOfService';
+import CookiePolicy from '@/pages/CookiePolicy';
+import RefundPolicy from '@/pages/RefundPolicy';
+import FAQ from '@/pages/FAQ';
 import { initAuth } from '@/services/auth';
 import { client } from '@/lib/appwrite';
 import '@/lib/debug/appwriteTest';
@@ -40,6 +46,11 @@ function App() {
     <ErrorBoundary>
       <Switch>
         <Route path="/" component={LandingPage} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
+        <Route path="/cookies" component={CookiePolicy} />
+        <Route path="/refund" component={RefundPolicy} />
+        <Route path="/faq" component={FAQ} />
         <Route path="/app" component={DashboardPage} />
         <Route path="/book/:bookId">
           {(params) => (
@@ -61,6 +72,7 @@ function App() {
         </Route>
       </Switch>
       <ToastContainer />
+      <CookieBanner />
     </ErrorBoundary>
   );
 }
