@@ -146,7 +146,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Features & Usage',
     question: 'What file formats can I export to?',
-    answer: 'You can export your books and chapters in standard text formats. We plan to add support for DOCX, PDF, and Markdown exports in future updates.',
+    answer: 'You can export your books and chapters in multiple formats including DOCX, PDF, Markdown, and plain text — directly from the settings panel.',
   },
 
   // Compliance
