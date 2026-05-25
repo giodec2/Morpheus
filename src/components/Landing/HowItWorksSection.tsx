@@ -8,7 +8,7 @@ const steps = [
     icon: BookOpen,
     title: 'Create a Book',
     description:
-      'Start with a title. Morpheus builds your workspace with a lore bible and first chapter ready to go.',
+      'Start with a title. Set up your first book for free with a world bible, chapters, and everything you need to start writing.',
     gradient: 'from-primary-500 via-teal-400 to-emerald-400',
     shadow: 'shadow-primary-500/25',
   },
@@ -26,7 +26,7 @@ const steps = [
     icon: MessageSquare,
     title: 'Write with AI',
     description:
-      "Chat, brainstorm, expand scenes. The AI follows your style and your world's logic — never generic.",
+      "Chat, brainstorm, expand scenes. Morpheus follows your style and your world's logic—so it never feels like a chatbot.",
     gradient: 'from-purple-500 via-violet-400 to-pink-400',
     shadow: 'shadow-purple-500/25',
   },

@@ -42,8 +42,7 @@ export default function CTABanner() {
         </h2>
 
         <p className="text-lg md:text-xl text-white/80 mb-10 max-w-xl mx-auto leading-relaxed">
-          Join writers who use Morpheus to bring their stories to life.
-          Start free — no credit card required.
+          Join writers who are building worlds with Morpheus. Start free—no credit card, no commitment.
         </p>
 
         {user ? (

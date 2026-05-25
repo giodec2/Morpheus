@@ -5,33 +5,33 @@ import { useState, useEffect } from 'react';
 const features = [
   {
     icon: MessageSquare,
-    title: 'AI That Knows Your World',
+    title: 'AI That Remembers Your World',
     description:
-      'Chat with AI about your story. It reads your lore bible and character sheets. No context lost between sessions.',
+      'Chat about your plot, your characters, your rules. Morpheus recalls every detail—so your AI partner never feels like a stranger.',
     gradient: 'from-primary-500 to-teal-400',
     shadow: 'shadow-primary-500/20',
   },
   {
     icon: Users,
-    title: 'Character & Lore Bible',
+    title: 'Your World, Organized',
     description:
-      'Build deep, consistent worlds. The AI remembers every trait, every rule, every secret you create.',
+      'Keep characters, locations, and lore in one dedicated space. Build the backbone of your story without juggling notes, tabs, or spreadsheets.',
     gradient: 'from-amber-500 to-orange-400',
     shadow: 'shadow-amber-500/20',
   },
   {
     icon: Shield,
-    title: 'Local-First, Cloud-Ready',
+    title: 'Your Ideas Stay Private',
     description:
-      'Your work lives on your device. Write offline, anywhere. Sync across devices when you\'re ready.',
+      'We only use AI providers with strict zero data retention policies. Your prompts are never logged, never stored, and never used to train models.',
     gradient: 'from-emerald-500 to-teal-400',
     shadow: 'shadow-emerald-500/20',
   },
   {
     icon: Zap,
-    title: 'Your Models, Your Choice',
+    title: 'Pick Your Brain',
     description:
-      'Bring your own OpenRouter key, or use our hosted AI. From fast and cheap to creative powerhouses.',
+      'Use your own API key for full control, or tap our hosted models. From quick brainstorming to deep literary analysis, you choose the mind behind the pen.',
     gradient: 'from-purple-500 to-pink-400',
     shadow: 'shadow-purple-500/20',
   },
@@ -108,7 +108,7 @@ export default function FeaturesSection() {
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
             Everything you need to{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              write your novel
+              write your book
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">

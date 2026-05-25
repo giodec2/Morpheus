@@ -74,7 +74,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
           <div className={`max-w-xl transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8 border border-primary-200 dark:border-primary-800 backdrop-blur-sm">
               <Sparkles className="w-3.5 h-3.5" />
-              Now in early access — write free forever
+              Start writing for free
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
@@ -85,15 +85,15 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
                   <path d="M2 8C50 2 150 2 198 8" stroke="currentColor" strokeWidth="4" className="text-primary-400/40 dark:text-primary-500/30" strokeLinecap="round" />
                 </svg>
               </span>
-              ,<br />
+              <br />
               <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-primary-400 bg-clip-text text-transparent">
-                Amplified by AI
+                With an AI That Gets It
               </span>
             </h1>
 
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-10 max-w-lg">
               The AI co-writer that learns your voice. Plan worlds, develop characters,
-              and never stare at a blank page again.
+              and banish blank-page syndrome for good.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">
@@ -135,7 +135,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
                 ))}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-500">
-                <span className="font-semibold text-gray-700 dark:text-gray-300">500+</span> writers already creating
+                <span className="font-semibold text-gray-700 dark:text-gray-300">Be among the first</span> to build your world
               </p>
             </div>
           </div>
