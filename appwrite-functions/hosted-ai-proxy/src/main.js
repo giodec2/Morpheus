@@ -79,6 +79,20 @@ export default async ({ req, res, log, error }) => {
     const estimatedOutputTokens = maxTokens || 2048;
     const estimatedTotal = estimatedInputTokens + estimatedOutputTokens;
 
+    // Check if weekly tokens need reset
+    const weeklyResetAt = profile.weeklyTokensResetAt || 0;
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+    if (now - weeklyResetAt >= oneWeek) {
+      await databases.updateDocument(databaseId, profilesCollection, userId, {
+        weeklyTokensUsed: 0,
+        weeklyTokensResetAt: now,
+      });
+      profile.weeklyTokensUsed = 0;
+      log('Weekly tokens reset');
+    }
+
     // Check token limits
     const weeklyUsed = profile.weeklyTokensUsed || 0;
     const weeklyLimit = isPremium ? defaults.maxWeeklyTokensPremium : defaults.maxWeeklyTokensStandard;

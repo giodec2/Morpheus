@@ -14,15 +14,37 @@ export const TIER_DEFAULTS: Record<UserProfile['subscriptionTier'], { maxBooks: 
   architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
 };
 
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
 function normalizeProfile(profile: UserProfile): UserProfile {
   const tier = profile.subscriptionTier;
-  const defaults = TIER_DEFAULTS[tier] || TIER_DEFAULTS.free;
+  const status = profile.subscriptionStatus;
+
+  // Use free tier limits if subscription is not active (expired, cancelled, etc.)
+  const hasActiveSub = status === 'active' || status === 'on_trial';
+  const effectiveTier = hasActiveSub ? tier : 'free';
+
+  const defaults = TIER_DEFAULTS[effectiveTier] || TIER_DEFAULTS.free;
   return {
     ...profile,
     maxBooks: defaults.maxBooks,
     maxWeeklyTokensStandard: defaults.maxWeeklyTokensStandard,
     maxWeeklyTokensPremium: defaults.maxWeeklyTokensPremium,
   };
+}
+
+/** Check if weekly tokens need resetting (7 days passed) */
+function getTokenResetUpdate(profile: UserProfile): Partial<UserProfile> | null {
+  const now = Date.now();
+  const resetAt = profile.weeklyTokensResetAt;
+
+  if (!resetAt || now - resetAt >= ONE_WEEK_MS) {
+    return {
+      weeklyTokensUsed: 0,
+      weeklyTokensResetAt: now,
+    };
+  }
+  return null;
 }
 
 export async function getCurrentUser(): Promise<Models.User<Models.Preferences> | null> {
@@ -87,8 +109,21 @@ async function fetchOrCreateProfile(user: Models.User<Models.Preferences>): Prom
       user.$id
     );
     const rawProfile = doc as unknown as UserProfile;
-    // Normalize limits based on current tier — fixes manual tier changes in Appwrite Console
-    return normalizeProfile(rawProfile);
+    let normalized = normalizeProfile(rawProfile);
+
+    // Check if weekly tokens need resetting
+    const tokenReset = getTokenResetUpdate(normalized);
+    if (tokenReset) {
+      await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.profiles,
+        user.$id,
+        tokenReset
+      );
+      normalized = { ...normalized, ...tokenReset };
+    }
+
+    return normalized;
   } catch {
     return createProfile(user);
   }
@@ -101,6 +136,14 @@ async function createProfile(user: Models.User<Models.Preferences>): Promise<Use
     email: user.email,
     name: user.name || user.email.split('@')[0],
     subscriptionTier: 'free',
+    subscriptionStatus: null,
+    subscriptionId: null,
+    subscriptionRenewsAt: null,
+    subscriptionEndsAt: null,
+    lemonSqueezyCustomerId: null,
+    lemonSqueezyVariantId: null,
+    customerPortalUrl: null,
+    trialEndsAt: null,
     weeklyTokensUsed: 0,
     weeklyTokensResetAt: now,
     maxBooks: defaults.maxBooks,

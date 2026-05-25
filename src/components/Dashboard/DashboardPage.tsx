@@ -39,6 +39,19 @@ export default function DashboardPage() {
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
   const isDark = theme === 'dark';
 
+  // Handle checkout success/cancel query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    if (checkout === 'success') {
+      toast('Your subscription is being activated! This may take a moment.', 'success');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (checkout === 'cancelled') {
+      toast('Checkout cancelled. You can subscribe anytime from your account.', 'info');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   useEffect(() => {
     loadBooks();
   }, []);
@@ -164,6 +177,9 @@ export default function DashboardPage() {
               >
                 <Crown className="w-3.5 h-3.5" />
                 <span className="capitalize">{profile.subscriptionTier}</span>
+                {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && (
+                  <span className="text-[10px] opacity-70 uppercase">({profile.subscriptionStatus})</span>
+                )}
                 <span className="text-primary-400 dark:text-primary-500">·</span>
                 <span>{books.length}/{maxBooks}</span>
               </button>

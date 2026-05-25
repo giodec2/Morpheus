@@ -1,6 +1,9 @@
-import { X, Crown, Check, Sparkles, Star, Zap } from 'lucide-react';
-import { Link } from 'wouter';
+import { X, Crown, Check, Sparkles, Star, Zap, Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
+import { useState } from 'react';
+import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
+import { createCheckout, getVariantIdForTier } from '@/services/billing';
+import { toast } from '@/components/common/Toast';
 
 interface TierSelectorModalProps {
   currentTier: UserProfile['subscriptionTier'];
@@ -28,7 +31,6 @@ const tiers = [
     key: 'scribe',
     name: 'Scribe',
     price: 9,
-    discountPrice: 4.50,
     icon: Sparkles,
     color: 'text-primary-600 dark:text-primary-400',
     accentBg: 'bg-primary-50 dark:bg-primary-900/20',
@@ -46,7 +48,6 @@ const tiers = [
     key: 'novelist',
     name: 'Novelist',
     price: 19,
-    discountPrice: 9.50,
     icon: Star,
     color: 'text-amber-600 dark:text-amber-400',
     accentBg: 'bg-amber-50 dark:bg-amber-900/20',
@@ -63,7 +64,6 @@ const tiers = [
     key: 'architect',
     name: 'Architect',
     price: 49,
-    discountPrice: 24.50,
     icon: Crown,
     color: 'text-purple-600 dark:text-purple-400',
     accentBg: 'bg-purple-50 dark:bg-purple-900/20',
@@ -80,6 +80,8 @@ const tiers = [
 ];
 
 export default function TierSelectorModal({ currentTier, onClose }: TierSelectorModalProps) {
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const { openCheckout } = useLemonSqueezy();
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -141,12 +143,9 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                         {tier.price > 0 ? (
                           <>
                             <span className="text-lg font-black text-gray-900 dark:text-white">
-                              ${tier.discountPrice?.toFixed(2)}
+                              ${tier.price}
                             </span>
-                            <span className="text-sm text-gray-400 line-through">${tier.price}</span>
-                            <span className={`text-[10px] px-2 py-0.5 ${tier.checkBg} ${tier.checkColor} rounded-full font-bold uppercase tracking-wider`}>
-                              50% off 1st month
-                            </span>
+                            <span className="text-xs text-gray-400">+ taxes</span>
                           </>
                         ) : (
                           <span className="text-lg font-black text-gray-900 dark:text-white">Free</span>
@@ -156,14 +155,29 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                   </div>
 
                   {isUpgrade ? (
-                    <Link href="/#pricing">
-                      <button
-                        onClick={onClose}
-                        className={`text-xs px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 ${tier.btnBg}`}
-                      >
-                        Upgrade
-                      </button>
-                    </Link>
+                    <button
+                      disabled={loadingTier === tier.key}
+                      onClick={async () => {
+                        const variantId = getVariantIdForTier(tier.key);
+                        if (!variantId) {
+                          toast('Payment system is not fully configured yet', 'error');
+                          return;
+                        }
+                        setLoadingTier(tier.key);
+                        try {
+                          const url = await createCheckout(variantId);
+                          openCheckout(url);
+                          onClose();
+                        } catch (err) {
+                          toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+                        } finally {
+                          setLoadingTier(null);
+                        }
+                      }}
+                      className={`text-xs px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 ${tier.btnBg} disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5`}
+                    >
+                      {loadingTier === tier.key ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Upgrade'}
+                    </button>
                   ) : isCurrent ? (
                     <span className={`text-xs font-bold px-4 py-2 ${tier.checkColor}`}>
                       Active
@@ -189,7 +203,7 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
         {/* Footer */}
         <div className="border-t border-gray-200 dark:border-slate-700 px-6 py-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            All paid plans include a 50% discount on your first month. Cancel anytime.
+            Prices exclude tax. Taxes are calculated at checkout based on your location. Cancel anytime.
           </p>
         </div>
       </div>

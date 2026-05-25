@@ -1,6 +1,11 @@
-import { Check, X, Sparkles, Star, Crown, Zap } from 'lucide-react';
+import { Check, X, Sparkles, Star, Crown, Zap, Loader2 } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
+import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
+import { createCheckout, getVariantIdForTier } from '@/services/billing';
+import { toast } from '@/components/common/Toast';
+import { useLocation } from 'wouter';
 
 const tiers = [
   {
@@ -50,7 +55,7 @@ const tiers = [
       { text: 'Adaptive memory mode', included: false },
       { text: 'Priority support', included: false },
     ],
-    cta: 'Coming Soon',
+    cta: 'Start Free Trial',
     highlight: true,
   },
   {
@@ -75,7 +80,7 @@ const tiers = [
       { text: 'Adaptive memory mode', included: false },
       { text: 'Priority support', included: false },
     ],
-    cta: 'Coming Soon',
+    cta: 'Start Free Trial',
   },
   {
     name: 'Architect',
@@ -99,7 +104,7 @@ const tiers = [
       { text: 'Adaptive memory mode', included: true },
       { text: 'Priority support', included: true },
     ],
-    cta: 'Coming Soon',
+    cta: 'Start Free Trial',
   },
 ];
 
@@ -119,6 +124,10 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
   const [hovered, setHovered] = useState(false);
   const [entered, setEntered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuthStore();
+  const { openCheckout } = useLemonSqueezy();
+  const [, setLocation] = useLocation();
 
   const tierIcons: Record<string, typeof Sparkles> = {
     Free: Zap,
@@ -191,18 +200,12 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                  ${(tier.price * 0.5).toFixed(2)}
+                  ${tier.price}
                 </span>
                 <span className="text-sm text-gray-400 font-medium">/mo</span>
               </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-sm text-gray-400 line-through">${tier.price}/mo</span>
-                <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-full font-bold uppercase tracking-wider">
-                  50% off 1st month
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Then ${tier.price}/mo ongoing
+              <p className="text-xs text-gray-400 mt-1.5">
+                + applicable taxes at checkout
               </p>
             </div>
           ) : (
@@ -241,11 +244,36 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
 
         {/* CTA */}
         <button
+          disabled={isLoading}
+          onClick={async () => {
+            if (tier.price === 0) {
+              setLocation('/app');
+              return;
+            }
+            if (!user) {
+              setLocation('/app');
+              return;
+            }
+            const variantId = getVariantIdForTier(tier.name.toLowerCase());
+            if (!variantId) {
+              toast('Payment system is not fully configured yet', 'error');
+              return;
+            }
+            setIsLoading(true);
+            try {
+              const url = await createCheckout(variantId);
+              openCheckout(url);
+            } catch (err) {
+              toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+            } finally {
+              setIsLoading(false);
+            }
+          }}
           className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} ${
             hovered && tier.price > 0 ? 'scale-[1.02]' : ''
-          }`}
+          } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
         >
-          {tier.cta}
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : tier.cta}
         </button>
       </div>
     </div>

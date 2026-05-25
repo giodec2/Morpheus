@@ -1,6 +1,9 @@
-import { X, ArrowUpRight, BookOpen, Crown, Star, Sparkles, Zap } from 'lucide-react';
-import { Link } from 'wouter';
+import { X, ArrowUpRight, BookOpen, Crown, Star, Sparkles, Zap, Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
+import { useState } from 'react';
+import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
+import { createCheckout, getVariantIdForTier } from '@/services/billing';
+import { toast } from '@/components/common/Toast';
 
 interface UpgradeModalProps {
   currentTier: UserProfile['subscriptionTier'];
@@ -75,19 +78,15 @@ const nextTierBenefits: Record<string, string[]> = {
   architect: [],
 };
 
-const discountedPrices: Record<string, string> = {
-  scribe: '$4.50',
-  novelist: '$9.50',
-  architect: '$24.50',
-};
-
-const originalPrices: Record<string, string> = {
+const prices: Record<string, string> = {
   scribe: '$9',
   novelist: '$19',
   architect: '$49',
 };
 
 export default function UpgradeModal({ currentTier, currentCount, maxCount, onClose }: UpgradeModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { openCheckout } = useLemonSqueezy();
   const currentIndex = tierOrder.indexOf(currentTier);
   const nextTierKey = currentIndex < tierOrder.length - 1 ? tierOrder[currentIndex + 1] : null;
   const benefits = nextTierKey ? nextTierBenefits[nextTierKey] : [];
@@ -146,13 +145,10 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
             </ul>
             <div className="flex items-center gap-2">
               <span className="text-xl font-black text-gray-900 dark:text-white">
-                {discountedPrices[nextTierKey]}/mo
+                {prices[nextTierKey]}/mo
               </span>
-              <span className="text-sm text-gray-400 line-through">
-                {originalPrices[nextTierKey]}/mo
-              </span>
-              <span className={`text-[10px] px-2 py-0.5 ${nextMeta.accentBg} ${nextMeta.accentText} rounded-full font-bold uppercase tracking-wider`}>
-                50% off first month
+              <span className="text-xs text-gray-400">
+                + taxes
               </span>
             </div>
           </div>
@@ -160,15 +156,32 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
 
         <div className="flex flex-col gap-2">
           {nextTierKey && nextMeta ? (
-            <Link href="/#pricing">
-              <button
-                onClick={onClose}
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 ${nextMeta.btnBg}`}
-              >
+            <button
+              disabled={isLoading}
+              onClick={async () => {
+                const variantId = getVariantIdForTier(nextTierKey);
+                if (!variantId) {
+                  toast('Payment system is not fully configured yet', 'error');
+                  return;
+                }
+                setIsLoading(true);
+                try {
+                  const url = await createCheckout(variantId);
+                  openCheckout(url);
+                  onClose();
+                } catch (err) {
+                  toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              className={`w-full py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 ${nextMeta.btnBg} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
                 Upgrade to {nextMeta.name}
                 <ArrowUpRight className="w-4 h-4" />
-              </button>
-            </Link>
+              </>}
+            </button>
           ) : (
             <p className="text-sm text-center text-gray-500 dark:text-gray-400 py-2">
               You're on our highest tier. Contact us for custom limits.

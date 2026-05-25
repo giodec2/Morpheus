@@ -20,6 +20,14 @@ export interface UserProfile {
   email: string;
   name: string;
   subscriptionTier: 'free' | 'scribe' | 'novelist' | 'architect';
+  subscriptionStatus: 'active' | 'cancelled' | 'past_due' | 'expired' | 'on_trial' | 'unpaid' | 'paused' | null;
+  subscriptionId: string | null;
+  subscriptionRenewsAt: number | null;
+  subscriptionEndsAt: number | null;
+  lemonSqueezyCustomerId: string | null;
+  lemonSqueezyVariantId: string | null;
+  customerPortalUrl: string | null;
+  trialEndsAt: number | null;
   weeklyTokensUsed: number;
   weeklyTokensResetAt: number;
   maxBooks: number;
