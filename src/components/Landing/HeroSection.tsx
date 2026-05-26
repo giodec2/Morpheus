@@ -24,7 +24,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden">
+    <section className="relative pt-24 pb-8 overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute inset-0 -z-10">
         <div className={`absolute inset-0 transition-colors duration-1000 ${
@@ -69,97 +69,93 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 w-full">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-          {/* Text content */}
-          <div className={`max-w-xl transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8 border border-primary-200 dark:border-primary-800 backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              Start writing for free
-            </div>
+        {/* ─── Headline + CTAs (centered) ─── */}
+        <div className={`text-center max-w-3xl mx-auto transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8 border border-primary-200 dark:border-primary-800 backdrop-blur-sm">
+            <Sparkles className="w-3.5 h-3.5" />
+            Start writing for free
+          </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
-              Write Your{' '}
-              <span className="relative inline-block">
-                <span className="relative z-10 text-primary-600 dark:text-primary-400">Story</span>
-                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
-                  <path d="M2 8C50 2 150 2 198 8" stroke="currentColor" strokeWidth="4" className="text-primary-400/40 dark:text-primary-500/30" strokeLinecap="round" />
-                </svg>
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-primary-400 bg-clip-text text-transparent">
-                With an AI That Gets It
-              </span>
-            </h1>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
+            Write Your{' '}
+            <span className="relative inline-block">
+              <span className="relative z-10 text-primary-600 dark:text-primary-400">Story</span>
+              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
+                <path d="M2 8C50 2 150 2 198 8" stroke="currentColor" strokeWidth="4" className="text-primary-400/40 dark:text-primary-500/30" strokeLinecap="round" />
+              </svg>
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-primary-400 bg-clip-text text-transparent">
+              With an AI That Gets It
+            </span>
+          </h1>
 
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-10 max-w-lg">
-              The AI co-writer that learns your voice. Plan worlds, develop characters,
-              and banish blank-page syndrome for good.
-            </p>
+          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto">
+            The AI co-writer that learns your voice. Plan worlds, develop characters,
+            and banish blank-page syndrome for good.
+          </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              {user ? (
-                <Link href="/app">
-                  <button className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40">
-                    Open Dashboard
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setShowAuth(true)}
-                  className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
-                >
-                  Start Writing Free
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            {user ? (
+              <Link href="/app">
+                <button className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40">
+                  Open Dashboard
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-              )}
-
+              </Link>
+            ) : (
               <button
-                onClick={() => onScrollTo?.('how-it-works')}
-                className="btn-secondary text-base px-8 py-4 flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+                onClick={() => setShowAuth(true)}
+                className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
               >
-                See How It Works
+                Start Writing Free
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-            </div>
+            )}
 
-            {/* Social proof mini */}
-            <div className="mt-10 flex items-center gap-4">
-              <div className="flex -space-x-2">
-                {[PenTool, BookOpen, Sparkles].map((Icon, i) => (
-                  <div
-                    key={i}
-                    className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 border-2 border-white dark:border-slate-900 flex items-center justify-center"
-                  >
-                    <Icon className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Be among the first</span> to build your world
-              </p>
-            </div>
+            <button
+              onClick={() => onScrollTo?.('how-it-works')}
+              className="btn-secondary text-base px-8 py-4 flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
+            >
+              See How It Works
+            </button>
           </div>
 
-          {/* Real product screenshot */}
-          <div className={`relative transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-            <div className="relative">
-              <img
-                src="/assets/hero-editor.png"
-                alt="Morpheus editor with AI co-writer — writing The Cartographer of Lost Things"
-                className="w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30"
-                loading="eager"
-              />
-              {/* Subtle glow behind the image */}
-              <div className="absolute -inset-4 -z-10 rounded-3xl bg-primary-500/10 blur-3xl opacity-60" />
+          {/* Social proof mini */}
+          <div className="mt-10 flex items-center justify-center gap-4">
+            <div className="flex -space-x-2">
+              {[PenTool, BookOpen, Sparkles].map((Icon, i) => (
+                <div
+                  key={i}
+                  className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 border-2 border-white dark:border-slate-900 flex items-center justify-center"
+                >
+                  <Icon className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+                </div>
+              ))}
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              <span className="font-semibold text-gray-700 dark:text-gray-300">Be among the first</span> to build your world
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2">
-        <span className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-600">Scroll</span>
-        <div className="w-px h-8 bg-gradient-to-b from-gray-400 dark:from-gray-600 to-transparent" />
+        {/* ─── Product screenshot (full-width, below headline) ─── */}
+        <div className={`relative mt-14 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className="relative max-w-6xl mx-auto">
+            {/* Glow behind image */}
+            <div className="absolute -inset-2 -z-10 rounded-[2rem] bg-primary-500/10 blur-3xl opacity-50" />
+
+            <img
+              src="/assets/hero-editor.png"
+              alt="Morpheus editor with AI co-writer — writing The Cartographer of Lost Things"
+              className="w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30"
+              loading="eager"
+            />
+
+            {/* Bottom fade — blends image into the page below */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-slate-950 to-transparent rounded-b-2xl pointer-events-none" />
+          </div>
+        </div>
       </div>
 
       {showAuth && (
