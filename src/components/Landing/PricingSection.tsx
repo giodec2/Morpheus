@@ -37,8 +37,8 @@ const tiers = [
     name: 'Scribe',
     price: 9,
     description: 'For dedicated writers',
-    badge: 'Popular',
-    gradient: 'from-primary-50 to-white dark:from-primary-950/20 dark:to-slate-900',
+    badge: null,
+    gradient: 'from-primary-50 to-white dark:from-slate-800 dark:to-slate-900',
     border: 'border-primary-300 dark:border-primary-700',
     accent: 'text-primary-600 dark:text-primary-400',
     iconBg: 'bg-primary-100 dark:bg-primary-900/30',
@@ -56,14 +56,13 @@ const tiers = [
       { text: 'Priority support', included: false },
     ],
     cta: 'Start Free Trial',
-    highlight: true,
   },
   {
     name: 'Novelist',
     price: 19,
     description: 'For serious novelists',
-    badge: null,
-    gradient: 'from-amber-50/60 to-white dark:from-amber-950/15 dark:to-slate-900',
+    badge: 'Popular',
+    gradient: 'from-amber-50 to-white dark:from-slate-800 dark:to-slate-900',
     border: 'border-amber-200 dark:border-amber-800',
     accent: 'text-amber-600 dark:text-amber-400',
     iconBg: 'bg-amber-100 dark:bg-amber-900/30',
@@ -81,14 +80,15 @@ const tiers = [
       { text: 'Priority support', included: false },
     ],
     cta: 'Start Free Trial',
+    highlight: true,
   },
   {
     name: 'Architect',
     price: 49,
     description: 'For writing at scale',
     badge: 'Best Value',
-    gradient: 'from-purple-50/60 to-white dark:from-purple-950/15 dark:to-slate-900',
-    border: 'border-purple-200 dark:border-purple-800',
+    gradient: 'from-purple-100 to-white dark:from-slate-800 dark:to-slate-900',
+    border: 'border-purple-400 dark:border-purple-500',
     accent: 'text-purple-600 dark:text-purple-400',
     iconBg: 'bg-purple-100 dark:bg-purple-900/30',
     iconColor: 'text-purple-600 dark:text-purple-400',
@@ -129,6 +129,18 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
   const { openCheckout } = useLemonSqueezy();
   const [, setLocation] = useLocation();
 
+  const { profile } = useAuthStore();
+  const currentTier = profile?.subscriptionTier ?? 'free';
+  const cardTier = tier.name.toLowerCase();
+  const tierOrder = ['free', 'scribe', 'novelist', 'architect'];
+  const currentIdx = tierOrder.indexOf(currentTier);
+  const cardIdx = tierOrder.indexOf(cardTier);
+  const isCurrent = cardTier === currentTier;
+  const isIncluded = cardIdx < currentIdx; // higher tier includes lower tier features
+  const isSuggested = cardTier === 'novelist' && (
+    !profile || (currentTier !== 'novelist' && currentTier !== 'architect')
+  );
+
   const tierIcons: Record<string, typeof Sparkles> = {
     Free: Zap,
     Scribe: Sparkles,
@@ -147,29 +159,37 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
     }
   }, [isInView, entered, index]);
 
+  const isPaid = tier.price > 0;
+  const hoverLift = 'hover:-translate-y-1';
+  const hoverShadow = isPaid
+    ? 'hover:shadow-lg hover:shadow-gray-400/10 dark:hover:shadow-black/30'
+    : 'hover:shadow-md hover:shadow-gray-400/10 dark:hover:shadow-black/30';
+
   return (
-    <div
-      ref={ref}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={`relative flex flex-col rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
-        tier.highlight
-          ? 'border-primary-400 dark:border-primary-600 shadow-2xl shadow-primary-500/15 scale-[1.03] z-10'
-          : tier.price > 0
-          ? `border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 ${tier.name === 'Novelist' ? 'hover:shadow-amber-500/10' : tier.name === 'Architect' ? 'hover:shadow-purple-500/10' : ''}`
-          : 'border-gray-200 dark:border-slate-700'
-      } ${isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-    >
-      {/* Badge ribbon */}
+    <div className="relative">
+      {/* Badge — outside card so it can exceed bounds */}
       {tier.badge && (
-        <div className={`absolute top-0 right-0 z-20 ${
-          tier.name === 'Scribe'
-            ? 'bg-primary-500'
-            : 'bg-purple-600'
-        } text-white text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-bl-xl`}>
+        <div className={`absolute -top-2.5 -right-2.5 z-30 ${
+          tier.name === 'Novelist'
+            ? 'bg-amber-400 shadow-md shadow-amber-500/20'
+            : 'bg-purple-400 shadow-md shadow-purple-500/20'
+        } text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg ring-2 ring-white dark:ring-slate-900`}>
           {tier.badge}
         </div>
       )}
+
+      <div
+        ref={ref}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={`relative flex flex-col rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
+          isCurrent
+            ? `border-emerald-500 dark:border-emerald-600 ${hoverLift} ${hoverShadow}`
+            : isSuggested
+            ? `border-amber-400 dark:border-amber-500 ${hoverLift} ${hoverShadow}`
+            : `${tier.border} ${hoverLift} ${hoverShadow}`
+        } ${isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+      >
 
       {/* Top gradient glow */}
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
@@ -182,7 +202,7 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
       {/* Background gradient */}
       <div className={`absolute inset-0 bg-gradient-to-b ${tier.gradient} opacity-60`} />
 
-      <div className="relative p-7 flex flex-col flex-1">
+      <div className={`relative flex flex-col flex-1 ${isSuggested ? 'p-8' : 'p-7'}`}>
         {/* Icon + Name */}
         <div className="flex items-center gap-3 mb-5">
           <div className={`w-10 h-10 rounded-xl ${tier.iconBg} flex items-center justify-center`}>
@@ -243,40 +263,52 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
         </ul>
 
         {/* CTA */}
-        <button
-          disabled={isLoading}
-          onClick={async () => {
-            if (tier.price === 0) {
-              setLocation('/app');
-              return;
-            }
-            if (!user) {
-              setLocation('/app');
-              return;
-            }
-            const variantId = getVariantIdForTier(tier.name.toLowerCase());
-            if (!variantId) {
-              toast('Payment system is not fully configured yet', 'error');
-              return;
-            }
-            setIsLoading(true);
-            try {
-              const url = await createCheckout(variantId);
-              openCheckout(url);
-            } catch (err) {
-              toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
-            } finally {
-              setIsLoading(false);
-            }
-          }}
-          className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} ${
-            hovered && tier.price > 0 ? 'scale-[1.02]' : ''
-          } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-        >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : tier.cta}
-        </button>
+        {isCurrent ? (
+          <div className="w-full py-3 rounded-xl text-sm font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
+            <Check className="w-4 h-4" />
+            Current Plan
+          </div>
+        ) : isIncluded ? (
+          <div className="w-full py-3 rounded-xl text-sm font-bold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+            Included
+          </div>
+        ) : (
+          <button
+            disabled={isLoading}
+            onClick={async () => {
+              if (tier.price === 0) {
+                setLocation('/app');
+                return;
+              }
+              if (!user) {
+                setLocation('/app');
+                return;
+              }
+              const variantId = getVariantIdForTier(tier.name.toLowerCase());
+              if (!variantId) {
+                toast('Payment system is not fully configured yet', 'error');
+                return;
+              }
+              setIsLoading(true);
+              try {
+                const url = await createCheckout(variantId);
+                openCheckout(url);
+              } catch (err) {
+                toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} ${
+              hovered && tier.price > 0 ? 'scale-[1.02]' : ''
+            } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : tier.cta}
+          </button>
+        )}
       </div>
     </div>
+  </div>
   );
 }
 

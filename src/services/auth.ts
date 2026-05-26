@@ -56,7 +56,9 @@ export async function getCurrentUser(): Promise<Models.User<Models.Preferences> 
 }
 
 async function postAuthSetup(user: Models.User<Models.Preferences>): Promise<void> {
-  await fetchOrCreateProfile(user);
+  const { setProfile } = useAuthStore.getState();
+  const profile = await fetchOrCreateProfile(user);
+  setProfile(profile);
   const localBooks = await getAllBooks();
   await syncToCloud(localBooks);
   await syncFromCloud(localBooks, putBook, putChapter, putCharacter, putLoreBible);

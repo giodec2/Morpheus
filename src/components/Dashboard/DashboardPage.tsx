@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Feather, Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, Cloud, CloudOff, Loader2, Crown } from 'lucide-react';
+import { Feather, Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
@@ -37,6 +37,8 @@ export default function DashboardPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showTierSelector, setShowTierSelector] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
+  const [showKey, setShowKey] = useState(false);
+  const [isEditingKey, setIsEditingKey] = useState(false);
   const isDark = theme === 'dark';
 
   // Handle checkout success/cancel query params
@@ -121,6 +123,7 @@ export default function DashboardPage() {
         setAiMode('byok');
         toast('API key saved! Switched to BYOK mode.', 'success');
         setApiInput('');
+        setIsEditingKey(false);
       } else {
         toast('Invalid API key. Please check and try again.', 'error');
       }
@@ -128,6 +131,21 @@ export default function DashboardPage() {
       toast('Could not connect to OpenRouter. Check your internet.', 'error');
     }
     setIsValidating(false);
+  };
+
+  const handleRemoveApiKey = () => {
+    setOpenRouterKey('');
+    setIsConnected(false);
+    setAiMode('hosted');
+    setShowKey(false);
+    setIsEditingKey(false);
+    setApiInput('');
+    toast('API key removed. Switched to hosted mode.', 'info');
+  };
+
+  const maskedKey = (key: string) => {
+    if (key.length <= 12) return '••••••••';
+    return key.slice(0, 8) + '••••••••••••' + key.slice(-4);
   };
 
   return (
@@ -201,8 +219,97 @@ export default function DashboardPage() {
 
       {/* Content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* API Key Banner */}
-        {!openRouterKey && (
+        {/* API Key Section */}
+        {openRouterKey && !isEditingKey ? (
+          <div className="mb-8 p-5 bg-emerald-50 dark:bg-emerald-900/15 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 bg-emerald-100 dark:bg-emerald-800/40 rounded-lg">
+                <KeyRound className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                  OpenRouter API Key
+                </h3>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  BYOK mode active — your key is stored locally
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <code className="text-xs font-mono bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1.5 rounded-lg text-emerald-700 dark:text-emerald-300 select-all">
+                  {showKey ? openRouterKey : maskedKey(openRouterKey)}
+                </code>
+                <button
+                  onClick={() => setShowKey(!showKey)}
+                  className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors text-emerald-600 dark:text-emerald-400"
+                  title={showKey ? 'Hide key' : 'Show key'}
+                >
+                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => { setIsEditingKey(true); setApiInput(openRouterKey); }}
+                  className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors text-emerald-600 dark:text-emerald-400"
+                  title="Update key"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleRemoveApiKey}
+                  className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-red-500 dark:text-red-400"
+                  title="Remove key"
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : isEditingKey && openRouterKey ? (
+          <div className="mb-8 p-5 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 bg-amber-100 dark:bg-amber-800/40 rounded-lg">
+                <Pencil className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                  Update API Key
+                </h3>
+                <div className="flex gap-2 max-w-lg">
+                  <input
+                    type={showKey ? 'text' : 'password'}
+                    className="input flex-1"
+                    placeholder="Paste your new OpenRouter API key (sk-or-...)"
+                    value={apiInput}
+                    onChange={(e) => setApiInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveApiKey();
+                      if (e.key === 'Escape') { setIsEditingKey(false); setApiInput(''); }
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => setShowKey(!showKey)}
+                    className="p-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-800/40 transition-colors text-amber-600 dark:text-amber-400"
+                    title={showKey ? 'Hide key' : 'Show key'}
+                  >
+                    {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={handleSaveApiKey}
+                    disabled={isValidating || !apiInput.trim()}
+                    className="btn-primary flex items-center gap-2 bg-amber-500 hover:bg-amber-600"
+                  >
+                    {isValidating ? 'Checking...' : 'Update'}
+                  </button>
+                  <button
+                    onClick={() => { setIsEditingKey(false); setApiInput(''); }}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="mb-8 p-6 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary-100 dark:bg-primary-800/50 rounded-lg">
@@ -213,12 +320,12 @@ export default function DashboardPage() {
                   Welcome to Morpheus!
                 </h3>
                 <p className="text-sm text-primary-700 dark:text-primary-400 mb-4">
-                  To use the AI co-writer, you need an OpenRouter API key. 
-                  <a 
-                    href="https://openrouter.ai/settings/keys" 
-                    target="_blank" 
+                  To use the AI co-writer, you need an OpenRouter API key.
+                  <a
+                    href="https://openrouter.ai/settings/keys"
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="underline hover:text-primary-900 dark:hover:text-primary-200"
+                    className="underline hover:text-primary-900 dark:hover:text-primary-200 ml-1"
                   >
                     Get one free here
                   </a>.
@@ -251,23 +358,47 @@ export default function DashboardPage() {
 
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Books</h2>
-          {user && !canCreateBook ? (
-            <button
-              onClick={() => setShowUpgrade(true)}
-              className="btn-primary flex items-center gap-2 bg-amber-500 hover:bg-amber-600"
-            >
-              <Crown className="w-4 h-4" />
-              Upgrade to Create More
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="btn-primary flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Book
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {user && profile && profile.subscriptionTier !== 'architect' && (
+              (() => {
+                const tierOrder = ['free', 'scribe', 'novelist', 'architect'];
+                const nextTier = tierOrder[tierOrder.indexOf(profile.subscriptionTier) + 1];
+                const styles: Record<string, string> = {
+                  scribe:    'bg-primary-700 hover:bg-primary-800 text-white shadow-lg shadow-primary-600/30 ring-1 ring-primary-400/50',
+                  novelist:  'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-600/30 ring-1 ring-amber-400/50',
+                  architect: 'bg-purple-700 hover:bg-purple-800 text-white shadow-lg shadow-purple-600/30 ring-1 ring-purple-400/50',
+                };
+                return (
+                  <button
+                    onClick={() => setShowTierSelector(true)}
+                    className={`flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-lg font-bold transition-all hover:scale-[1.03] hover:shadow-xl ${styles[nextTier]}`}
+                    title={`Upgrade to ${nextTier}`}
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    Upgrade to {nextTier.charAt(0).toUpperCase() + nextTier.slice(1)}
+                    <ArrowUpRight className="w-3 h-3 opacity-80" />
+                  </button>
+                );
+              })()
+            )}
+            {user && !canCreateBook ? (
+              <button
+                onClick={() => setShowUpgrade(true)}
+                className="btn-primary flex items-center gap-2 bg-amber-500 hover:bg-amber-600"
+              >
+                <Crown className="w-4 h-4" />
+                Upgrade to Create More
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="btn-primary flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New Book
+              </button>
+            )}
+          </div>
         </div>
 
         {books.length === 0 ? (

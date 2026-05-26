@@ -4,7 +4,7 @@ import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
-import SearchBar from '@/components/Layout/SearchBar';
+import ResearchPanel from '@/components/Layout/ResearchPanel';
 import ExportModal from '@/components/Settings/ExportModal';
 import ImportModal from '@/components/Settings/ImportModal';
 import { useState } from 'react';
@@ -60,7 +60,7 @@ export default function TopBar({ onOpenSettings }: TopBarProps) {
                   </span>
                 )}
               </div>
-              <SearchBar />
+              <ResearchPanel />
             </>
           )}
         </div>

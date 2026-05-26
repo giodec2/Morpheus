@@ -10,9 +10,17 @@ export function useAutoSave(editor: Editor | null) {
   const { updateChapter: updateChapterInStore } = useBookStore();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const lastSavedRef = useRef<string>('');
+  // Tracks which chapter the editor currently has content for.
+  // Prevents saving stale content to a chapter that was switched away from.
+  const currentChapterIdRef = useRef<string | null>(null);
 
   const save = useCallback(async () => {
     if (!editor || !activeChapter) return;
+
+    // DEFENSIVE: if activeChapter has changed since this effect was set up,
+    // the editor DOM may still hold the previous chapter's content.
+    // Do NOT save if the chapter ID no longer matches.
+    if (activeChapter.id !== currentChapterIdRef.current) return;
 
     const content = editor.getJSON();
     const contentStr = JSON.stringify(content);
@@ -33,6 +41,9 @@ export function useAutoSave(editor: Editor | null) {
 
   useEffect(() => {
     if (!editor || !activeChapter) return;
+
+    // Mark which chapter this effect instance owns
+    currentChapterIdRef.current = activeChapter.id;
 
     // Reset last saved when chapter changes
     lastSavedRef.current = JSON.stringify(activeChapter.content);

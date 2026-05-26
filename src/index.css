@@ -121,6 +121,28 @@
     @apply leading-relaxed;
   }
 
+  /* Search highlight in editor — CSS Custom Highlight API */
+  ::highlight(search-highlight) {
+    background-color: rgba(251, 191, 36, 0.45);
+    border-radius: 2px;
+  }
+
+  .dark ::highlight(search-highlight) {
+    background-color: rgba(251, 191, 36, 0.35);
+  }
+
+  /* Search result marks in ResearchPanel snippets */
+  mark {
+    background-color: rgba(251, 191, 36, 0.5);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  .dark mark {
+    background-color: rgba(251, 191, 36, 0.4);
+  }
+
   .sidebar-item {
     @apply flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors;
     @apply text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800;

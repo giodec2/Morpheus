@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -12,15 +12,55 @@ import Underline from '@tiptap/extension-underline';
 import { Loader2 } from 'lucide-react';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
+import { useSearchStore } from '@/stores/searchStore';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import EditorToolbar from './EditorToolbar';
 import ChapterHeader from './ChapterHeader';
 import CharacterTags from './CharacterTags';
 import { FontSize } from '@/lib/tiptapFontSize';
 
+/**
+ * Apply CSS Custom Highlight to search terms in the editor DOM.
+ * Gracefully degrades on browsers without CSS Highlight API support.
+ */
+function applySearchHighlights(editorElement: HTMLElement | null, terms: string[]) {
+  if (!editorElement || typeof CSS === 'undefined' || !('highlights' in CSS)) return;
+
+  // Clear previous highlight
+  CSS.highlights.delete('search-highlight');
+
+  if (terms.length === 0) return;
+
+  const ranges: Range[] = [];
+  const walker = document.createTreeWalker(editorElement, NodeFilter.SHOW_TEXT);
+  let node: Node | null;
+
+  while ((node = walker.nextNode())) {
+    const text = node.textContent || '';
+    const lower = text.toLowerCase();
+
+    for (const term of terms) {
+      let idx = lower.indexOf(term);
+      while (idx !== -1) {
+        const range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + term.length);
+        ranges.push(range);
+        idx = lower.indexOf(term, idx + 1);
+      }
+    }
+  }
+
+  if (ranges.length > 0) {
+    // @ts-expect-error DOM Highlight API constructor shadowed by TipTap import
+    CSS.highlights.set('search-highlight', new Highlight(...ranges));
+  }
+}
+
 export default function TiptapEditor() {
   const { activeChapter, saveStatus } = useEditorStore();
   const { characters } = useBookStore();
+  const { activeHighlightTerms } = useSearchStore();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   const editor = useEditor({
@@ -45,6 +85,36 @@ export default function TiptapEditor() {
   });
 
   useAutoSave(editor);
+
+  // CRITICAL: Update editor content when active chapter changes.
+  // useEditor's `content` option is only for initialization — it does NOT
+  // reactively update when activeChapter changes. Without this effect,
+  // switching books leaves the old book's text in the editor DOM,
+  // and auto-save will overwrite the new chapter with the old content.
+  useEffect(() => {
+    if (!editor || !activeChapter) return;
+    // Note: setContent always emits an 'update' event in this TipTap version.
+    // The auto-save hook resets lastSavedRef when activeChapter changes,
+    // so the subsequent save comparison will see no diff and skip the write.
+    editor.commands.setContent(
+      activeChapter.content || { type: 'doc', content: [{ type: 'paragraph' }] }
+    );
+  }, [editor, activeChapter?.id]);
+
+  // Apply search highlights when terms or editor content changes
+  useEffect(() => {
+    if (!editor) return;
+    // Small delay to let TipTap render the DOM first
+    const timer = setTimeout(() => {
+      applySearchHighlights(editor.view.dom as HTMLElement, activeHighlightTerms);
+    }, 100);
+    return () => {
+      clearTimeout(timer);
+      if (typeof CSS !== 'undefined' && 'highlights' in CSS) {
+        CSS.highlights.delete('search-highlight');
+      }
+    };
+  }, [editor, activeHighlightTerms, activeChapter?.id]);
 
   if (!activeChapter) {
     return (
