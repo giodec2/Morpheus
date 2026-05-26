@@ -1,5 +1,19 @@
 export type AIMode = 'companion' | 'continuity' | 'plotWeaver' | 'twistForge';
 
+export type Language =
+  | 'english'
+  | 'italian'
+  | 'german'
+  | 'french'
+  | 'spanish'
+  | 'portuguese'
+  | 'dutch'
+  | 'russian'
+  | 'chinese'
+  | 'japanese'
+  | 'korean'
+  | 'polish';
+
 export interface Book {
   id: string;
   title: string;
@@ -71,7 +85,7 @@ export interface AppSettings {
   maxTokens: number;
   theme: 'light' | 'dark';
   advancedMode: boolean;
-  language: 'english' | 'italian';
+  language: Language;
   modelTier: 'standard' | 'premium';
   aiMode: 'byok' | 'hosted';
 }

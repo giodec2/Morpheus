@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Compass, Search, Network, Sparkles, Send, Bot, User, Lock,
   Loader2, Plus, Trash2, MessageSquare, AlertTriangle, RefreshCw
 } from 'lucide-react';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import CustomSelect from '@/components/common/CustomSelect';
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
@@ -38,6 +40,24 @@ const MODE_DESCRIPTIONS: Record<string, string> = {
   twistForge: 'The creative provocateur. Generates bold, unexpected plot twists grounded in your existing characters and world.',
 };
 
+/* ---------- Markdown rendering ---------- */
+
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
+
+function markdownToHtml(text: string): string {
+  if (!text) return '';
+  const raw = marked.parse(text) as string;
+  return DOMPurify.sanitize(raw);
+}
+
+function MarkdownContent({ text }: { text: string }) {
+  const html = useMemo(() => markdownToHtml(text), [text]);
+  return <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 export default function RightSidebar() {
   const { activeBook, chapters, characters, loreBible } = useBookStore();
   const { activeChapter } = useEditorStore();
@@ -56,6 +76,7 @@ export default function RightSidebar() {
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   const [modeDescPos, setModeDescPos] = useState<{ top: number; right: number } | null>(null);
   const [lastUserInput, setLastUserInput] = useState('');
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -118,8 +139,12 @@ export default function RightSidebar() {
     setContextInfo({ characters: 0, summaries: 0, tokens: 0 });
   };
 
-  const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm('Delete this chat session?')) return;
+  const handleDeleteSession = (sessionId: string) => {
+    setConfirmingDeleteId(sessionId);
+  };
+
+  const executeDeleteSession = async (sessionId: string) => {
+    setConfirmingDeleteId(null);
     await deleteChatSession(sessionId);
     removeSessionFromStore(sessionId);
     // If we deleted the active session, switch to another
@@ -273,33 +298,61 @@ export default function RightSidebar() {
         {/* Session list */}
         {sessions.length > 0 && (
           <div className="mb-2 max-h-20 overflow-y-auto space-y-0.5">
-            {sessions.map(session => (
-              <div
-                key={session.id}
-                className={`group flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
-                  session.id === activeSessionId
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                    : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                <MessageSquare className="w-3 h-3 shrink-0" />
-                <span
-                  className="flex-1 truncate"
-                  onClick={() => handleSwitchSession(session.id)}
+            {sessions.map(session => {
+              const isConfirming = confirmingDeleteId === session.id;
+              return (
+                <div
+                  key={session.id}
+                  className={`group flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors ${
+                    isConfirming
+                      ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                      : session.id === activeSessionId
+                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 cursor-pointer'
+                        : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-400 cursor-pointer'
+                  }`}
                 >
-                  {session.title}
-                </span>
-                {sessions.length > 1 && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-opacity"
-                    title="Delete session"
-                  >
-                    <Trash2 className="w-3 h-3 text-red-400" />
-                  </button>
-                )}
-              </div>
-            ))}
+                  {isConfirming ? (
+                    <>
+                      <AlertTriangle className="w-3 h-3 shrink-0 text-red-500" />
+                      <span className="flex-1 truncate text-red-700 dark:text-red-300 font-medium">
+                        Delete &quot;{session.title}&quot;?
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmingDeleteId(null); }}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); executeDeleteSession(session.id); }}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="w-3 h-3 shrink-0" />
+                      <span
+                        className="flex-1 truncate"
+                        onClick={() => handleSwitchSession(session.id)}
+                      >
+                        {session.title}
+                      </span>
+                      {sessions.length > 1 && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-opacity"
+                          title="Delete session"
+                        >
+                          <Trash2 className="w-3 h-3 text-red-400" />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -400,7 +453,11 @@ export default function RightSidebar() {
               }`}>
                 {showStream ? (
                   <div>
-                    {streamContent || <Loader2 className="w-4 h-4 animate-spin" />}
+                    {streamContent ? (
+                      <MarkdownContent text={streamContent} />
+                    ) : (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    )}
                   </div>
                 ) : isError ? (
                   <div className="space-y-2">
@@ -424,6 +481,8 @@ export default function RightSidebar() {
                       </button>
                     )}
                   </div>
+                ) : msg.role === 'assistant' ? (
+                  <MarkdownContent text={msg.content} />
                 ) : (
                   <div className="whitespace-pre-wrap">{msg.content}</div>
                 )}

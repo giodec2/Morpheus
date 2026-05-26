@@ -3,7 +3,7 @@ import { COMPANION_SYSTEM_PROMPT } from './prompts/companion';
 import { CONTINUITY_SYSTEM_PROMPT } from './prompts/continuity';
 import { PLOT_WEAVER_SYSTEM_PROMPT } from './prompts/plotWeaver';
 import { TWIST_FORGE_SYSTEM_PROMPT } from './prompts/twistForge';
-import type { AIMode, Book, Chapter, Character, ChatMessage } from '@/types';
+import type { AIMode, Book, Chapter, Character, ChatMessage, Language } from '@/types';
 
 const MODE_PROMPTS: Record<AIMode, string> = {
   companion: COMPANION_SYSTEM_PROMPT,
@@ -12,9 +12,19 @@ const MODE_PROMPTS: Record<AIMode, string> = {
   twistForge: TWIST_FORGE_SYSTEM_PROMPT,
 };
 
-const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+const LANGUAGE_INSTRUCTIONS: Record<Language, string> = {
   english: '',
-  italian: 'IMPORTANTE: L\'autore scrive principalmente in italiano. Rispondi SEMPRE in italiano a meno che non ti venga esplicitamente richiesto diversamente. Mantieni il tono e lo stile naturali per la lingua italiana.',
+  italian: "IMPORTANTE: L'autore scrive principalmente in italiano. Rispondi SEMPRE in italiano a meno che non ti venga esplicitamente richiesto diversamente. Mantieni il tono e lo stile naturali per la lingua italiana.",
+  german: 'WICHTIG: Der Autor schreibt hauptsächlich auf Deutsch. Antworte IMMER auf Deutsch, es sei denn, es wird ausdrücklich etwas anderes verlangt. Halte einen natürlichen Ton und Stil für die deutsche Sprache bei.',
+  french: 'IMPORTANT : L\'auteur écrit principalement en français. Réponds TOUJOURS en français, sauf demande explicite contraire. Maintiens un ton et un style naturels pour la langue française.',
+  spanish: 'IMPORTANTE: El autor escribe principalmente en español. Responde SIEMPRE en español a menos que se te solicite explícitamente lo contrario. Mantén un tono y estilo naturales para el idioma español.',
+  portuguese: 'IMPORTANTE: O autor escreve principalmente em português. Responda SEMPRE em português, a menos que seja explicitamente solicitado o contrário. Mantenha o tom e o estilo naturais para a língua portuguesa.',
+  dutch: 'BELANGRIJK: De auteur schrijft voornamelijk in het Nederlands. Beantwoord ALTIJD in het Nederlands, tenzij er expliciet om iets anders wordt gevraagd. Houd een natuurlijke toon en stijl aan voor de Nederlandse taal.',
+  russian: 'ВАЖНО: Автор пишет преимущественно на русском языке. Отвечай ВСЕГДА на русском языке, если явно не просят иначе. Сохраняй естественный тон и стиль для русского языка.',
+  chinese: '重要：作者主要使用中文写作。除非明确要求，否则始终用中文回复。保持中文的自然语气和风格。',
+  japanese: '重要：作者は主に日本語で執筆しています。明示的に異なる言語が求められない限り、常に日本語で返答してください。日本語の自然なトーンとスタイルを保ってください。',
+  korean: '중요: 작가는 주로 한국어로 글을 씁니다. 명시적으로 다른 언어를 요청하지 않는 한 항상 한국어로 답변하세요. 한국어의 자연스러운 톤과 스타일을 유지하세요.',
+  polish: 'WAŻNE: Autor pisze głównie po polsku. Odpowiadaj ZAWSZE po polsku, chyba że zostanie to wyraźnie zmienione. Zachowaj naturalny ton i styl dla języka polskiego.',
 };
 
 function formatLoreBible(content: Record<string, unknown>): string {
@@ -79,7 +89,7 @@ export interface BuildContextParams {
   chatHistory: ChatMessage[];
   model: string;
   maxTokens: number;
-  language?: 'english' | 'italian';
+  language?: Language;
 }
 
 export function buildContextPacket(params: BuildContextParams): ContextPacket {

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
+import type { Language } from '@/types';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -13,7 +14,17 @@ interface SettingsModalProps {
 
 const LANGUAGES = [
   { value: 'english', label: 'English' },
-  { value: 'italian', label: 'Italian' },
+  { value: 'italian', label: 'Italiano' },
+  { value: 'german', label: 'Deutsch' },
+  { value: 'french', label: 'Français' },
+  { value: 'spanish', label: 'Español' },
+  { value: 'portuguese', label: 'Português' },
+  { value: 'dutch', label: 'Nederlands' },
+  { value: 'russian', label: 'Русский' },
+  { value: 'chinese', label: '中文' },
+  { value: 'japanese', label: '日本語' },
+  { value: 'korean', label: '한국어' },
+  { value: 'polish', label: 'Polski' },
 ];
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
@@ -216,7 +227,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 <CustomSelect
                   value={language}
                   options={LANGUAGES}
-                  onChange={(val) => setLanguage(val as 'english' | 'italian')}
+                  onChange={(val) => setLanguage(val as Language)}
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Sets the language Morpheus uses when responding to you.

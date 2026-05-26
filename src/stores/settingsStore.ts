@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_STANDARD_MODEL } from '@/lib/models';
-import type { AppSettings } from '@/types';
+import type { AppSettings, Language } from '@/types';
 
 type AIProviderMode = 'byok' | 'hosted';
 
@@ -15,7 +15,7 @@ interface SettingsState extends AppSettings {
   setMaxTokens: (tokens: number) => void;
   setTheme: (theme: 'light' | 'dark') => void;
   setAdvancedMode: (advanced: boolean) => void;
-  setLanguage: (language: 'english' | 'italian') => void;
+  setLanguage: (language: Language) => void;
   setIsConnected: (connected: boolean) => void;
   setModelTier: (tier: 'standard' | 'premium') => void;
   setAiMode: (mode: AIProviderMode) => void;
