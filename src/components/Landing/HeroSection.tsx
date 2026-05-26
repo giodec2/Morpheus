@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Link } from 'wouter';
 import { ArrowRight, Sparkles, PenTool, BookOpen } from 'lucide-react';
 import { useLocation } from 'wouter';
-import EditorMockup from './EditorMockup';
+
 import AuthModal from '@/components/Auth/AuthModal';
 import { useState, useEffect } from 'react';
 
@@ -140,9 +140,18 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Mockup */}
+          {/* Real product screenshot */}
           <div className={`relative transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-            <EditorMockup />
+            <div className="relative">
+              <img
+                src="/assets/hero-editor.png"
+                alt="Morpheus editor with AI co-writer — writing The Cartographer of Lost Things"
+                className="w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30"
+                loading="eager"
+              />
+              {/* Subtle glow behind the image */}
+              <div className="absolute -inset-4 -z-10 rounded-3xl bg-primary-500/10 blur-3xl opacity-60" />
+            </div>
           </div>
         </div>
       </div>
