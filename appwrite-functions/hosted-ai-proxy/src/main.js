@@ -116,7 +116,7 @@ export default async ({ req, res, log, error }) => {
       model,
       messages,
       temperature: temperature ?? 0.7,
-      max_tokens: maxTokens ?? 2048,
+      max_completion_tokens: maxTokens ?? 2048,
     };
 
     // Force OpenAI provider for OpenAI models to avoid slow fallback providers

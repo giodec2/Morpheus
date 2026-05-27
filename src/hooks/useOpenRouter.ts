@@ -148,7 +148,7 @@ export function useOpenRouter() {
           ...messages,
         ],
         temperature,
-        max_tokens: maxTokens,
+        max_completion_tokens: maxTokens,
         stream: true,
       }, { signal: abortRef.current.signal });
 
