@@ -111,21 +111,50 @@ export default async ({ req, res, log, error }) => {
     }
     log('Calling OpenRouter...');
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${openRouterKey}`,
-        'HTTP-Referer': process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://morpheus.app',
-        'X-Title': 'Morpheus AI Co-Writer',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: temperature ?? 0.7,
-        max_tokens: maxTokens ?? 2048,
-      }),
-    });
+    // Build request body
+    const requestBody = {
+      model,
+      messages,
+      temperature: temperature ?? 0.7,
+      max_tokens: maxTokens ?? 2048,
+    };
+
+    // Force OpenAI provider for OpenAI models to avoid slow fallback providers
+    // (e.g. gpt-5-nano has 6s fallback providers vs 2s direct OpenAI)
+    if (model && model.startsWith('openai/')) {
+      requestBody.provider = {
+        order: ['OpenAI'],
+        allow_fallbacks: false,
+      };
+      log(`Provider forced to OpenAI for model: ${model}`);
+    }
+
+    // 30s timeout to catch hung providers
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    let response;
+    try {
+      response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${openRouterKey}`,
+          'HTTP-Referer': process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://morpheus.app',
+          'X-Title': 'Morpheus AI Co-Writer',
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        error('OpenRouter request timed out after 30s');
+        return res.json({ error: 'AI request timed out. The provider took too long to respond. Please try again.' }, 504);
+      }
+      throw fetchErr;
+    }
 
     if (!response.ok) {
       const errBody = await response.text();
