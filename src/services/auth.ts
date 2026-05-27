@@ -20,9 +20,11 @@ function normalizeProfile(profile: UserProfile): UserProfile {
   const tier = profile.subscriptionTier;
   const status = profile.subscriptionStatus;
 
-  // Use free tier limits if subscription is not active (expired, cancelled, etc.)
-  const hasActiveSub = status === 'active' || status === 'on_trial';
-  const effectiveTier = hasActiveSub ? tier : 'free';
+  // Only downgrade when subscription is explicitly inactive.
+  // Null/undefined status preserves the tier (handles legacy profiles,
+  // admin-set tiers, or webhook delays).
+  const isExplicitlyInactive = status === 'cancelled' || status === 'expired' || status === 'past_due' || status === 'unpaid' || status === 'paused';
+  const effectiveTier = isExplicitlyInactive ? 'free' : tier;
 
   const defaults = TIER_DEFAULTS[effectiveTier] || TIER_DEFAULTS.free;
   return {

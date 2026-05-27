@@ -166,6 +166,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               <div className="text-xs text-primary-600 dark:text-primary-400 mt-2 space-y-0.5">
                 {profile ? (
                   <>
+                    <p className="font-medium capitalize">
+                      {profile.subscriptionTier} Plan
+                      {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && profile.subscriptionStatus !== 'on_trial' && (
+                        <span className="text-amber-500 ml-1">({profile.subscriptionStatus})</span>
+                      )}
+                    </p>
                     <p>
                       Standard: {formatTokenCount(profile.weeklyTokensUsed)} / {formatTokenCount(profile.maxWeeklyTokensStandard)}
                     </p>

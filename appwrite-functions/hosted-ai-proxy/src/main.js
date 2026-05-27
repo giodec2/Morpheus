@@ -55,7 +55,10 @@ export default async ({ req, res, log, error }) => {
       architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
     };
 
-    const tier = profile.subscriptionTier || 'free';
+    // Only enforce free tier when subscription is explicitly inactive
+    const status = profile.subscriptionStatus;
+    const isExplicitlyInactive = status === 'cancelled' || status === 'expired' || status === 'past_due' || status === 'unpaid' || status === 'paused';
+    const tier = isExplicitlyInactive ? 'free' : (profile.subscriptionTier || 'free');
     const defaults = tierDefaults[tier] || tierDefaults.free;
 
     // Determine if model is standard or premium (exact match)
