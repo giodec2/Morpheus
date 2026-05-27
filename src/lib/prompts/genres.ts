@@ -9,7 +9,6 @@ import {
   Glasses,
   Landmark,
   Sunrise,
-  type LucideIcon,
 } from 'lucide-react';
 
 export interface GenreConfig {

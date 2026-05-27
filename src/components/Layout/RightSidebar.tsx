@@ -83,7 +83,7 @@ export default function RightSidebar() {
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   const [modeDescPos, setModeDescPos] = useState<{ top: number; right: number } | null>(null);
   const [showGenreSelect, setShowGenreSelect] = useState(false);
-  const [hoveredGenre, setHoveredGenre] = useState<string | null>(null);
+  const [hoveredGenre, setHoveredGenre] = useState<WritingGenre | null>(null);
   const [genreDescPos, setGenreDescPos] = useState<{ top: number; right: number } | null>(null);
   const [lastUserInput, setLastUserInput] = useState('');
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);

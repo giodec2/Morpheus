@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Book, Chapter, Character, LoreBible, ChatMessage, ChatSession, AppSettings } from '@/types';
+import type { Book, Chapter, Character, LoreBible, ChatMessage, ChatSession, AppSettings, StyleProfile } from '@/types';
 
 const db = new Dexie('MorpheusDB') as Dexie & {
   books: EntityTable<Book, 'id'>;
@@ -8,6 +8,7 @@ const db = new Dexie('MorpheusDB') as Dexie & {
   loreBibles: EntityTable<LoreBible, 'id'>;
   chatHistory: EntityTable<ChatMessage, 'id'>;
   chatSessions: EntityTable<ChatSession, 'id'>;
+  styleProfiles: EntityTable<StyleProfile, 'bookId'>;
   settings: EntityTable<AppSettings, 'id'>;
 };
 

@@ -13,6 +13,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   language: 'english',
   modelTier: 'standard',
   aiMode: 'hosted',
+  writingGenre: 'general',
+  adaptiveMemory: false,
 };
 
 export async function getSettings(): Promise<AppSettings> {
