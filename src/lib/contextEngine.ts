@@ -3,7 +3,9 @@ import { COMPANION_SYSTEM_PROMPT } from './prompts/companion';
 import { CONTINUITY_SYSTEM_PROMPT } from './prompts/continuity';
 import { PLOT_WEAVER_SYSTEM_PROMPT } from './prompts/plotWeaver';
 import { TWIST_FORGE_SYSTEM_PROMPT } from './prompts/twistForge';
-import type { AIMode, Book, Chapter, Character, ChatMessage, Language } from '@/types';
+import { GENRE_PROMPTS } from './prompts/genres';
+import { buildStyleProfileInjection } from './prompts/adaptiveMemory';
+import type { AIMode, Book, Chapter, Character, ChatMessage, Language, WritingGenre } from '@/types';
 
 const MODE_PROMPTS: Record<AIMode, string> = {
   companion: COMPANION_SYSTEM_PROMPT,
@@ -80,6 +82,8 @@ export interface ContextPacket {
 
 export interface BuildContextParams {
   mode: AIMode;
+  genre: WritingGenre;
+  styleProfile?: string;
   book: Book;
   currentChapter: Chapter;
   allChapters: Chapter[];
@@ -95,6 +99,8 @@ export interface BuildContextParams {
 export function buildContextPacket(params: BuildContextParams): ContextPacket {
   const {
     mode,
+    genre,
+    styleProfile,
     currentChapter,
     allChapters,
     allCharacters,
@@ -110,11 +116,13 @@ export function buildContextPacket(params: BuildContextParams): ContextPacket {
   const budget = calculateBudget(model, maxTokens);
   let usedTokens = 0;
 
-  // 1. System prompt + language instruction
+  // 1. System prompt + genre instruction + style profile + language instruction
   const langInstruction = LANGUAGE_INSTRUCTIONS[language] || '';
-  const systemPrompt = langInstruction
-    ? `${MODE_PROMPTS[mode]}\n\n${langInstruction}`
-    : MODE_PROMPTS[mode];
+  const genreInstruction = genre !== 'general' ? GENRE_PROMPTS[genre] : '';
+  const styleInstruction = styleProfile ? buildStyleProfileInjection(styleProfile) : '';
+  const systemPrompt = [MODE_PROMPTS[mode], genreInstruction, styleInstruction, langInstruction]
+    .filter(Boolean)
+    .join('\n\n');
   usedTokens += estimateTokens(systemPrompt);
 
   // 2. Lore Bible

@@ -47,4 +47,32 @@ db.version(2).stores({
   }
 });
 
+// Version 3: added genre field to ChatMessage (no index changes needed)
+db.version(3).stores({
+  books: 'id, title, updatedAt',
+  chapters: 'id, bookId, order, updatedAt',
+  characters: 'id, bookId, name',
+  loreBibles: 'id, bookId',
+  chatHistory: 'id, bookId, sessionId, timestamp',
+  chatSessions: 'id, bookId, updatedAt',
+  settings: 'id',
+}).upgrade(async (tx) => {
+  // Backfill existing messages with default genre
+  await tx.table('chatHistory').toCollection().modify((m: any) => {
+    if (!m.genre) m.genre = 'general';
+  });
+});
+
+// Version 4: added styleProfiles table for Echo (adaptive memory)
+db.version(4).stores({
+  books: 'id, title, updatedAt',
+  chapters: 'id, bookId, order, updatedAt',
+  characters: 'id, bookId, name',
+  loreBibles: 'id, bookId',
+  chatHistory: 'id, bookId, sessionId, timestamp',
+  chatSessions: 'id, bookId, updatedAt',
+  styleProfiles: 'bookId',
+  settings: 'id',
+});
+
 export { db };

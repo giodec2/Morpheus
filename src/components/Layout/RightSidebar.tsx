@@ -24,7 +24,9 @@ import {
 } from '@/db/chatHistory';
 import { toast } from '@/components/common/Toast';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
-import type { AIMode, ChatMessage } from '@/types';
+import { GENRES, GENRE_DESCRIPTIONS } from '@/lib/prompts/genres';
+import { getStyleProfile } from '@/db/styleProfiles';
+import type { AIMode, ChatMessage, WritingGenre } from '@/types';
 
 const MODES: { id: AIMode; label: string; icon: typeof Compass; color: string; baseTemp: number; adj: number }[] = [
   { id: 'companion', label: "Scribe's Companion", icon: Compass, color: 'text-primary-600 dark:text-primary-400', baseTemp: 0.7, adj: 0 },
@@ -62,23 +64,37 @@ export default function RightSidebar() {
   const { activeBook, chapters, characters, loreBible } = useBookStore();
   const { activeChapter } = useEditorStore();
   const {
-    messages, sessions, activeSessionId, activeMode, isStreaming, streamContent, contextInfo,
+    messages, sessions, activeSessionId, activeMode, activeGenre, isStreaming, streamContent, contextInfo,
     setMessages, addMessage, updateLastMessage, setSessions, addSession, deleteSession: removeSessionFromStore,
-    setActiveSessionId, setActiveMode, setIsStreaming,
+    setActiveSessionId, setActiveMode, setActiveGenre, setIsStreaming,
     setStreamContent, appendStreamContent, setContextInfo,
   } = useChatStore();
 
-  const { openRouterKey, defaultModel, temperature: _temperature, maxTokens, advancedMode, language, aiMode, setTemperature } = useSettingsStore();
+  const { openRouterKey, defaultModel, maxTokens, advancedMode, language, aiMode, setTemperature, writingGenre, setWritingGenre, adaptiveMemory } = useSettingsStore();
   const { sendMessage } = useOpenRouter();
+  const { profile } = useAuthStore();
+
+  const subscriptionTier = profile?.subscriptionTier || 'free';
+  const canUseGenres = subscriptionTier === 'novelist' || subscriptionTier === 'architect';
+  const canUseEcho = subscriptionTier === 'architect';
 
   const [input, setInput] = useState('');
   const [showModeSelect, setShowModeSelect] = useState(false);
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   const [modeDescPos, setModeDescPos] = useState<{ top: number; right: number } | null>(null);
+  const [showGenreSelect, setShowGenreSelect] = useState(false);
+  const [hoveredGenre, setHoveredGenre] = useState<string | null>(null);
+  const [genreDescPos, setGenreDescPos] = useState<{ top: number; right: number } | null>(null);
   const [lastUserInput, setLastUserInput] = useState('');
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
+  const genreMenuRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync activeGenre from persisted writingGenre on load / when it changes externally
+  useEffect(() => {
+    setActiveGenre(writingGenre);
+  }, [writingGenre, setActiveGenre]);
 
   // Load sessions when book changes
   useEffect(() => {
@@ -120,6 +136,16 @@ export default function RightSidebar() {
         setTemperature(modeConfig.baseTemp);
       }
     }
+  };
+
+  const handleGenreChange = (genre: WritingGenre) => {
+    if (genre !== 'general' && !canUseGenres) {
+      toast('Genre tuning is reserved for Novelist tier and above.', 'error');
+      return;
+    }
+    setActiveGenre(genre);
+    setWritingGenre(genre);
+    setShowGenreSelect(false);
   };
 
   const handleNewSession = async () => {
@@ -185,6 +211,7 @@ export default function RightSidebar() {
       role: 'user',
       content: trimmedInput,
       mode: activeMode,
+      genre: activeGenre,
       timestamp: Date.now(),
     };
 
@@ -195,6 +222,7 @@ export default function RightSidebar() {
       role: 'user',
       content: trimmedInput,
       mode: activeMode,
+      genre: activeGenre,
     });
 
     // Update session title from first user message if it's still generic
@@ -209,8 +237,16 @@ export default function RightSidebar() {
     setIsStreaming(true);
     setStreamContent('');
 
+    let styleProfile: string | undefined;
+    if (adaptiveMemory && canUseEcho) {
+      const profile = await getStyleProfile(activeBook.id);
+      styleProfile = profile?.content;
+    }
+
     const packet = buildContextPacket({
       mode: activeMode,
+      genre: activeGenre,
+      styleProfile,
       book: activeBook,
       currentChapter: activeChapter,
       allChapters: chapters,
@@ -232,6 +268,7 @@ export default function RightSidebar() {
       role: 'assistant',
       content: '',
       mode: activeMode,
+      genre: activeGenre,
       timestamp: Date.now(),
     };
     addMessage(aiMsg);
@@ -258,6 +295,7 @@ export default function RightSidebar() {
       role: 'assistant',
       content: finalContent,
       mode: activeMode,
+      genre: activeGenre,
     });
 
     updateLastMessage(finalContent);
@@ -267,6 +305,9 @@ export default function RightSidebar() {
 
   const activeModeConfig = MODES.find(m => m.id === activeMode);
   const ModeIcon = activeModeConfig?.icon || Compass;
+
+  const activeGenreConfig = GENRES.find(g => g.id === activeGenre);
+  const GenreIcon = activeGenreConfig?.icon || Compass;
 
   if (!activeBook) {
     return (
@@ -357,9 +398,12 @@ export default function RightSidebar() {
         )}
 
         {/* Mode Selector */}
-        <div className="relative">
+        <div className="relative mb-1.5">
           <button
-            onClick={() => setShowModeSelect(!showModeSelect)}
+            onClick={() => {
+              setShowModeSelect(!showModeSelect);
+              setShowGenreSelect(false);
+            }}
             className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
           >
             <ModeIcon className={`w-4 h-4 ${activeModeConfig?.color}`} />
@@ -383,24 +427,19 @@ export default function RightSidebar() {
                       }
                     }}
                     onMouseLeave={() => setHoveredMode(null)}
-                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors ${
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors ${
                       activeMode === mode.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                     }`}
                   >
                     <Icon className={`w-4 h-4 ${mode.color}`} />
-                    <div className="text-left">
-                      <div className="font-medium">{mode.label}</div>
-                      <div className="text-xs text-gray-400">
-                        Temp: {mode.baseTemp}{mode.adj > 0 ? ` (+${mode.adj})` : mode.adj < 0 ? ` (${mode.adj})` : ''}
-                      </div>
-                    </div>
+                    <div className="text-left font-medium">{mode.label}</div>
                   </button>
                 );
               })}
             </div>
           )}
 
-          {/* Mode description panel — fixed positioned to escape sidebar clipping */}
+          {/* Mode description panel */}
           {showModeSelect && hoveredMode && MODE_DESCRIPTIONS[hoveredMode] && modeDescPos && (
             <div
               className="fixed z-[100] w-56 p-3 rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
@@ -412,6 +451,73 @@ export default function RightSidebar() {
             </div>
           )}
         </div>
+
+        {/* Genre Selector */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setShowGenreSelect(!showGenreSelect);
+              setShowModeSelect(false);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <GenreIcon className={`w-4 h-4 ${activeGenreConfig?.color}`} />
+            <span className="flex-1 text-left">{activeGenreConfig?.label}</span>
+            {!canUseGenres && <Lock className="w-3 h-3 text-gray-400" />}
+            <span className="text-xs text-gray-400">▼</span>
+          </button>
+
+          {showGenreSelect && (
+            <div ref={genreMenuRef} className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-10 overflow-hidden">
+              {GENRES.map(genre => {
+                const Icon = genre.icon;
+                const isLocked = genre.id !== 'general' && !canUseGenres;
+                return (
+                  <button
+                    key={genre.id}
+                    onClick={() => { handleGenreChange(genre.id); setHoveredGenre(null); setGenreDescPos(null); }}
+                    onMouseEnter={() => {
+                      setHoveredGenre(genre.id);
+                      if (genreMenuRef.current) {
+                        const rect = genreMenuRef.current.getBoundingClientRect();
+                        setGenreDescPos({ top: rect.top, right: window.innerWidth - rect.left + 8 });
+                      }
+                    }}
+                    onMouseLeave={() => setHoveredGenre(null)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors ${
+                      activeGenre === genre.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+                    } ${isLocked ? 'opacity-60' : ''}`}
+                  >
+                    <Icon className={`w-4 h-4 ${genre.color}`} />
+                    <div className="text-left font-medium flex-1">{genre.label}</div>
+                    {isLocked && <Lock className="w-3 h-3 text-gray-400" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Genre description panel */}
+          {showGenreSelect && hoveredGenre && GENRE_DESCRIPTIONS[hoveredGenre] && genreDescPos && (
+            <div
+              className="fixed z-[100] w-56 p-3 rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
+              style={{ top: genreDescPos.top, right: genreDescPos.right }}
+            >
+              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                {GENRE_DESCRIPTIONS[hoveredGenre]}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {!canUseGenres && (
+          <div className="flex items-center gap-1.5 mt-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <Lock className="w-3 h-3 text-amber-500" />
+            <span className="text-[10px] text-amber-700 dark:text-amber-400">
+              Genre tuning locked. Upgrade to Novelist to unlock.
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -541,8 +647,8 @@ export default function RightSidebar() {
 /* ---------- AI Settings ---------- */
 function AISettings() {
   const {
-    defaultModel, temperature, maxTokens, advancedMode, modelTier, aiMode,
-    setDefaultModel, setTemperature, setMaxTokens, setAdvancedMode, setModelTier,
+    defaultModel, maxTokens, modelTier, aiMode,
+    setDefaultModel, setMaxTokens, setModelTier,
   } = useSettingsStore();
   const { profile } = useAuthStore();
 
@@ -619,36 +725,6 @@ function AISettings() {
           descriptions={MODEL_DESCRIPTIONS}
           onChange={(val) => setDefaultModel(val)}
         />
-
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <label className="text-xs text-gray-500">Temperature</label>
-            <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={advancedMode}
-                onChange={(e) => setAdvancedMode(e.target.checked)}
-                className="rounded accent-primary-600"
-              />
-              Advanced
-            </label>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={temperature}
-            onChange={(e) => setTemperature(parseFloat(e.target.value))}
-            disabled={!advancedMode}
-            className="w-full accent-primary-600 disabled:opacity-50"
-          />
-          <div className="flex justify-between text-xs text-gray-400">
-            <span>0</span>
-            <span className={advancedMode ? 'text-primary-600 font-medium' : ''}>{temperature.toFixed(2)}</span>
-            <span>1</span>
-          </div>
-        </div>
 
         <div className="space-y-1">
           <label className="text-xs text-gray-500">Max Tokens</label>

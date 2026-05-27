@@ -1,5 +1,16 @@
 export type AIMode = 'companion' | 'continuity' | 'plotWeaver' | 'twistForge';
 
+export type WritingGenre =
+  | 'general'
+  | 'crime'
+  | 'romance'
+  | 'thriller'
+  | 'scifi'
+  | 'fantasy'
+  | 'literary'
+  | 'historical'
+  | 'youngAdult';
+
 export type Language =
   | 'english'
   | 'italian'
@@ -74,7 +85,14 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   mode: AIMode;
+  genre: WritingGenre;
   timestamp: number;
+}
+
+export interface StyleProfile {
+  bookId: string;
+  content: string;
+  updatedAt: number;
 }
 
 export interface AppSettings {
@@ -88,6 +106,8 @@ export interface AppSettings {
   language: Language;
   modelTier: 'standard' | 'premium';
   aiMode: 'byok' | 'hosted';
+  writingGenre: WritingGenre;
+  adaptiveMemory: boolean;
 }
 
 export type SidebarView = 'chapters' | 'characters' | 'loreBible' | 'settings';

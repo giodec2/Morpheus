@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DEFAULT_STANDARD_MODEL } from '@/lib/models';
-import type { AppSettings, Language } from '@/types';
+import type { AppSettings, Language, WritingGenre } from '@/types';
 
 type AIProviderMode = 'byok' | 'hosted';
 
@@ -19,6 +19,8 @@ interface SettingsState extends AppSettings {
   setIsConnected: (connected: boolean) => void;
   setModelTier: (tier: 'standard' | 'premium') => void;
   setAiMode: (mode: AIProviderMode) => void;
+  setWritingGenre: (genre: WritingGenre) => void;
+  setAdaptiveMemory: (enabled: boolean) => void;
   loadSettings: (settings: AppSettings) => void;
 }
 
@@ -36,6 +38,8 @@ export const useSettingsStore = create<SettingsState>()(
       isConnected: false,
       modelTier: 'standard',
       aiMode: 'hosted',
+      writingGenre: 'general',
+      adaptiveMemory: false,
 
       setOpenRouterKey: (key) => set({ openRouterKey: key }),
       setDefaultModel: (model) => set({ defaultModel: model }),
@@ -50,6 +54,8 @@ export const useSettingsStore = create<SettingsState>()(
       setIsConnected: (connected) => set({ isConnected: connected }),
       setModelTier: (tier) => set({ modelTier: tier }),
       setAiMode: (mode) => set({ aiMode: mode }),
+      setWritingGenre: (genre) => set({ writingGenre: genre }),
+      setAdaptiveMemory: (enabled) => set({ adaptiveMemory: enabled }),
       loadSettings: (settings) => set({ ...settings }),
     }),
     {
@@ -64,6 +70,8 @@ export const useSettingsStore = create<SettingsState>()(
         language: state.language,
         modelTier: state.modelTier,
         aiMode: state.aiMode,
+        writingGenre: state.writingGenre,
+        adaptiveMemory: state.adaptiveMemory,
       }),
     }
   )

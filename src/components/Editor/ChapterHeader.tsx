@@ -3,10 +3,13 @@ import { FileText, ChevronDown, ChevronUp, Loader2, Sparkles } from 'lucide-reac
 import { toast } from '@/components/common/Toast';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { updateChapter } from '@/db/chapters';
+import { getStyleProfile, setStyleProfile } from '@/db/styleProfiles';
 import { buildSummaryPrompt } from '@/lib/prompts/summaryGenerator';
+import { buildAdaptiveSummaryPrompt, parseAdaptiveResponse } from '@/lib/prompts/adaptiveMemory';
 import { extractTextFromContent } from '@/lib/tiptap';
 import type { Chapter } from '@/types';
 
@@ -20,9 +23,14 @@ interface ChapterHeaderProps {
 export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setIsSummaryOpen }: ChapterHeaderProps) {
   const { updateActiveChapter } = useEditorStore();
   const { updateChapter: updateChapterInStore } = useBookStore();
-  const { openRouterKey } = useSettingsStore();
+  const { openRouterKey, adaptiveMemory } = useSettingsStore();
+  const { profile } = useAuthStore();
   const { sendMessage } = useOpenRouter();
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const subscriptionTier = profile?.subscriptionTier || 'free';
+  const canUseEcho = subscriptionTier === 'architect';
+  const echoEnabled = adaptiveMemory && canUseEcho;
   const [editTitle, setEditTitle] = useState(chapter.title);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
@@ -41,24 +49,66 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
     setIsGenerating(true);
     const text = extractTextFromContent(chapter.content, { addSpaces: true });
     const targetWords = Math.max(20, Math.round(text.split(/\s+/).length * 0.05));
-    const prompt = buildSummaryPrompt(text, targetWords);
 
-    let summary = '';
-    await sendMessage(
-      'You are a literary editor. Be concise and precise.',
-      [{ role: 'user', content: prompt }],
-      (chunk) => { summary += chunk; },
-      (error) => { console.error('Summary error:', error); },
-      'companion'
-    );
+    if (echoEnabled) {
+      // Echo mode: combined summary + style profile extraction
+      const existingProfile = await getStyleProfile(chapter.bookId);
+      const prompt = buildAdaptiveSummaryPrompt(text, targetWords, existingProfile?.content);
 
-    if (summary.trim()) {
-      await updateChapter(chapter.id, { summary: summary.trim(), summaryPreparedAt: Date.now() });
-      updateChapterInStore({ ...chapter, summary: summary.trim(), summaryPreparedAt: Date.now() });
-      updateActiveChapter({ summary: summary.trim(), summaryPreparedAt: Date.now() });
-      toast('Summary generated', 'success');
+      let rawResponse = '';
+      await sendMessage(
+        'You are a literary analyst and editor. Output ONLY valid JSON.',
+        [{ role: 'user', content: prompt }],
+        (chunk) => { rawResponse += chunk; },
+        (error) => { console.error('Echo summary error:', error); },
+        'companion'
+      );
+
+      const parsed = parseAdaptiveResponse(rawResponse);
+
+      if (parsed?.summary) {
+        await updateChapter(chapter.id, { summary: parsed.summary, summaryPreparedAt: Date.now() });
+        updateChapterInStore({ ...chapter, summary: parsed.summary, summaryPreparedAt: Date.now() });
+        updateActiveChapter({ summary: parsed.summary, summaryPreparedAt: Date.now() });
+
+        if (parsed.styleProfile) {
+          await setStyleProfile(chapter.bookId, parsed.styleProfile);
+        }
+
+        toast('Summary generated' + (parsed.styleProfile ? ' & style learned' : ''), 'success');
+      } else {
+        // Fallback: treat entire response as summary
+        const fallbackSummary = rawResponse.trim();
+        if (fallbackSummary) {
+          await updateChapter(chapter.id, { summary: fallbackSummary, summaryPreparedAt: Date.now() });
+          updateChapterInStore({ ...chapter, summary: fallbackSummary, summaryPreparedAt: Date.now() });
+          updateActiveChapter({ summary: fallbackSummary, summaryPreparedAt: Date.now() });
+          toast('Summary generated (style learning skipped)', 'info');
+        } else {
+          toast('Failed to generate summary', 'error');
+        }
+      }
     } else {
-      toast('Failed to generate summary', 'error');
+      // Standard mode: summary only
+      const prompt = buildSummaryPrompt(text, targetWords);
+
+      let summary = '';
+      await sendMessage(
+        'You are a literary editor. Be concise and precise.',
+        [{ role: 'user', content: prompt }],
+        (chunk) => { summary += chunk; },
+        (error) => { console.error('Summary error:', error); },
+        'companion'
+      );
+
+      if (summary.trim()) {
+        await updateChapter(chapter.id, { summary: summary.trim(), summaryPreparedAt: Date.now() });
+        updateChapterInStore({ ...chapter, summary: summary.trim(), summaryPreparedAt: Date.now() });
+        updateActiveChapter({ summary: summary.trim(), summaryPreparedAt: Date.now() });
+        toast('Summary generated', 'success');
+      } else {
+        toast('Failed to generate summary', 'error');
+      }
     }
 
     setIsGenerating(false);

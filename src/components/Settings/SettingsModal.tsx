@@ -29,9 +29,9 @@ const LANGUAGES = [
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
   const {
-    openRouterKey, defaultModel, temperature, maxTokens, advancedMode, language, modelTier, aiMode,
+    openRouterKey, defaultModel, temperature, maxTokens, advancedMode, language, modelTier, aiMode, adaptiveMemory,
     setOpenRouterKey, setDefaultModel, setTemperature, setMaxTokens, setAdvancedMode, setLanguage,
-    setIsConnected, setModelTier, setAiMode,
+    setIsConnected, setModelTier, setAiMode, setAdaptiveMemory,
   } = useSettingsStore();
 
   const { profile } = useAuthStore();
@@ -41,6 +41,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
   const canUsePremium = aiMode === 'byok' || subscriptionTier === 'novelist' || subscriptionTier === 'architect';
+  const canUseEcho = subscriptionTier === 'architect';
 
   const handleConnect = async () => {
     if (!apiInput.trim()) return;
@@ -232,6 +233,46 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 <p className="text-xs text-gray-400 mt-1">
                   Sets the language Morpheus uses when responding to you.
                 </p>
+              </div>
+
+              {/* Echo (Adaptive Memory) */}
+              <div className="p-3 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/30">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Echo</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full font-medium">Beta</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!canUseEcho) {
+                        toast('Echo is reserved for Architect tier.', 'error');
+                        return;
+                      }
+                      setAdaptiveMemory(!adaptiveMemory);
+                    }}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${
+                      adaptiveMemory ? 'bg-purple-500' : 'bg-gray-300 dark:bg-slate-600'
+                    } ${!canUseEcho ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    aria-label="Toggle Echo adaptive memory"
+                    disabled={!canUseEcho}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                      adaptiveMemory ? 'translate-x-4' : ''
+                    }`} />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  When enabled, Morpheus learns your writing style from chapter summaries and adapts its suggestions to match your voice.
+                </p>
+                {!canUseEcho && (
+                  <div className="flex items-center gap-1.5 mt-2 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded">
+                    <Lock className="w-3 h-3 text-amber-500" />
+                    <span className="text-[10px] text-amber-700 dark:text-amber-400">
+                      Echo is exclusive to Architect tier.
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div>

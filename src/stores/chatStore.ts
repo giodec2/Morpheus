@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import type { AIMode, ChatMessage, ChatSession } from '@/types';
+import type { AIMode, ChatMessage, ChatSession, WritingGenre } from '@/types';
 
 interface ChatState {
   messages: ChatMessage[];
   sessions: ChatSession[];
   activeSessionId: string | null;
   activeMode: AIMode;
+  activeGenre: WritingGenre;
   isStreaming: boolean;
   streamContent: string;
   contextInfo: { characters: number; summaries: number; tokens: number };
@@ -18,6 +19,7 @@ interface ChatState {
   deleteSession: (sessionId: string) => void;
   setActiveSessionId: (sessionId: string | null) => void;
   setActiveMode: (mode: AIMode) => void;
+  setActiveGenre: (genre: WritingGenre) => void;
   setIsStreaming: (streaming: boolean) => void;
   setStreamContent: (content: string) => void;
   appendStreamContent: (chunk: string) => void;
@@ -29,6 +31,7 @@ export const useChatStore = create<ChatState>((set) => ({
   sessions: [],
   activeSessionId: null,
   activeMode: 'companion',
+  activeGenre: 'general',
   isStreaming: false,
   streamContent: '',
   contextInfo: { characters: 0, summaries: 0, tokens: 0 },
@@ -48,6 +51,7 @@ export const useChatStore = create<ChatState>((set) => ({
   })),
   setActiveSessionId: (activeSessionId) => set({ activeSessionId }),
   setActiveMode: (activeMode) => set({ activeMode }),
+  setActiveGenre: (activeGenre) => set({ activeGenre }),
   setIsStreaming: (isStreaming) => set({ isStreaming }),
   setStreamContent: (streamContent) => set({ streamContent }),
   appendStreamContent: (chunk) => set((state) => ({ streamContent: state.streamContent + chunk })),
