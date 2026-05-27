@@ -30,6 +30,7 @@ function normalizeProfile(profile: UserProfile): UserProfile {
     maxBooks: defaults.maxBooks,
     maxWeeklyTokensStandard: defaults.maxWeeklyTokensStandard,
     maxWeeklyTokensPremium: defaults.maxWeeklyTokensPremium,
+    weeklyTokensUsedPremium: profile.weeklyTokensUsedPremium || 0,
   };
 }
 
@@ -41,6 +42,7 @@ function getTokenResetUpdate(profile: UserProfile): Partial<UserProfile> | null 
   if (!resetAt || now - resetAt >= ONE_WEEK_MS) {
     return {
       weeklyTokensUsed: 0,
+      weeklyTokensUsedPremium: 0,
       weeklyTokensResetAt: now,
     };
   }
@@ -147,6 +149,7 @@ async function createProfile(user: Models.User<Models.Preferences>): Promise<Use
     customerPortalUrl: null,
     trialEndsAt: null,
     weeklyTokensUsed: 0,
+    weeklyTokensUsedPremium: 0,
     weeklyTokensResetAt: now,
     maxBooks: defaults.maxBooks,
     maxWeeklyTokensStandard: defaults.maxWeeklyTokensStandard,

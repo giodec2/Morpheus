@@ -58,7 +58,7 @@ export default async ({ req, res, log, error }) => {
     const tier = profile.subscriptionTier || 'free';
     const defaults = tierDefaults[tier] || tierDefaults.free;
 
-    // Determine if model is standard or premium
+    // Determine if model is standard or premium (exact match)
     const premiumModels = [
       'deepseek/deepseek-v4-pro',
       'z-ai/glm-5.1',
@@ -66,7 +66,7 @@ export default async ({ req, res, log, error }) => {
       'x-ai/grok-4.3',
       'moonshotai/kimi-k2.5',
     ];
-    const isPremium = premiumModels.some((m) => model.includes(m));
+    const isPremium = premiumModels.some((m) => model === m);
 
     // Check tier allows this model type
     if (isPremium && defaults.maxWeeklyTokensPremium === 0) {
@@ -87,20 +87,38 @@ export default async ({ req, res, log, error }) => {
     if (now - weeklyResetAt >= oneWeek) {
       await databases.updateDocument(databaseId, profilesCollection, userId, {
         weeklyTokensUsed: 0,
+        weeklyTokensUsedPremium: 0,
         weeklyTokensResetAt: now,
       });
       profile.weeklyTokensUsed = 0;
+      profile.weeklyTokensUsedPremium = 0;
       log('Weekly tokens reset');
     }
 
-    // Check token limits
-    const weeklyUsed = profile.weeklyTokensUsed || 0;
-    const weeklyLimit = isPremium ? defaults.maxWeeklyTokensPremium : defaults.maxWeeklyTokensStandard;
+    // Check token limits — standard and premium are tracked separately
+    const standardUsed = profile.weeklyTokensUsed || 0;
+    const premiumUsed = profile.weeklyTokensUsedPremium || 0;
 
-    if (weeklyUsed + estimatedTotal > weeklyLimit) {
-      return res.json({
-        error: `Token limit reached. Used ${weeklyUsed.toLocaleString()} / ${weeklyLimit.toLocaleString()} tokens this week.`,
-      }, 429);
+    if (isPremium) {
+      const premiumLimit = defaults.maxWeeklyTokensPremium;
+      if (premiumUsed + estimatedTotal > premiumLimit) {
+        return res.json({
+          error: 'Premium token limit reached.',
+          limitType: 'premium',
+          used: premiumUsed,
+          limit: premiumLimit,
+        }, 429);
+      }
+    } else {
+      const standardLimit = defaults.maxWeeklyTokensStandard;
+      if (standardUsed + estimatedTotal > standardLimit) {
+        return res.json({
+          error: 'Standard token limit reached.',
+          limitType: 'standard',
+          used: standardUsed,
+          limit: standardLimit,
+        }, 429);
+      }
     }
 
     // Call OpenRouter
@@ -169,12 +187,19 @@ export default async ({ req, res, log, error }) => {
     // Count actual tokens used (from OpenRouter response or estimate)
     const actualTokens = data.usage?.total_tokens || estimateTokens(content) + estimatedInputTokens;
 
-    // Update profile token usage
+    // Update the correct token counter
     try {
-      await databases.updateDocument(databaseId, profilesCollection, userId, {
-        weeklyTokensUsed: weeklyUsed + actualTokens,
-      });
-      log(`Token usage updated: +${actualTokens}`);
+      if (isPremium) {
+        await databases.updateDocument(databaseId, profilesCollection, userId, {
+          weeklyTokensUsedPremium: premiumUsed + actualTokens,
+        });
+        log(`Premium token usage updated: +${actualTokens} (total: ${premiumUsed + actualTokens})`);
+      } else {
+        await databases.updateDocument(databaseId, profilesCollection, userId, {
+          weeklyTokensUsed: standardUsed + actualTokens,
+        });
+        log(`Standard token usage updated: +${actualTokens} (total: ${standardUsed + actualTokens})`);
+      }
     } catch (err) {
       error(`Failed to update token usage: ${err.message || err}`);
     }
@@ -183,6 +208,8 @@ export default async ({ req, res, log, error }) => {
       content,
       tokensUsed: actualTokens,
       model,
+      weeklyTokensUsed: isPremium ? standardUsed : standardUsed + actualTokens,
+      weeklyTokensUsedPremium: isPremium ? premiumUsed + actualTokens : premiumUsed,
     });
   } catch (err) {
     error(`Unhandled error: ${err.message}`);

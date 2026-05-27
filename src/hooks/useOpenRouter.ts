@@ -111,7 +111,8 @@ export function useOpenRouter() {
         if (profile) {
           setProfile({
             ...profile,
-            weeklyTokensUsed: (profile.weeklyTokensUsed || 0) + body.tokensUsed,
+            weeklyTokensUsed: body.weeklyTokensUsed ?? (profile.weeklyTokensUsed || 0) + body.tokensUsed,
+            weeklyTokensUsedPremium: body.weeklyTokensUsedPremium ?? profile.weeklyTokensUsedPremium ?? 0,
           });
         }
       }

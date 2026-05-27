@@ -29,6 +29,7 @@ export interface UserProfile {
   customerPortalUrl: string | null;
   trialEndsAt: number | null;
   weeklyTokensUsed: number;
+  weeklyTokensUsedPremium: number;
   weeklyTokensResetAt: number;
   maxBooks: number;
   maxWeeklyTokensStandard: number;

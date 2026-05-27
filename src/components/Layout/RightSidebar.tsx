@@ -23,6 +23,7 @@ import {
   updateChatSession,
 } from '@/db/chatHistory';
 import { toast } from '@/components/common/Toast';
+import TierSelectorModal from '@/components/common/TierSelectorModal';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
 import { GENRES, GENRE_DESCRIPTIONS } from '@/lib/prompts/genres';
 import { getStyleProfile } from '@/db/styleProfiles';
@@ -87,6 +88,7 @@ export default function RightSidebar() {
   const [genreDescPos, setGenreDescPos] = useState<{ top: number; right: number } | null>(null);
   const [lastUserInput, setLastUserInput] = useState('');
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
+  const [showTierModal, setShowTierModal] = useState(false);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const genreMenuRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -284,6 +286,14 @@ export default function RightSidebar() {
       },
       (error) => {
         fullContent = `Error: ${error}`;
+        if (error.includes('Token limit reached') || error.includes('token limit')) {
+          if (subscriptionTier === 'architect') {
+            toast('Your weekly token allowance has been exhausted. Tokens reset every 7 days.', 'error');
+          } else {
+            toast('Token limit reached. Upgrade your plan to continue.', 'error');
+            setShowTierModal(true);
+          }
+        }
       },
       activeMode
     );
@@ -640,6 +650,13 @@ export default function RightSidebar() {
 
       {/* AI Settings */}
       <AISettings />
+
+      {showTierModal && (
+        <TierSelectorModal
+          currentTier={subscriptionTier}
+          onClose={() => setShowTierModal(false)}
+        />
+      )}
     </aside>
   );
 }

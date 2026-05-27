@@ -8,6 +8,12 @@ import DarkModeToggle from '@/components/common/DarkModeToggle';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
 import type { Language } from '@/types';
 
+function formatTokenCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
+  return `${n}`;
+}
+
 interface SettingsModalProps {
   onClose: () => void;
 }
@@ -157,11 +163,22 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             </div>
 
             {aiMode === 'hosted' && (
-              <p className="text-xs text-primary-600 dark:text-primary-400 mt-2">
-                Using Hosted AI. {profile
-                  ? `${(profile.weeklyTokensUsed / 1000).toFixed(0)}k / ${(profile.maxWeeklyTokensStandard / 1000).toFixed(0)}k tokens used this week.`
-                  : 'Sign in to track token usage.'}
-              </p>
+              <div className="text-xs text-primary-600 dark:text-primary-400 mt-2 space-y-0.5">
+                {profile ? (
+                  <>
+                    <p>
+                      Standard: {formatTokenCount(profile.weeklyTokensUsed)} / {formatTokenCount(profile.maxWeeklyTokensStandard)}
+                    </p>
+                    {(profile.subscriptionTier === 'novelist' || profile.subscriptionTier === 'architect') && (
+                      <p>
+                        Premium: {formatTokenCount(profile.weeklyTokensUsedPremium)} / {formatTokenCount(profile.maxWeeklyTokensPremium)}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p>Sign in to track token usage.</p>
+                )}
+              </div>
             )}
           </section>
 
