@@ -48,7 +48,7 @@ export default function CTABanner() {
         {user ? (
           <Link href="/app">
             <button className="group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary-700 rounded-2xl font-bold text-lg hover:bg-primary-50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-2xl shadow-black/20">
-              Open Dashboard
+              Open the App
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>

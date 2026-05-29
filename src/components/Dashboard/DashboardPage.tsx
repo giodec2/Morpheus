@@ -8,7 +8,7 @@ const AuthModal = lazy(() => import('@/components/Auth/AuthModal'));
 const UpgradeModal = lazy(() => import('@/components/common/UpgradeModal'));
 const TierSelectorModal = lazy(() => import('@/components/common/TierSelectorModal'));
 const ConfirmModal = lazy(() => import('@/components/common/ConfirmModal'));
-import { getAllBooks, createBook, deleteBook, putBook } from '@/db/books';
+import { getAllBooks, createBook, deleteBook, putBook, updateBook } from '@/db/books';
 import { TIER_DEFAULTS } from '@/services/auth';
 import { getChaptersByBook } from '@/db/chapters';
 import { createLoreBible } from '@/db/loreBibles';
@@ -40,6 +40,8 @@ export default function DashboardPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showTierSelector, setShowTierSelector] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
+  const [bookToEdit, setBookToEdit] = useState<Book | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const [orphanedBookIds, setOrphanedBookIds] = useState<Set<string>>(new Set());
   const [syncingOrphanId, setSyncingOrphanId] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
@@ -146,6 +148,20 @@ export default function DashboardPage() {
 
   const handleDeleteBook = async (id: string) => {
     setBookToDelete(id);
+  };
+
+  const handleStartEdit = (book: Book) => {
+    setBookToEdit(book);
+    setEditTitle(book.title);
+  };
+
+  const confirmEditBook = async () => {
+    if (!bookToEdit || !editTitle.trim()) return;
+    await updateBook(bookToEdit.id, { title: editTitle.trim() });
+    setBookToEdit(null);
+    setEditTitle('');
+    loadBooks();
+    toast('Book renamed', 'success');
   };
 
   const confirmDeleteBook = async () => {
@@ -471,6 +487,7 @@ export default function DashboardPage() {
                 book={book}
                 chapterCount={chapterCounts[book.id] || 0}
                 onDelete={() => handleDeleteBook(book.id)}
+                onEdit={() => handleStartEdit(book)}
                 isOrphaned={orphanedBookIds.has(book.id)}
                 isSyncing={syncingOrphanId === book.id}
                 onSyncToCloud={() => handleSyncOrphanToCloud(book.id)}
@@ -515,6 +532,41 @@ export default function DashboardPage() {
             );
           })()
         )}
+
+        {/* Edit Modal */}
+        {bookToEdit && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-md shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rename Book</h3>
+              <input
+                autoFocus
+                className="input mb-4"
+                placeholder="Book title..."
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmEditBook();
+                  if (e.key === 'Escape') { setBookToEdit(null); setEditTitle(''); }
+                }}
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => { setBookToEdit(null); setEditTitle(''); }}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmEditBook}
+                  disabled={!editTitle.trim()}
+                  className="btn-primary"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </Suspense>
 
       {/* Create Modal */}
@@ -545,9 +597,9 @@ export default function DashboardPage() {
 }
 
 function BookCard({
-  book, chapterCount, onDelete, isOrphaned, isSyncing, onSyncToCloud,
+  book, chapterCount, onDelete, onEdit, isOrphaned, isSyncing, onSyncToCloud,
 }: {
-  book: Book; chapterCount: number; onDelete: () => void;
+  book: Book; chapterCount: number; onDelete: () => void; onEdit: () => void;
   isOrphaned?: boolean; isSyncing?: boolean; onSyncToCloud?: () => void;
 }) {
   return (
@@ -558,13 +610,22 @@ function BookCard({
             {book.title}
           </h3>
         </Link>
-        <button
-          onClick={onDelete}
-          className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-          title="Delete book"
-        >
-          <Trash2 className="w-4 h-4 text-red-400" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onEdit}
+            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all"
+            title="Rename book"
+          >
+            <Pencil className="w-4 h-4 text-primary-400" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+            title="Delete book"
+          >
+            <Trash2 className="w-4 h-4 text-red-400" />
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">

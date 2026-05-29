@@ -76,7 +76,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
 
             {user ? (
               <Link href="/app">
-                <button className="btn-primary">Open Dashboard</button>
+                <button className="btn-primary">Open the App</button>
               </Link>
             ) : (
               <>
@@ -109,7 +109,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
             <div className="pt-3 border-t border-gray-200 dark:border-slate-800 flex flex-col gap-2">
               {user ? (
                 <Link href="/app">
-                  <button className="btn-primary w-full">Open Dashboard</button>
+                  <button className="btn-primary w-full">Open the App</button>
                 </Link>
               ) : (
                 <>

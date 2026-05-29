@@ -99,7 +99,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             {user ? (
               <Link href="/app">
                 <button className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40">
-                  Open Dashboard
+                  Open the App
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>
