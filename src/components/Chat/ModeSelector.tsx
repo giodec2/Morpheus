@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { MODES, MODE_DESCRIPTIONS } from '@/lib/modes';
 import type { AIMode } from '@/types';
 
@@ -57,7 +58,7 @@ export default function ModeSelector({
         </div>
       )}
 
-      {show && hoveredMode && MODE_DESCRIPTIONS[hoveredMode] && modeDescPos && (
+      {show && hoveredMode && MODE_DESCRIPTIONS[hoveredMode] && modeDescPos && createPortal(
         <div
           className="fixed z-[100] w-56 p-3 rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
           style={{ top: modeDescPos.top, right: modeDescPos.right }}
@@ -65,7 +66,8 @@ export default function ModeSelector({
           <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
             {MODE_DESCRIPTIONS[hoveredMode]}
           </p>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

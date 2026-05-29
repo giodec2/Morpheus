@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Lock } from 'lucide-react';
 import { GENRES, GENRE_DESCRIPTIONS } from '@/lib/prompts/genres';
 import type { WritingGenre } from '@/types';
@@ -62,7 +63,7 @@ export default function GenreSelector({
         </div>
       )}
 
-      {show && hoveredGenre && GENRE_DESCRIPTIONS[hoveredGenre] && genreDescPos && (
+      {show && hoveredGenre && GENRE_DESCRIPTIONS[hoveredGenre] && genreDescPos && createPortal(
         <div
           className="fixed z-[100] w-56 p-3 rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
           style={{ top: genreDescPos.top, right: genreDescPos.right }}
@@ -70,7 +71,8 @@ export default function GenreSelector({
           <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
             {GENRE_DESCRIPTIONS[hoveredGenre]}
           </p>
-        </div>
+        </div>,
+        document.body
       )}
 
       {!canUseGenres && (

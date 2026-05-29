@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -145,8 +146,8 @@ export default function CustomSelect({
         </div>
       )}
 
-      {/* Description panel — fixed positioned to escape parent clipping */}
-      {isOpen && activeDescription && descPos && (
+      {/* Description panel — portal to body to escape all parent clipping */}
+      {isOpen && activeDescription && descPos && createPortal(
         <div
           className="fixed z-[100] w-56 p-3 rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
           style={{ top: descPos.top, right: descPos.right }}
@@ -154,7 +155,8 @@ export default function CustomSelect({
           <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
             {activeDescription}
           </p>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
