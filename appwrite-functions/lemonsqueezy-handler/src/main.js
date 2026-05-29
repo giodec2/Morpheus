@@ -17,10 +17,11 @@ import crypto from 'crypto';
  *   APPWRITE_COLLECTION_PROFILES
  *   LEMONSQUEEZY_API_KEY
  *   LEMONSQUEEZY_STORE_ID
- *   LEMONSQUEEZY_WEBHOOK_SECRET     (optional but recommended)
+ *   LEMONSQUEEZY_WEBHOOK_SECRET     (required in production)
  *   LEMONSQUEEZY_VARIANT_SCRIBE
  *   LEMONSQUEEZY_VARIANT_NOVELIST
  *   LEMONSQUEEZY_VARIANT_ARCHITECT
+ *   CHECKOUT_SUCCESS_URL            (optional, defaults to https://your-domain.com/app?checkout=success)
  */
 
 // ───────────────────────────────────────────────
@@ -28,7 +29,12 @@ import crypto from 'crypto';
 // ───────────────────────────────────────────────
 
 function verifySignature(body, signature, secret) {
-  if (!secret) return true; // Skip if not configured (dev only)
+  // In production, require the secret. In dev (localhost), allow skipping.
+  const isProduction = !(process.env.APPWRITE_FUNCTION_API_ENDPOINT || '').includes('localhost');
+  if (isProduction && !secret) {
+    throw new Error('LEMONSQUEEZY_WEBHOOK_SECRET is required in production');
+  }
+  if (!secret) return true; // Dev only: skip if not configured
   if (!signature) return false;
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(body);
@@ -58,6 +64,22 @@ function parseDate(dateStr) {
   if (!dateStr) return null;
   const ts = new Date(dateStr).getTime();
   return isNaN(ts) ? null : ts;
+}
+
+function validateEnv() {
+  const required = [
+    'APPWRITE_FUNCTION_API_ENDPOINT',
+    'APPWRITE_FUNCTION_PROJECT_ID',
+    'APPWRITE_API_KEY',
+    'APPWRITE_DATABASE_ID',
+    'APPWRITE_COLLECTION_PROFILES',
+    'LEMONSQUEEZY_API_KEY',
+    'LEMONSQUEEZY_STORE_ID',
+  ];
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+  }
 }
 
 // ───────────────────────────────────────────────
@@ -104,7 +126,11 @@ async function handleCheckout({ req, res, log, error }) {
       );
     } catch (err) {
       error(`Profile fetch failed: ${err.message || err}`);
-      return res.json({ error: 'User profile not found' }, 404);
+      const isNotFound = err.code === 404 || err.type === 'document_not_found';
+      if (isNotFound) {
+        return res.json({ error: 'User profile not found' }, 404);
+      }
+      return res.json({ error: 'Database error while fetching profile' }, 502);
     }
 
     const apiKey = process.env.LEMONSQUEEZY_API_KEY;
@@ -115,6 +141,8 @@ async function handleCheckout({ req, res, log, error }) {
     }
 
     log(`Creating checkout for user ${userId}, variant ${variantId}`);
+
+    const redirectUrl = process.env.CHECKOUT_SUCCESS_URL || 'https://your-domain.com/app?checkout=success';
 
     const checkoutResponse = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
       method: 'POST',
@@ -132,7 +160,7 @@ async function handleCheckout({ req, res, log, error }) {
               custom: { user_id: userId },
             },
             product_options: {
-              redirect_url: 'https://your-domain.com/app?checkout=success',
+              redirect_url: redirectUrl,
             },
           },
           relationships: {
@@ -178,8 +206,13 @@ async function handleWebhook({ req, res, log, error }) {
     const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
     const bodyRaw = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
-    if (!verifySignature(bodyRaw, signature, secret)) {
-      return res.json({ error: 'Invalid signature' }, 401);
+    try {
+      if (!verifySignature(bodyRaw, signature, secret)) {
+        return res.json({ error: 'Invalid signature' }, 401);
+      }
+    } catch (sigErr) {
+      error(`Signature verification error: ${sigErr.message}`);
+      return res.json({ error: sigErr.message }, 500);
     }
 
     let payload;
@@ -206,6 +239,9 @@ async function handleWebhook({ req, res, log, error }) {
       'subscription_paused',
       'subscription_resumed',
       'subscription_unpaused',
+      'subscription_payment_success',
+      'subscription_payment_failed',
+      'subscription_payment_recovered',
     ];
 
     if (!handledEvents.includes(eventName)) {
@@ -263,6 +299,12 @@ async function handleWebhook({ req, res, log, error }) {
       updates.subscriptionStatus = 'paused';
     } else if (eventName === 'subscription_resumed' || eventName === 'subscription_unpaused') {
       updates.subscriptionStatus = status || 'active';
+    } else if (eventName === 'subscription_payment_success') {
+      updates.subscriptionStatus = status || 'active';
+    } else if (eventName === 'subscription_payment_failed') {
+      updates.subscriptionStatus = 'past_due';
+    } else if (eventName === 'subscription_payment_recovered') {
+      updates.subscriptionStatus = status || 'active';
     }
 
     try {
@@ -272,7 +314,8 @@ async function handleWebhook({ req, res, log, error }) {
         userId,
         updates
       );
-      log(`Profile updated for user ${userId}: ${JSON.stringify(updates)}`);
+      // Log only non-sensitive fields
+      log(`Profile updated for user ${userId}: tier=${updates.subscriptionTier || 'unchanged'}, status=${updates.subscriptionStatus || 'unchanged'}`);
     } catch (err) {
       error(`Failed to update profile: ${err.message || err}`);
       return res.json({ error: 'Failed to update user profile' }, 500);
@@ -291,6 +334,13 @@ async function handleWebhook({ req, res, log, error }) {
 
 export default async (context) => {
   const { req, res } = context;
+
+  try {
+    validateEnv();
+  } catch (err) {
+    context.error(`Env validation failed: ${err.message}`);
+    return res.json({ error: 'Server misconfiguration' }, 500);
+  }
 
   // Route based on headers:
   // - Webhooks have X-Signature and no X-Appwrite-User-Id

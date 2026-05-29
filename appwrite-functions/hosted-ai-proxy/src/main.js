@@ -1,30 +1,117 @@
 import { Client, Databases } from 'node-appwrite';
 
-// Simple token estimation: characters / 4 (rough approximation)
+// ───────────────────────────────────────────────
+// Token Estimation (improved for mixed languages)
+// ───────────────────────────────────────────────
 function estimateTokens(text) {
   if (!text) return 0;
-  return Math.ceil(text.length / 4);
+  // CJK characters are roughly 1 token each
+  const cjkCount = (text.match(/[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g) || []).length;
+  const nonCjk = text.length - cjkCount;
+  // English words average ~1.3 tokens, other latin text ~chars/4
+  const wordCount = nonCjk > 0 ? text.split(/\s+/).filter(w => w.length > 0).length : 0;
+  return Math.ceil(cjkCount + (wordCount * 1.3) + (nonCjk * 0.1));
+}
+
+// ───────────────────────────────────────────────
+// CORS Headers
+// ───────────────────────────────────────────────
+function setCors(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Appwrite-User-Id');
+}
+
+// ───────────────────────────────────────────────
+// Simple in-memory rate limiter
+// ───────────────────────────────────────────────
+const rateLimits = new Map(); // userId -> { count, resetAt }
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 30;
+
+function checkRateLimit(userId) {
+  const now = Date.now();
+  const record = rateLimits.get(userId);
+  if (!record || now > record.resetAt) {
+    rateLimits.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, retryAfter: Math.ceil((record.resetAt - now) / 1000) };
+  }
+  record.count++;
+  return { allowed: true };
+}
+
+// ───────────────────────────────────────────────
+// Env Validation
+// ───────────────────────────────────────────────
+function validateEnv() {
+  const required = [
+    'APPWRITE_FUNCTION_API_ENDPOINT',
+    'APPWRITE_FUNCTION_PROJECT_ID',
+    'APPWRITE_API_KEY',
+    'APPWRITE_DATABASE_ID',
+    'APPWRITE_COLLECTION_PROFILES',
+    'OPENROUTER_API_KEY',
+  ];
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+  }
 }
 
 export default async ({ req, res, log, error }) => {
-  try {
-    log('--- Function started ---');
-    log(`req.body type: ${typeof req.body}`);
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.text('', 204);
 
+  try {
+    validateEnv();
+  } catch (err) {
+    error(`Env validation failed: ${err.message}`);
+    return res.json({ error: 'Server misconfiguration' }, 500);
+  }
+
+  try {
     const payload = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const { model, messages, temperature, maxTokens } = payload;
 
-    log(`Model: ${model}, Messages count: ${messages?.length}`);
+    // ── Input Validation ──
+    if (!model || typeof model !== 'string') {
+      return res.json({ error: 'Missing or invalid field: model (string required)' }, 400);
+    }
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.json({ error: 'Missing or invalid field: messages (non-empty array required)' }, 400);
+    }
+    for (const m of messages) {
+      if (!m.role || !['user', 'assistant', 'system'].includes(m.role)) {
+        return res.json({ error: `Invalid message role: ${m.role}` }, 400);
+      }
+      if (typeof m.content !== 'string') {
+        return res.json({ error: 'Message content must be a string' }, 400);
+      }
+    }
 
-    if (!model || !messages || !Array.isArray(messages)) {
-      return res.json({ error: 'Missing required fields: model, messages' }, 400);
+    const temp = typeof temperature === 'number' ? temperature : 0.7;
+    if (temp < 0 || temp > 2) {
+      return res.json({ error: 'temperature must be between 0 and 2' }, 400);
+    }
+
+    const maxTok = typeof maxTokens === 'number' ? maxTokens : 2048;
+    if (maxTok < 1 || maxTok > 32768) {
+      return res.json({ error: 'maxTokens must be between 1 and 32768' }, 400);
     }
 
     // Get authenticated user ID from Appwrite context
     const userId = req.headers['x-appwrite-user-id'];
-    log(`User ID: ${userId}`);
     if (!userId) {
       return res.json({ error: 'Authentication required' }, 401);
+    }
+
+    // Rate limiting
+    const rateCheck = checkRateLimit(userId);
+    if (!rateCheck.allowed) {
+      return res.json({ error: 'Rate limit exceeded. Please slow down.', retryAfter: rateCheck.retryAfter }, 429);
     }
 
     // Admin client to read/update profiles
@@ -41,10 +128,13 @@ export default async ({ req, res, log, error }) => {
     let profile;
     try {
       profile = await databases.getDocument(databaseId, profilesCollection, userId);
-      log(`Profile loaded. Tier: ${profile.subscriptionTier}`);
     } catch (err) {
       error(`Profile fetch failed: ${err.message || err}`);
-      return res.json({ error: 'User profile not found' }, 404);
+      const isNotFound = err.code === 404 || err.type === 'document_not_found';
+      if (isNotFound) {
+        return res.json({ error: 'User profile not found' }, 404);
+      }
+      return res.json({ error: 'Database error while fetching profile' }, 502);
     }
 
     // Tier defaults
@@ -79,15 +169,16 @@ export default async ({ req, res, log, error }) => {
     // Calculate estimated tokens for this request
     const inputText = messages.map((m) => m.content).join(' ');
     const estimatedInputTokens = estimateTokens(inputText);
-    const estimatedOutputTokens = maxTokens || 2048;
+    const estimatedOutputTokens = maxTok;
     const estimatedTotal = estimatedInputTokens + estimatedOutputTokens;
 
     // Check if weekly tokens need reset
-    const weeklyResetAt = profile.weeklyTokensResetAt || 0;
+    const weeklyResetAt = profile.weeklyTokensResetAt;
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
-    if (now - weeklyResetAt >= oneWeek) {
+    // Fix: treat null/undefined/0 as "never reset" — set to now on first call
+    if (!weeklyResetAt || now - weeklyResetAt >= oneWeek) {
       await databases.updateDocument(databaseId, profilesCollection, userId, {
         weeklyTokensUsed: 0,
         weeklyTokensUsedPremium: 0,
@@ -95,7 +186,6 @@ export default async ({ req, res, log, error }) => {
       });
       profile.weeklyTokensUsed = 0;
       profile.weeklyTokensUsedPremium = 0;
-      log('Weekly tokens reset');
     }
 
     // Check token limits — standard and premium are tracked separately
@@ -126,33 +216,28 @@ export default async ({ req, res, log, error }) => {
 
     // Call OpenRouter
     const openRouterKey = process.env.OPENROUTER_API_KEY;
-    if (!openRouterKey) {
-      error('Missing OPENROUTER_API_KEY env var');
-      return res.json({ error: 'Hosted AI not configured. Operator API key missing.' }, 500);
-    }
-    log('Calling OpenRouter...');
 
     // Build request body
     const requestBody = {
       model,
       messages,
-      temperature: temperature ?? 0.7,
-      max_completion_tokens: maxTokens ?? 2048,
+      temperature: temp,
+      max_completion_tokens: maxTok,
     };
 
-    // Force OpenAI provider for OpenAI models to avoid slow fallback providers
-    // (e.g. gpt-5-nano has 6s fallback providers vs 2s direct OpenAI)
+    // Provider forcing: configurable via env var
+    const allowFallbacks = process.env.OPENROUTER_ALLOW_FALLBACKS !== 'true';
     if (model && model.startsWith('openai/')) {
       requestBody.provider = {
         order: ['OpenAI'],
-        allow_fallbacks: false,
+        allow_fallbacks: !allowFallbacks,
       };
-      log(`Provider forced to OpenAI for model: ${model}`);
     }
 
-    // 30s timeout to catch hung providers
+    // Timeout to catch hung providers
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '30000', 10);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     let response;
     try {
@@ -171,7 +256,6 @@ export default async ({ req, res, log, error }) => {
     } catch (fetchErr) {
       clearTimeout(timeoutId);
       if (fetchErr.name === 'AbortError') {
-        error('OpenRouter request timed out after 30s');
         return res.json({ error: 'AI request timed out. The provider took too long to respond. Please try again.' }, 504);
       }
       throw fetchErr;
@@ -179,10 +263,15 @@ export default async ({ req, res, log, error }) => {
 
     if (!response.ok) {
       const errBody = await response.text();
-      error(`OpenRouter error ${response.status}: ${errBody}`);
-      return res.json({ error: 'AI provider error. Please try again later.' }, 502);
+      error(`OpenRouter error ${response.status}: ${errBody.slice(0, 500)}`);
+      let parsedError;
+      try { parsedError = JSON.parse(errBody); } catch { /* ignore */ }
+      return res.json({
+        error: 'AI provider error.',
+        providerStatus: response.status,
+        providerMessage: parsedError?.error?.message || parsedError?.message || errBody.slice(0, 200),
+      }, 502);
     }
-    log('OpenRouter responded OK');
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
@@ -196,15 +285,15 @@ export default async ({ req, res, log, error }) => {
         await databases.updateDocument(databaseId, profilesCollection, userId, {
           weeklyTokensUsedPremium: premiumUsed + actualTokens,
         });
-        log(`Premium token usage updated: +${actualTokens} (total: ${premiumUsed + actualTokens})`);
       } else {
         await databases.updateDocument(databaseId, profilesCollection, userId, {
           weeklyTokensUsed: standardUsed + actualTokens,
         });
-        log(`Standard token usage updated: +${actualTokens} (total: ${standardUsed + actualTokens})`);
       }
     } catch (err) {
       error(`Failed to update token usage: ${err.message || err}`);
+      // Do NOT return the AI content if we couldn't charge tokens
+      return res.json({ error: 'Failed to record token usage. Please retry.' }, 500);
     }
 
     return res.json({
