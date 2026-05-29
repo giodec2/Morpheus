@@ -30,7 +30,7 @@ export const STANDARD_MODELS: ModelDef[] = [
   },
   {
     value: 'qwen/qwen3.5-flash-02-23',
-    label: 'Qwen 3.5 Flash',
+    label: 'Qwen Flash',
     tier: 'standard',
   },
 ];
@@ -44,7 +44,7 @@ export const PREMIUM_MODELS: ModelDef[] = [
   },
   {
     value: 'z-ai/glm-5.1',
-    label: 'GLM 5.1',
+    label: 'GLM',
     tier: 'premium',
     badge: 'Suggested',
   },
@@ -55,12 +55,12 @@ export const PREMIUM_MODELS: ModelDef[] = [
   },
   {
     value: 'x-ai/grok-4.3',
-    label: 'Grok 4.3',
+    label: 'Grok',
     tier: 'premium',
   },
   {
     value: 'moonshotai/kimi-k2.5',
-    label: 'Kimi K2.5',
+    label: 'Kimi',
     tier: 'premium',
   },
 ];
@@ -75,23 +75,23 @@ export const MODEL_DESCRIPTIONS: Record<string, string> = {
   'openai/gpt-5-nano':
     "OpenAI's smallest model. Fast and nimble for quick dialogue passes, brainstorming sparks, and iterative drafting. Best when you want instant feedback without overthinking.",
   'google/gemma-4-26b-a4b-it':
-    "Google's open model with a 256K context window and built-in reasoning. Strong narrative coherence and natural character voices. A solid everyday co-writer for any genre.",
+    "Incredibly fast and creative model. Strong narrative coherence and natural character voices. A solid everyday co-writer for any genre.",
   'deepseek/deepseek-v4-flash':
-    'Ultra-fast open-weight model with a massive 1M context window. Perfect for high-volume drafting sessions, rapid prototyping, and processing large manuscripts in one go.',
+    'Fast model with a massive context window. Perfect for high-volume drafting sessions, honest feedbacks, and processing large manuscripts in one go.',
   'google/gemini-2.5-flash-lite':
-    "Google's speed-focused model. Lightning-fast responses ideal for rapid brainstorming, quick dialogue passes, and iterative idea generation when momentum matters.",
+    "Google's speed-focused model. Lightning-fast responses ideal for rapid brainstorming, can also reason quickly, to use when momentum matters.",
   'qwen/qwen3.5-flash-02-23':
-    "Alibaba's efficient generalist with strong reasoning and a generous context window. Balanced across creative and analytical tasks — a reliable daily driver.",
+    "Efficient generalist with strong reasoning. Balanced across creative and analytical tasks — a reliable daily driver.",
 
   // Premium
   'openai/gpt-5.4-mini':
     "OpenAI's frontier-grade all-rounder. Excellent for structured feedback, continuity checking, and precise prose refinement. When you need reliability above all else.",
   'x-ai/grok-4.3':
-    'Fast and opinionated with a bold, distinctive voice. Better for punchy dialogue and irreverent characters than delicate prose. 1M context window for deep dives.',
+    'Fast and opinionated with a bold, distinctive voice. Better for punchy dialogue and irreverent characters than delicate prose. Massive context window.',
   'moonshotai/kimi-k2.5':
-    "Moonshot's open-source generalist with strong reasoning and a 262K context. Balanced across creative writing and analytical tasks — a premium everyday co-writer.",
+    "Sophisticated generalist with a spark of deep creativity. Great for balancing complex, analytical plotting with elegant character dialogue.",
   'z-ai/glm-5.1':
-    "Zhipu's powerful all-rounder with a 200K context window. Strong at literary expression, plot development, and long-horizon story planning. Great for serious novel writing.",
+    "A versatile literary powerhouse. Outstanding at rich prose, intricate plot development, and long-horizon story planning. Crafted for ambitious novel writing.",
   'deepseek/deepseek-v4-pro':
-    "DeepSeek's most capable reasoning model. Excels at complex plot analysis, deep character psychology, and multi-layered continuity checking. For when the story demands nuance.",
+    "Flagship-level reasoning model. Excels at complex plot analysis, deep character psychology, and multi-layered continuity checking. For when the story demands nuance.",
 };
