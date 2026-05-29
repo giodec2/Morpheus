@@ -310,7 +310,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
 
   if (!activeBook) {
     return (
-      <div className="w-96 h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 p-6 text-center">
+      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 p-6 text-center">
         <Bot className="w-12 h-12 mb-3" />
         <p className="text-sm">Open a book to chat with Morpheus</p>
       </div>
@@ -318,7 +318,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
   }
 
   return (
-    <div className="w-96 h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-3 border-b border-gray-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-2">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense, type ReactNode } from 'react';
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -40,6 +40,63 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
   const prevBookIdRef = useRef<string>(bookId);
   const conflictResolvedRef = useRef<string | null>(null);
   const { user } = useAuthStore();
+
+  /* ---- Resizable right sidebar -------------------------------------- */
+  const DEFAULT_SIDEBAR_WIDTH = 384;
+  const MIN_SIDEBAR_WIDTH = 307;  // ~80%
+  const MAX_SIDEBAR_WIDTH = 576;  // ~150%
+  const SIDEBAR_WIDTH_KEY = 'morpheus:rightSidebarWidth';
+
+  const [rightWidth, setRightWidth] = useState(() => {
+    try {
+      const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+      const parsed = saved ? parseInt(saved, 10) : DEFAULT_SIDEBAR_WIDTH;
+      return Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, parsed));
+    } catch {
+      return DEFAULT_SIDEBAR_WIDTH;
+    }
+  });
+  const isResizingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
+
+  const stopResize = useCallback(() => {
+    if (!isResizingRef.current) return;
+    isResizingRef.current = false;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    try {
+      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(rightWidth));
+    } catch {
+      // ignore
+    }
+  }, [rightWidth]);
+
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizingRef.current) return;
+    const delta = e.clientX - startXRef.current;
+    const newWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, startWidthRef.current - delta));
+    setRightWidth(newWidth);
+  }, []);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    isResizingRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = rightWidth;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }, [rightWidth]);
+
+  useEffect(() => {
+    if (!isResizingRef.current) return;
+    const handleUp = () => stopResize();
+    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('mousemove', onMouseMove);
+    return () => {
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('mousemove', onMouseMove);
+    };
+  }, [onMouseMove, stopResize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -171,9 +228,17 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
           {children}
         </main>
 
+        {/* Resize handle — desktop only */}
+        <div
+          className="hidden lg:block w-1 cursor-col-resize hover:bg-primary-500/30 active:bg-primary-500/50 z-40 self-stretch shrink-0 transition-colors"
+          onMouseDown={startResize}
+          title="Drag to resize"
+        />
+
         {/* Right sidebar */}
         <aside
-          className={`w-96 panel border-l flex flex-col overflow-hidden absolute lg:relative z-30 h-full right-0 transition-transform duration-200 ease-out ${
+          style={{ width: rightWidth }}
+          className={`panel border-l flex flex-col overflow-hidden absolute lg:relative z-30 h-full right-0 transition-transform duration-200 ease-out shrink-0 ${
             showRight ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
           }`}
         >
