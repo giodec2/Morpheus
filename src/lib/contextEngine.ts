@@ -192,13 +192,13 @@ export function buildContextPacket(params: BuildContextParams): ContextPacket {
   }
   usedTokens += currentChapterTokens;
 
-  // 6. Chat history (recent messages only)
-  const recentHistory = chatHistory.slice(-10);
+  // 6. Chat history (bounded by token budget, not fixed message count)
   let historyTokens = 0;
   const historyMessages: { role: 'user' | 'assistant' | 'system'; content: string }[] = [];
 
-  for (let i = recentHistory.length - 1; i >= 0; i--) {
-    const msg = recentHistory[i];
+  // Walk backward from most recent message until budget is exhausted
+  for (let i = chatHistory.length - 1; i >= 0; i--) {
+    const msg = chatHistory[i];
     const msgTokens = estimateTokens(msg.content);
     if (usedTokens + historyTokens + msgTokens < budget.availableForContext) {
       historyMessages.unshift({ role: msg.role, content: msg.content });

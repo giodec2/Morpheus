@@ -29,14 +29,14 @@ export async function createCharacter(bookId: string, name: string): Promise<Cha
     updatedAt: now,
   };
   await db.characters.add(character);
-  pushCharacter(character).catch(() => {});
+  pushCharacter(character).catch((err) => console.error('[Sync] pushCharacter failed:', err));
   return character;
 }
 
 export async function updateCharacter(id: string, updates: Partial<Character>): Promise<void> {
   await db.characters.update(id, { ...updates, updatedAt: Date.now() });
   const character = await db.characters.get(id);
-  if (character) pushCharacter(character).catch(() => {});
+  if (character) pushCharacter(character).catch((err) => console.error('[Sync] pushCharacter failed:', err));
 }
 
 export async function deleteCharacter(id: string): Promise<void> {
@@ -66,5 +66,5 @@ export async function deleteCharacter(id: string): Promise<void> {
 
     await db.characters.delete(id);
   });
-  deleteCharacterCloud(id).catch(() => {});
+  deleteCharacterCloud(id).catch((err) => console.error('[Sync] deleteCharacterCloud failed:', err));
 }

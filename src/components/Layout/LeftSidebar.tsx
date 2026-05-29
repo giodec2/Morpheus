@@ -5,6 +5,7 @@ import {
   Pin, PinOff, ChevronRight, ArrowUp, ArrowDown
 } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
+import ConfirmModal from '@/components/common/ConfirmModal';
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { createChapter, deleteChapter, updateChapter, reorderChapters } from '@/db/chapters';
@@ -32,6 +33,8 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState(true);
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
+  const [confirmDeleteChapter, setConfirmDeleteChapter] = useState<Chapter | null>(null);
+  const [confirmDeleteCharacter, setConfirmDeleteCharacter] = useState<Character | null>(null);
 
   if (!activeBook) {
     return (
@@ -51,8 +54,12 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
     toast('Chapter created', 'success');
   };
 
-  const handleDeleteChapter = async (id: string) => {
-    if (!confirm('Delete this chapter? This cannot be undone.')) return;
+  const handleDeleteChapter = (chapter: Chapter) => {
+    setConfirmDeleteChapter(chapter);
+  };
+
+  const executeDeleteChapter = async (id: string) => {
+    setConfirmDeleteChapter(null);
     await deleteChapter(id);
     removeChapter(id);
     toast('Chapter deleted', 'info');
@@ -163,7 +170,7 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
                     </span>
                   )}
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleDeleteChapter(chapter.id); }}
+                    onClick={(e) => { e.stopPropagation(); handleDeleteChapter(chapter); }}
                     className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-opacity"
                   >
                     <Trash2 className="w-3 h-3 text-red-400" />
@@ -234,11 +241,8 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
             if (char) updateCharacterInStore({ ...char, ...updates });
           }}
           onDelete={async (id) => {
-            if (!confirm('Delete this character?')) return;
-            await deleteCharacter(id);
-            removeCharacter(id);
-            toast('Character deleted', 'info');
-            if (activeCharacterId === id) setActiveCharacterId(null);
+            const char = characters.find(c => c.id === id);
+            if (char) setConfirmDeleteCharacter(char);
           }}
         />
       )}
@@ -248,6 +252,35 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
           await updateLoreBible(loreBible.id, { content });
           updateLoreInStore({ ...loreBible, content });
         }} />
+      )}
+
+      {/* Confirm Delete Chapter */}
+      {confirmDeleteChapter && (
+        <ConfirmModal
+          title="Delete Chapter"
+          description="This will permanently delete the chapter and all its content. This cannot be undone."
+          itemName={confirmDeleteChapter.title}
+          onConfirm={() => executeDeleteChapter(confirmDeleteChapter.id)}
+          onClose={() => setConfirmDeleteChapter(null)}
+        />
+      )}
+
+      {/* Confirm Delete Character */}
+      {confirmDeleteCharacter && (
+        <ConfirmModal
+          title="Delete Character"
+          description="This will permanently delete the character and remove all references to them. This cannot be undone."
+          itemName={confirmDeleteCharacter.name}
+          onConfirm={() => {
+            deleteCharacter(confirmDeleteCharacter.id).then(() => {
+              removeCharacter(confirmDeleteCharacter.id);
+              toast('Character deleted', 'info');
+              if (activeCharacterId === confirmDeleteCharacter.id) setActiveCharacterId(null);
+            });
+            setConfirmDeleteCharacter(null);
+          }}
+          onClose={() => setConfirmDeleteCharacter(null)}
+        />
       )}
     </aside>
   );

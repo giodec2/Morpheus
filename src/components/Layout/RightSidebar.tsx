@@ -3,7 +3,7 @@ import {
   Compass, Search, Network, Sparkles, Send, Bot, User, Lock,
   Loader2, Plus, Trash2, MessageSquare, AlertTriangle, RefreshCw
 } from 'lucide-react';
-import { marked } from 'marked';
+import { Marked } from 'marked';
 import DOMPurify from 'dompurify';
 import CustomSelect from '@/components/common/CustomSelect';
 import { useBookStore } from '@/stores/bookStore';
@@ -46,10 +46,7 @@ const MODE_DESCRIPTIONS: Record<string, string> = {
 
 /* ---------- Markdown rendering ---------- */
 
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-});
+const marked = new Marked({ breaks: true, gfm: true });
 
 function markdownToHtml(text: string): string {
   if (!text) return '';
@@ -73,7 +70,7 @@ export default function RightSidebar() {
   } = useChatStore();
 
   const { openRouterKey, defaultModel, maxTokens, advancedMode, language, aiMode, setTemperature, writingGenre, setWritingGenre, adaptiveMemory } = useSettingsStore();
-  const { sendMessage } = useOpenRouter();
+  const { sendMessage, abort } = useOpenRouter();
   const { profile } = useAuthStore();
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
@@ -162,6 +159,12 @@ export default function RightSidebar() {
   };
 
   const handleSwitchSession = async (sessionId: string) => {
+    // Abort any active stream before switching to prevent state drift
+    if (isStreaming) {
+      abort();
+      setIsStreaming(false);
+      setStreamContent('');
+    }
     setActiveSessionId(sessionId);
     const msgs = await getChatHistoryBySession(sessionId);
     setMessages(msgs);
@@ -291,7 +294,14 @@ export default function RightSidebar() {
         (error) => {
           hasError = true;
           errorMsg = error;
-          if (error.includes('Token limit reached') || error.includes('token limit')) {
+          // Use structured error codes from proxy / BYOK for reliable detection
+          const isTokenLimit =
+            error.includes('Token limit reached') ||
+            error.includes('token limit') ||
+            error.includes('limit reached') ||
+            error.includes('429') ||
+            error.includes('insufficient_quota');
+          if (isTokenLimit) {
             if (subscriptionTier === 'architect') {
               toast('Your weekly token allowance has been exhausted. Tokens reset every 7 days.', 'error');
             } else {
@@ -641,19 +651,25 @@ export default function RightSidebar() {
       {/* Input */}
       <div className="p-3 border-t border-gray-200 dark:border-slate-800">
         <div className="flex gap-2">
-          <textarea
-            className="textarea flex-1 h-10 min-h-[40px] max-h-32 resize-y"
-            placeholder="Ask Morpheus..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            disabled={isStreaming}
-          />
+          <div className="flex-1 relative">
+            <textarea
+              className="textarea w-full h-10 min-h-[40px] max-h-32 resize-y pr-16"
+              placeholder="Ask Morpheus..."
+              value={input}
+              maxLength={4000}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              disabled={isStreaming}
+            />
+            <span className={`absolute bottom-1 right-2 text-[10px] ${input.length > 3500 ? 'text-red-500' : 'text-gray-400 dark:text-gray-600'}`}>
+              {input.length}/4000
+            </span>
+          </div>
           <button
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}

@@ -141,10 +141,10 @@ export function useOpenRouter() {
     setIsStreaming(true);
     abortRef.current = new AbortController();
 
-    // 30-second timeout to prevent hung connections
+    // Timeout to prevent hung connections
     const timeoutId = setTimeout(() => {
       abortRef.current?.abort();
-    }, 30000);
+    }, 30000); // BYOK_TIMEOUT_MS
 
     try {
       const stream = await client.chat.completions.create({

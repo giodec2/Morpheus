@@ -55,7 +55,7 @@ export function useAutoSave(editor: Editor | null) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         save();
-      }, 2000);
+      }, 2000); // AUTO_SAVE_DEBOUNCE_MS — kept inline to avoid import cycle
     };
 
     editor.on('update', handler);

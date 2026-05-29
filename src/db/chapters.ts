@@ -30,19 +30,19 @@ export async function createChapter(bookId: string, title: string, order: number
     updatedAt: now,
   };
   await db.chapters.add(chapter);
-  pushChapter(chapter).catch(() => {});
+  pushChapter(chapter).catch((err) => console.error('[Sync] pushChapter failed:', err));
   return chapter;
 }
 
 export async function updateChapter(id: string, updates: Partial<Chapter>): Promise<void> {
   await db.chapters.update(id, { ...updates, updatedAt: Date.now() });
   const chapter = await db.chapters.get(id);
-  if (chapter) pushChapter(chapter).catch(() => {});
+  if (chapter) pushChapter(chapter).catch((err) => console.error('[Sync] pushChapter failed:', err));
 }
 
 export async function deleteChapter(id: string): Promise<void> {
   await db.chapters.delete(id);
-  deleteChapterCloud(id).catch(() => {});
+  deleteChapterCloud(id).catch((err) => console.error('[Sync] deleteChapterCloud failed:', err));
 }
 
 export async function reorderChapters(_bookId: string, chapterIds: string[]): Promise<void> {
@@ -54,6 +54,6 @@ export async function reorderChapters(_bookId: string, chapterIds: string[]): Pr
   // Push reordered chapters to cloud
   for (let i = 0; i < chapterIds.length; i++) {
     const chapter = await db.chapters.get(chapterIds[i]);
-    if (chapter) pushChapter(chapter).catch(() => {});
+    if (chapter) pushChapter(chapter).catch((err) => console.error('[Sync] pushChapter failed:', err));
   }
 }

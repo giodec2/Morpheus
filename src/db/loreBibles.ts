@@ -20,12 +20,12 @@ export async function createLoreBible(bookId: string): Promise<LoreBible> {
     updatedAt: now,
   };
   await db.loreBibles.add(lore);
-  pushLoreBible(lore).catch(() => {});
+  pushLoreBible(lore).catch((err) => console.error('[Sync] pushLoreBible failed:', err));
   return lore;
 }
 
 export async function updateLoreBible(id: string, updates: Partial<LoreBible>): Promise<void> {
   await db.loreBibles.update(id, { ...updates, updatedAt: Date.now() });
   const lore = await db.loreBibles.get(id);
-  if (lore) pushLoreBible(lore).catch(() => {});
+  if (lore) pushLoreBible(lore).catch((err) => console.error('[Sync] pushLoreBible failed:', err));
 }

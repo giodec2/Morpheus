@@ -19,10 +19,12 @@ import NotFound from '@/pages/NotFound';
 import AuthGuard from '@/components/Auth/AuthGuard';
 import { initAuth } from '@/services/auth';
 import { client } from '@/lib/appwrite';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 function App() {
   const { setTheme, loadSettings, openRouterKey, setIsConnected } = useSettingsStore();
   useKeyboardShortcuts();
+  useOnlineStatus();
 
   useEffect(() => {
     initAuth();

@@ -17,10 +17,16 @@ function notifyListeners() {
   toastListeners.forEach((fn) => fn([...toasts]));
 }
 
+const MAX_TOASTS = 5;
+
 export function toast(message: string, type: ToastType = 'info') {
   const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2) + Date.now().toString(36);
+  // Cap visible toasts to prevent stacking overflow
+  if (toasts.length >= MAX_TOASTS) {
+    toasts = toasts.slice(1);
+  }
   toasts = [...toasts, { id, message, type }];
   notifyListeners();
   setTimeout(() => {

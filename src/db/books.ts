@@ -24,14 +24,14 @@ export async function createBook(title: string): Promise<Book> {
     updatedAt: now,
   };
   await db.books.add(book);
-  pushBook(book).catch(() => {});
+  pushBook(book).catch((err) => console.error('[Sync] pushBook failed:', err));
   return book;
 }
 
 export async function updateBook(id: string, updates: Partial<Book>): Promise<void> {
   await db.books.update(id, { ...updates, updatedAt: Date.now() });
   const book = await db.books.get(id);
-  if (book) pushBook(book).catch(() => {});
+  if (book) pushBook(book).catch((err) => console.error('[Sync] pushBook failed:', err));
 }
 
 export async function deleteBook(id: string): Promise<void> {
@@ -44,5 +44,5 @@ export async function deleteBook(id: string): Promise<void> {
     await db.chatSessions.where('bookId').equals(id).delete();
     await db.styleProfiles.where('bookId').equals(id).delete();
   });
-  deleteBookCloud(id).catch(() => {});
+  deleteBookCloud(id).catch((err) => console.error('[Sync] deleteBookCloud failed:', err));
 }
