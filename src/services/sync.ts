@@ -78,8 +78,52 @@ export async function pushBook(book: Book): Promise<void> {
 }
 
 export async function deleteBookCloud(bookId: string): Promise<void> {
-  if (!getUserId() || !isConfigured()) return;
+  const userId = getUserId();
+  if (!userId || !isConfigured()) return;
+
   try {
+    // Cascade-delete all child documents from the cloud first
+    const [chapterDocs, charDocs, loreDocs] = await Promise.all([
+      databases.listDocuments(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.chapters,
+        [Query.equal('bookId', bookId)]
+      ),
+      databases.listDocuments(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.characters,
+        [Query.equal('bookId', bookId)]
+      ),
+      databases.listDocuments(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.loreBibles,
+        [Query.equal('bookId', bookId)]
+      ),
+    ]);
+
+    for (const doc of chapterDocs.documents) {
+      await databases.deleteDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.chapters,
+        doc.$id
+      );
+    }
+    for (const doc of charDocs.documents) {
+      await databases.deleteDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.characters,
+        doc.$id
+      );
+    }
+    for (const doc of loreDocs.documents) {
+      await databases.deleteDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.loreBibles,
+        doc.$id
+      );
+    }
+
+    // Finally delete the book itself
     await databases.deleteDocument(
       appwriteConfig.databaseId,
       appwriteConfig.collections.books,
