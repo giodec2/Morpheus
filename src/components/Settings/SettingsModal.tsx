@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Modal from '@/components/common/Modal';
 import { X, AlertTriangle, Lock, Zap, Cloud } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -93,8 +94,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+    <Modal onClose={onClose} className="max-w-lg p-6" ariaLabel="Settings">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
@@ -416,7 +416,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         <div className="mt-6 flex justify-end">
           <button onClick={onClose} className="btn-primary">Done</button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

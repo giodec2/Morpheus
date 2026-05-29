@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   BookOpen, ChevronDown, ChevronUp, Plus, FileText,
   Users, ScrollText, Settings, Trash2,
-  Pin, PinOff, ChevronRight, ArrowUp, ArrowDown
+  Pin, PinOff, ChevronRight, ArrowUp, ArrowDown, X
 } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -17,9 +17,10 @@ import type { Chapter, Character } from '@/types';
 
 interface LeftSidebarProps {
   onOpenSettings?: () => void;
+  onCloseMobile?: () => void;
 }
 
-export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
+export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSidebarProps) {
   const {
     activeBook, chapters, characters, loreBible,
     sidebarView, setSidebarView, activeCharacterId, setActiveCharacterId,
@@ -38,10 +39,10 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
 
   if (!activeBook) {
     return (
-      <aside className="w-64 panel flex flex-col items-center justify-center text-gray-400 dark:text-gray-600">
+      <div className="w-64 h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600">
         <BookOpen className="w-12 h-12 mb-3" />
         <p className="text-sm">Open a book to start</p>
-      </aside>
+      </div>
     );
   }
 
@@ -98,10 +99,18 @@ export default function LeftSidebar({ onOpenSettings }: LeftSidebarProps) {
 
   return (
     <aside className="w-64 panel flex flex-col overflow-hidden">
-      <div className="p-3 border-b border-gray-200 dark:border-slate-800">
+      <div className="p-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
           My Books
         </h2>
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            className="lg:hidden p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded"
+          >
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1">

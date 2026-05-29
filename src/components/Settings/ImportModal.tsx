@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import Modal from '@/components/common/Modal';
 import { X, Upload, FileText, BookOpen, AlertTriangle, CheckCircle } from 'lucide-react';
 import { generateJSON } from '@tiptap/html';
 import StarterKit from '@tiptap/starter-kit';
@@ -9,12 +10,15 @@ import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
 import { toast } from '@/components/common/Toast';
-import { createBook } from '@/db/books';
-import { createChapter, getChaptersByBook, updateChapter } from '@/db/chapters';
-import { createCharacter } from '@/db/characters';
-import { createLoreBible } from '@/db/loreBibles';
+import { putBook } from '@/db/books';
+import { putChapter } from '@/db/chapters';
+import { putCharacter } from '@/db/characters';
+import { putLoreBible, createLoreBible } from '@/db/loreBibles';
+import { putChatSession, putChatMessage } from '@/db/chatHistory';
+import { putStyleProfile } from '@/db/styleProfiles';
+import { generateId } from '@/lib/utils';
 import { FontSize } from '@/lib/tiptapFontSize';
-import type { Chapter, Character } from '@/types';
+import type { Chapter, Character, ChatMessage, ChatSession, LoreBible, StyleProfile } from '@/types';
 
 interface ImportModalProps {
   onClose: () => void;
@@ -99,26 +103,109 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
     const data = JSON.parse(jsonText);
 
     // Validate minimal structure
-    if (!data.book || !data.chapters) {
+    if (!data.book || !Array.isArray(data.chapters)) {
       throw new Error('Invalid JSON backup: missing book or chapters');
     }
 
-    const book = await createBook(data.book.title || 'Imported Book');
-    await createLoreBible(book.id);
+    // Generate new book ID to avoid collisions
+    const newBookId = generateId();
 
-    // Import chapters
-    for (const ch of data.chapters as Chapter[]) {
-      await createChapter(book.id, ch.title || 'Untitled', ch.order || 0);
+    // Build ID remapping for characters (so relations stay valid)
+    const charIdMap = new Map<string, string>();
+    const characters: Character[] = (data.characters || []).map((char: Character) => {
+      const newId = generateId();
+      charIdMap.set(char.id, newId);
+      return {
+        ...char,
+        id: newId,
+        bookId: newBookId,
+      };
+    });
+
+    // Remap character relations to new IDs
+    for (const char of characters) {
+      char.relations = char.relations.map((rel) => ({
+        ...rel,
+        targetId: charIdMap.get(rel.targetId) || rel.targetId,
+      }));
     }
 
-    // Import characters if present
-    if (data.characters) {
-      for (const char of data.characters as Character[]) {
-        await createCharacter(book.id, char.name || 'Unnamed');
-      }
+    // Remap chapter taggedCharacterIds
+    const chapters: Chapter[] = data.chapters.map((ch: Chapter) => ({
+      ...ch,
+      id: generateId(),
+      bookId: newBookId,
+      taggedCharacterIds: (ch.taggedCharacterIds || []).map(
+        (id: string) => charIdMap.get(id) || id
+      ),
+    }));
+
+    // Lore bible
+    let loreBible: LoreBible | undefined;
+    if (data.loreBible) {
+      loreBible = {
+        ...data.loreBible,
+        id: generateId(),
+        bookId: newBookId,
+      };
     }
 
-    setResult({ success: true, message: `Imported "${book.title}" with ${data.chapters.length} chapters` });
+    // Book
+    const book = {
+      ...data.book,
+      id: newBookId,
+      createdAt: data.book.createdAt || Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    // Restore everything in a single transaction-like batch
+    await putBook(book);
+    for (const ch of chapters) await putChapter(ch);
+    for (const char of characters) await putCharacter(char);
+    if (loreBible) {
+      await putLoreBible(loreBible);
+    } else {
+      await createLoreBible(newBookId);
+    }
+
+    // Chat sessions & messages
+    if (Array.isArray(data.chatSessions) && Array.isArray(data.chatHistory)) {
+      const sessionIdMap = new Map<string, string>();
+      const sessions: ChatSession[] = data.chatSessions.map((sess: ChatSession) => {
+        const newId = generateId();
+        sessionIdMap.set(sess.id, newId);
+        return {
+          ...sess,
+          id: newId,
+          bookId: newBookId,
+        };
+      });
+
+      const messages: ChatMessage[] = data.chatHistory.map((msg: ChatMessage) => ({
+        ...msg,
+        id: generateId(),
+        bookId: newBookId,
+        sessionId: sessionIdMap.get(msg.sessionId) || msg.sessionId,
+      }));
+
+      for (const sess of sessions) await putChatSession(sess);
+      for (const msg of messages) await putChatMessage(msg);
+    }
+
+    // Style profile
+    if (data.styleProfile) {
+      const profile: StyleProfile = {
+        ...data.styleProfile,
+        bookId: newBookId,
+        updatedAt: Date.now(),
+      };
+      await putStyleProfile(profile);
+    }
+
+    setResult({
+      success: true,
+      message: `Imported "${book.title}" with ${chapters.length} chapters, ${characters.length} characters`,
+    });
     toast('Book imported successfully', 'success');
   };
 
@@ -138,16 +225,11 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
   };
 
   const importHTML = async (title: string, html: string) => {
-    const book = await createBook(title);
+    const book = await putBookImport(title);
     await createLoreBible(book.id);
     const content = htmlToTiptap(html);
-    await createChapter(book.id, 'Chapter 1', 0);
-    // Update the chapter with imported content
-    const chapters = await getChaptersByBook(book.id);
-    if (chapters[0]) {
-      await updateChapter(chapters[0].id, { content });
-    }
-    setResult({ success: true, message: `Imported "${title}" from HTML` });
+    await putChapterImport(book.id, title || 'Imported Chapter', content);
+    setResult({ success: true, message: `Imported "${title}" from HTML with 1 chapter` });
     toast('HTML imported successfully', 'success');
   };
 
@@ -172,20 +254,47 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
         content: line.trim() ? [{ type: 'text', text: line.trim() }] : [],
       }));
     const content = { type: 'doc', content: paragraphs };
-    const book = await createBook(title);
+    const book = await putBookImport(title);
     await createLoreBible(book.id);
-    await createChapter(book.id, 'Chapter 1', 0);
-    const chapters = await getChaptersByBook(book.id);
-    if (chapters[0]) {
-      await updateChapter(chapters[0].id, { content });
-    }
-    setResult({ success: true, message: `Imported "${title}" from text` });
+    await putChapterImport(book.id, title || 'Imported Chapter', content);
+    setResult({ success: true, message: `Imported "${title}" from text with 1 chapter` });
     toast('Text imported successfully', 'success');
   };
 
+  // Helper: create a book via put (no cloud sync during import)
+  async function putBookImport(title: string) {
+    const now = Date.now();
+    const book = {
+      id: generateId(),
+      title: title || 'Imported Book',
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putBook(book);
+    return book;
+  }
+
+  // Helper: create a chapter via put (no cloud sync during import)
+  async function putChapterImport(bookId: string, title: string, content: Record<string, unknown>) {
+    const now = Date.now();
+    const chapter: Chapter = {
+      id: generateId(),
+      bookId,
+      title,
+      order: 0,
+      content,
+      summary: '',
+      summaryPreparedAt: null,
+      taggedCharacterIds: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putChapter(chapter);
+    return chapter;
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+    <Modal onClose={onClose} className="max-w-lg p-6" ariaLabel="Import book">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Import Book</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
@@ -251,7 +360,7 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
           <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 text-primary-500" />
-              <span><strong>JSON</strong> — Full backup: book, chapters, characters, lore bible</span>
+              <span><strong>JSON</strong> — Full backup: book, chapters, characters, lore bible, chat history, style profile</span>
             </div>
             <div className="flex items-center gap-2">
               <FileText className="w-3.5 h-3.5 text-primary-500" />
@@ -259,7 +368,6 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -53,6 +53,18 @@ export async function addChatMessage(message: Omit<ChatMessage, 'id' | 'timestam
   return msg;
 }
 
+export async function putChatMessage(message: ChatMessage): Promise<void> {
+  await db.chatHistory.put(message);
+}
+
+export async function putChatSession(session: ChatSession): Promise<void> {
+  await db.chatSessions.put(session);
+}
+
+export async function getAllChatMessagesByBook(bookId: string): Promise<ChatMessage[]> {
+  return db.chatHistory.where('bookId').equals(bookId).toArray();
+}
+
 export async function deleteChatMessage(id: string): Promise<void> {
   await db.chatHistory.delete(id);
 }

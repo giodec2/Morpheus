@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Modal from './Modal';
 import { AlertTriangle } from 'lucide-react';
 
 interface ConfirmModalProps {
@@ -24,8 +25,7 @@ export default function ConfirmModal({
   const isConfirmed = confirmText.trim() === itemName.trim();
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+    <Modal onClose={onClose} className="max-w-md rounded-2xl p-6" ariaLabel={title}>
         <div className="flex items-start gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -73,7 +73,6 @@ export default function ConfirmModal({
             {confirmLabel}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

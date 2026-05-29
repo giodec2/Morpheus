@@ -1,6 +1,7 @@
 import { X, Crown, Check, Sparkles, Star, Zap, Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
 import { useState } from 'react';
+import Modal from './Modal';
 import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
 import { createCheckout, getVariantIdForTier } from '@/services/billing';
 import { toast } from '@/components/common/Toast';
@@ -83,8 +84,7 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const { openCheckout } = useLemonSqueezy();
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+    <Modal onClose={onClose} className="max-w-2xl rounded-2xl overflow-y-auto" ariaLabel="Upgrade your plan">
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
           <div>
@@ -206,7 +206,6 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
             Prices exclude tax. Taxes are calculated at checkout based on your location. Cancel anytime.
           </p>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

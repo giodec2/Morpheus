@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'wouter';
 import { Feather, Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
-import AuthModal from '@/components/Auth/AuthModal';
-import UpgradeModal from '@/components/common/UpgradeModal';
-import TierSelectorModal from '@/components/common/TierSelectorModal';
-import ConfirmModal from '@/components/common/ConfirmModal';
+const AuthModal = lazy(() => import('@/components/Auth/AuthModal'));
+const UpgradeModal = lazy(() => import('@/components/common/UpgradeModal'));
+const TierSelectorModal = lazy(() => import('@/components/common/TierSelectorModal'));
+const ConfirmModal = lazy(() => import('@/components/common/ConfirmModal'));
 import { getAllBooks, createBook, deleteBook } from '@/db/books';
 import { TIER_DEFAULTS } from '@/services/auth';
 import { getChaptersByBook } from '@/db/chapters';
@@ -428,40 +428,42 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      <Suspense fallback={null}>
+        {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
 
-      {showUpgrade && profile && (
-        <UpgradeModal
-          currentTier={profile.subscriptionTier}
-          currentCount={books.length}
-          maxCount={maxBooks}
-          onClose={() => setShowUpgrade(false)}
-        />
-      )}
+        {showUpgrade && profile && (
+          <UpgradeModal
+            currentTier={profile.subscriptionTier}
+            currentCount={books.length}
+            maxCount={maxBooks}
+            onClose={() => setShowUpgrade(false)}
+          />
+        )}
 
-      {showTierSelector && profile && (
-        <TierSelectorModal
-          currentTier={profile.subscriptionTier}
-          onClose={() => setShowTierSelector(false)}
-        />
-      )}
+        {showTierSelector && profile && (
+          <TierSelectorModal
+            currentTier={profile.subscriptionTier}
+            onClose={() => setShowTierSelector(false)}
+          />
+        )}
 
-      {bookToDelete && (
-        (() => {
-          const book = books.find((b) => b.id === bookToDelete);
-          if (!book) return null;
-          return (
-            <ConfirmModal
-              title="Delete Book"
-              description={`This will permanently delete "${book.title}" and all its chapters. This action cannot be undone.`}
-              itemName={book.title}
-              confirmLabel="Delete Book"
-              onConfirm={confirmDeleteBook}
-              onClose={() => setBookToDelete(null)}
-            />
-          );
-        })()
-      )}
+        {bookToDelete && (
+          (() => {
+            const book = books.find((b) => b.id === bookToDelete);
+            if (!book) return null;
+            return (
+              <ConfirmModal
+                title="Delete Book"
+                description={`This will permanently delete "${book.title}" and all its chapters. This action cannot be undone.`}
+                itemName={book.title}
+                confirmLabel="Delete Book"
+                onConfirm={confirmDeleteBook}
+                onClose={() => setBookToDelete(null)}
+              />
+            );
+          })()
+        )}
+      </Suspense>
 
       {/* Create Modal */}
       {showCreateModal && (

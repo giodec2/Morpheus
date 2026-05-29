@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { X, FileText, BookOpen } from 'lucide-react';
+import Modal from '@/components/common/Modal';
 import { toast } from '@/components/common/Toast';
 import { useBookStore } from '@/stores/bookStore';
 import { getChaptersByBook } from '@/db/chapters';
 import { getCharactersByBook } from '@/db/characters';
 import { getLoreBibleByBook } from '@/db/loreBibles';
-import { jsPDF } from 'jspdf';
+import { getChatSessionsByBook, getAllChatMessagesByBook } from '@/db/chatHistory';
+import { getStyleProfile } from '@/db/styleProfiles';
+
 
 interface ExportModalProps {
   onClose: () => void;
@@ -69,17 +72,24 @@ p { margin: 1em 0; }
   const exportJSON = async () => {
     setExporting(true);
     try {
-      const [chapters, characters, lore] = await Promise.all([
+      const [chapters, characters, lore, sessions, messages, styleProfile] = await Promise.all([
         getChaptersByBook(activeBook.id),
         getCharactersByBook(activeBook.id),
         getLoreBibleByBook(activeBook.id),
+        getChatSessionsByBook(activeBook.id),
+        getAllChatMessagesByBook(activeBook.id),
+        getStyleProfile(activeBook.id),
       ]);
 
       const data = {
+        version: 1,
         book: activeBook,
         chapters: chapters.sort((a, b) => a.order - b.order),
         characters,
         loreBible: lore,
+        chatSessions: sessions,
+        chatHistory: messages,
+        styleProfile: styleProfile || null,
         exportedAt: Date.now(),
       };
 
@@ -245,6 +255,7 @@ mark { background: #ff0; }
       if (container.parentNode) document.body.removeChild(container);
       container = null;
 
+      const { jsPDF } = await import('jspdf');
       const pdf = new jsPDF('p', 'pt', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -299,8 +310,8 @@ mark { background: #ff0; }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-md shadow-xl">
+    <Modal onClose={onClose} className="max-w-md p-6" ariaLabel="Export book">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Export Book</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
@@ -362,7 +373,7 @@ mark { background: #ff0; }
           <p className="text-sm text-gray-500 text-center mt-4">Preparing export...</p>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }
 

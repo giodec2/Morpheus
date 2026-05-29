@@ -29,3 +29,14 @@ dist-ssr
 
 # Backup files
 *.bak
+
+# BFG Repo-Cleaner artifacts
+bfg-*.jar
+morpheus-mirror.git*
+
+# Embedded repo (accidental)
+/Morpheus/
+
+# Function deployment archives (keep source, not tarballs)
+appwrite-functions/**/*.tar.gz
+appwrite-functions/**/package-lock.json

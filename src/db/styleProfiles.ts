@@ -14,6 +14,10 @@ export async function setStyleProfile(bookId: string, content: string): Promise<
   await db.styleProfiles.put(profile);
 }
 
+export async function putStyleProfile(profile: StyleProfile): Promise<void> {
+  await db.styleProfiles.put(profile);
+}
+
 export async function deleteStyleProfile(bookId: string): Promise<void> {
   await db.styleProfiles.delete(bookId);
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react';
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { getBook } from '@/db/books';
@@ -8,7 +8,7 @@ import { getLoreBibleByBook } from '@/db/loreBibles';
 import TopBar from './TopBar';
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
-import SettingsModal from '@/components/Settings/SettingsModal';
+const SettingsModal = lazy(() => import('@/components/Settings/SettingsModal'));
 
 interface AppShellProps {
   bookId: string;
@@ -28,6 +28,8 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
   const { setActiveBook, setChapters, setCharacters, setLoreBible } = useBookStore();
   const { setActiveChapter } = useEditorStore();
   const [showSettings, setShowSettings] = useState(false);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
   const prevBookIdRef = useRef<string>(bookId);
 
   useEffect(() => {
@@ -38,8 +40,6 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
     async function load() {
       try {
         // CRITICAL: Immediately clear stale state when switching books.
-        // If the old activeChapter lingers during the async load window,
-        // the editor will show the wrong content and auto-save can corrupt data.
         if (switchedBook) {
           setActiveChapter(null);
           setActiveBook(null);
@@ -79,17 +79,60 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
     return () => { cancelled = true; };
   }, [bookId, chapterId, setActiveBook, setChapters, setCharacters, setLoreBible, setActiveChapter]);
 
+  // Close sidebars when switching books
+  useEffect(() => {
+    setShowLeft(false);
+    setShowRight(false);
+  }, [bookId]);
+
+  const anySidebarOpen = showLeft || showRight;
+
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-slate-950">
-      <TopBar onOpenSettings={() => setShowSettings(true)} />
-      <div className="flex-1 flex overflow-hidden">
-        <LeftSidebar onOpenSettings={() => setShowSettings(true)} />
+      <TopBar
+        onOpenSettings={() => setShowSettings(true)}
+        onToggleLeft={() => setShowLeft(!showLeft)}
+        onToggleRight={() => setShowRight(!showRight)}
+      />
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile backdrop */}
+        {anySidebarOpen && (
+          <div
+            className="absolute inset-0 bg-black/30 z-20 lg:hidden"
+            onClick={() => { setShowLeft(false); setShowRight(false); }}
+          />
+        )}
+
+        {/* Left sidebar */}
+        <aside
+          className={`w-64 panel flex flex-col overflow-hidden absolute lg:relative z-30 h-full transition-transform duration-200 ease-out ${
+            showLeft ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
+        >
+          <LeftSidebar
+            onOpenSettings={() => { setShowSettings(true); setShowLeft(false); }}
+            onCloseMobile={() => setShowLeft(false)}
+          />
+        </aside>
+
         <main className="flex-1 overflow-hidden">
           {children}
         </main>
-        <RightSidebar />
+
+        {/* Right sidebar */}
+        <aside
+          className={`w-96 panel border-l flex flex-col overflow-hidden absolute lg:relative z-30 h-full right-0 transition-transform duration-200 ease-out ${
+            showRight ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+          }`}
+        >
+          <RightSidebar onCloseMobile={() => setShowRight(false)} />
+        </aside>
       </div>
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showSettings && (
+        <Suspense fallback={null}>
+          <SettingsModal onClose={() => setShowSettings(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

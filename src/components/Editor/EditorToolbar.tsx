@@ -60,7 +60,7 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
   if (!editor) return null;
 
   return (
-    <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-4 py-2 flex items-center justify-center gap-1 flex-wrap">
+    <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-2 md:px-4 py-2 flex items-center gap-1 overflow-x-auto scrollbar-hide">
       {/* Formatting */}
       <ToolbarGroup>
         <ToolbarButton

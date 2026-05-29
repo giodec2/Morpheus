@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Modal from '@/components/common/Modal';
 import { X, Mail, Lock, User, Loader2, Cloud, CloudOff } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { login, register, logout } from '@/services/auth';
@@ -58,19 +59,16 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-8 w-full max-w-sm shadow-xl flex flex-col items-center gap-3">
-          <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Checking session...</p>
-        </div>
-      </div>
+      <Modal onClose={onClose} className="max-w-sm p-8 flex flex-col items-center gap-3" ariaLabel="Authentication">
+        <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">Checking session...</p>
+      </Modal>
     );
   }
 
   if (user) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-sm shadow-xl">
+      <Modal onClose={onClose} className="max-w-sm p-6" ariaLabel="Your account">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Account</h2>
             <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
@@ -100,14 +98,12 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
           >
             {isSubmitting ? 'Logging out...' : 'Log Out'}
           </button>
-        </div>
-      </div>
+      </Modal>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-sm shadow-xl">
+    <Modal onClose={onClose} className="max-w-sm p-6" ariaLabel="Sign in">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {mode === 'login' ? 'Sign In' : 'Create Account'}
@@ -202,7 +198,6 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
             Sign in to sync your books across devices.
           </p>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

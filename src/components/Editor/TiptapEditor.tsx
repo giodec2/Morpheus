@@ -79,7 +79,7 @@ export default function TiptapEditor() {
     content: activeChapter?.content || { type: 'doc', content: [{ type: 'paragraph' }] },
     editorProps: {
       attributes: {
-        class: 'editor-content focus:outline-none min-h-[500px] px-10 py-8',
+        class: 'editor-content focus:outline-none min-h-[500px] px-4 md:px-10 py-6 md:py-8',
       },
     },
   });
@@ -160,7 +160,7 @@ export default function TiptapEditor() {
             <EditorContent editor={editor} />
           </div>
 
-          <div className="flex items-center justify-between px-10 py-4 text-xs text-gray-400">
+          <div className="flex items-center justify-between px-4 md:px-10 py-4 text-xs text-gray-400">
             <span>{wordCount.toLocaleString()} words</span>
             <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Synced ✓' : saveStatus === 'error' ? 'Save failed' : ''}</span>
           </div>
