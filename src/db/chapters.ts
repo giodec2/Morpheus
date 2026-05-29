@@ -1,4 +1,5 @@
 import { db } from './database';
+import { generateId } from '@/lib/utils';
 import type { Chapter } from '@/types';
 import { pushChapter, deleteChapterCloud } from '@/services/sync';
 
@@ -17,7 +18,7 @@ export async function putChapter(chapter: Chapter): Promise<void> {
 export async function createChapter(bookId: string, title: string, order: number): Promise<Chapter> {
   const now = Date.now();
   const chapter: Chapter = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     bookId,
     title,
     order,

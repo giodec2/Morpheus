@@ -34,7 +34,13 @@ db.version(2).stores({
   const messages: any[] = await tx.table('chatHistory').toArray();
   const bookIds = [...new Set(messages.map((m) => m.bookId))];
   for (const bookId of bookIds) {
-    const sessionId = crypto.randomUUID();
+    const sessionId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
     await tx.table('chatSessions').add({
       id: sessionId,
       bookId,

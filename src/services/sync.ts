@@ -32,8 +32,9 @@ function fromJsonString<T>(value: string | undefined): T {
   if (!value) return {} as T;
   try {
     return JSON.parse(value) as T;
-  } catch {
-    return {} as T;
+  } catch (err) {
+    console.error('[Sync] Failed to parse JSON:', value, err);
+    throw new Error(`Data corruption detected: unable to parse stored value`);
   }
 }
 

@@ -1,8 +1,12 @@
 import { Client, Account, Databases, Functions, ID, Permission, Role } from 'appwrite';
 
-const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID || 'YOUR_APPWRITE_PROJECT_ID';
-const databaseId = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'YOUR_APPWRITE_DATABASE_ID';
+const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT;
+const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+const databaseId = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+
+if (!endpoint) throw new Error('VITE_APPWRITE_ENDPOINT is required');
+if (!projectId) throw new Error('VITE_APPWRITE_PROJECT_ID is required');
+if (!databaseId) throw new Error('VITE_APPWRITE_DATABASE_ID is required');
 
 export const collections = {
   books: import.meta.env.VITE_APPWRITE_COLLECTION_BOOKS || 'books',

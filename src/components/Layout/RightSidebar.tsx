@@ -27,6 +27,7 @@ import TierSelectorModal from '@/components/common/TierSelectorModal';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
 import { GENRES, GENRE_DESCRIPTIONS } from '@/lib/prompts/genres';
 import { getStyleProfile } from '@/db/styleProfiles';
+import { generateId } from '@/lib/utils';
 import type { AIMode, ChatMessage, WritingGenre } from '@/types';
 
 const MODES: { id: AIMode; label: string; icon: typeof Compass; color: string; baseTemp: number; adj: number }[] = [
@@ -207,7 +208,7 @@ export default function RightSidebar() {
     setLastUserInput(trimmedInput);
 
     const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       bookId: activeBook.id,
       sessionId: activeSessionId,
       role: 'user',
@@ -264,7 +265,7 @@ export default function RightSidebar() {
     setContextInfo(packet.contextInfo);
 
     const aiMsg: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       bookId: activeBook.id,
       sessionId: activeSessionId,
       role: 'assistant',
@@ -276,29 +277,46 @@ export default function RightSidebar() {
     addMessage(aiMsg);
 
     let fullContent = '';
+    let hasError = false;
+    let errorMsg = '';
 
-    await sendMessage(
-      packet.system,
-      packet.messages,
-      (chunk) => {
-        fullContent += chunk;
-        appendStreamContent(chunk);
-      },
-      (error) => {
-        fullContent = `Error: ${error}`;
-        if (error.includes('Token limit reached') || error.includes('token limit')) {
-          if (subscriptionTier === 'architect') {
-            toast('Your weekly token allowance has been exhausted. Tokens reset every 7 days.', 'error');
-          } else {
-            toast('Token limit reached. Upgrade your plan to continue.', 'error');
-            setShowTierModal(true);
+    try {
+      await sendMessage(
+        packet.system,
+        packet.messages,
+        (chunk) => {
+          fullContent += chunk;
+          appendStreamContent(chunk);
+        },
+        (error) => {
+          hasError = true;
+          errorMsg = error;
+          if (error.includes('Token limit reached') || error.includes('token limit')) {
+            if (subscriptionTier === 'architect') {
+              toast('Your weekly token allowance has been exhausted. Tokens reset every 7 days.', 'error');
+            } else {
+              toast('Token limit reached. Upgrade your plan to continue.', 'error');
+              setShowTierModal(true);
+            }
           }
-        }
-      },
-      activeMode
-    );
+        },
+        activeMode
+      );
+    } catch (err) {
+      hasError = true;
+      errorMsg = err instanceof Error ? err.message : String(err);
+      console.error('[Chat] sendMessage threw:', err);
+      toast('An unexpected error occurred. Please try again.', 'error');
+    } finally {
+      setIsStreaming(false);
+      setStreamContent('');
+    }
 
-    const finalContent = fullContent || streamContent || 'No response received.';
+    // Preserve partial content on error — don't overwrite with just "Error: ..."
+    const finalContent = hasError
+      ? (fullContent || streamContent || '') + '\n\n[Error: ' + errorMsg + ']'
+      : (fullContent || streamContent || 'No response received.');
+
     await addChatMessage({
       bookId: activeBook.id,
       sessionId: activeSessionId,
@@ -309,8 +327,6 @@ export default function RightSidebar() {
     });
 
     updateLastMessage(finalContent);
-    setIsStreaming(false);
-    setStreamContent('');
   };
 
   const activeModeConfig = MODES.find(m => m.id === activeMode);

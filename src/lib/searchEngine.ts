@@ -67,8 +67,20 @@ function findMatches(text: string, queryWords: string[]): SearchMatch[] {
   return deduped;
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildSnippet(text: string, matches: SearchMatch[], maxLen = 140): string {
-  if (matches.length === 0) return text.slice(0, maxLen) + (text.length > maxLen ? '...' : '');
+  if (matches.length === 0) {
+    const truncated = text.slice(0, maxLen);
+    return escapeHtml(truncated) + (text.length > maxLen ? '...' : '');
+  }
 
   const bestMatch = matches[0];
   const center = Math.floor((bestMatch.start + bestMatch.end) / 2);
@@ -80,28 +92,28 @@ function buildSnippet(text: string, matches: SearchMatch[], maxLen = 140): strin
     start = Math.max(0, end - maxLen);
   }
 
-  let snippet = text.slice(start, end);
-  let prefix = start > 0 ? '...' : '';
-  let suffix = end < text.length ? '...' : '';
+  const snippet = text.slice(start, end);
+  const prefix = start > 0 ? '...' : '';
+  const suffix = end < text.length ? '...' : '';
 
   // Adjust match positions for snippet slicing
   const adjustedMatches = matches
     .map((m) => ({ start: m.start - start, end: m.end - start }))
     .filter((m) => m.end > 0 && m.start < snippet.length);
 
-  // Build snippet with mark tags — work backwards to preserve indices
-  let highlighted = snippet;
-  for (let i = adjustedMatches.length - 1; i >= 0; i--) {
-    const m = adjustedMatches[i];
-    const s = Math.max(0, m.start);
-    const e = Math.min(snippet.length, m.end);
-    highlighted =
-      highlighted.slice(0, s) +
-      `<mark>${highlighted.slice(s, e)}</mark>` +
-      highlighted.slice(e);
+  // Build snippet by escaping HTML in segments and safely injecting <mark> tags
+  const segments: string[] = [];
+  let pos = 0;
+  for (const m of adjustedMatches) {
+    const matchStart = Math.max(0, m.start);
+    const matchEnd = Math.min(snippet.length, m.end);
+    if (matchStart > pos) segments.push(escapeHtml(snippet.slice(pos, matchStart)));
+    segments.push(`<mark>${escapeHtml(snippet.slice(matchStart, matchEnd))}</mark>`);
+    pos = matchEnd;
   }
+  if (pos < snippet.length) segments.push(escapeHtml(snippet.slice(pos)));
 
-  return prefix + highlighted + suffix;
+  return prefix + segments.join('') + suffix;
 }
 
 function safeExtractText(content: unknown): string {

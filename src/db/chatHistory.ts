@@ -1,4 +1,5 @@
 import { db } from './database';
+import { generateId } from '@/lib/utils';
 import type { ChatMessage, ChatSession } from '@/types';
 
 export async function getChatSessionsByBook(bookId: string): Promise<ChatSession[]> {
@@ -11,7 +12,7 @@ export async function getChatSessionsByBook(bookId: string): Promise<ChatSession
 
 export async function createChatSession(bookId: string, title = 'New Chat'): Promise<ChatSession> {
   const session: ChatSession = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     bookId,
     title,
     createdAt: Date.now(),
@@ -43,7 +44,7 @@ export async function getChatHistoryBySession(sessionId: string, limit = 100): P
 export async function addChatMessage(message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<ChatMessage> {
   const msg: ChatMessage = {
     ...message,
-    id: crypto.randomUUID(),
+    id: generateId(),
     timestamp: Date.now(),
   };
   await db.chatHistory.add(msg);

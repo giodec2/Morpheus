@@ -23,7 +23,8 @@ export async function getSettings(): Promise<AppSettings> {
     await db.settings.add(DEFAULT_SETTINGS);
     return DEFAULT_SETTINGS;
   }
-  return settings;
+  // Merge with defaults to ensure new fields are populated after schema changes
+  return { ...DEFAULT_SETTINGS, ...settings };
 }
 
 export async function updateSettings(updates: Partial<Omit<AppSettings, 'id'>>): Promise<void> {

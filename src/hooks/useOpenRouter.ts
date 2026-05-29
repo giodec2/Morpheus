@@ -141,6 +141,11 @@ export function useOpenRouter() {
     setIsStreaming(true);
     abortRef.current = new AbortController();
 
+    // 30-second timeout to prevent hung connections
+    const timeoutId = setTimeout(() => {
+      abortRef.current?.abort();
+    }, 30000);
+
     try {
       const stream = await client.chat.completions.create({
         model: defaultModel,
@@ -153,6 +158,8 @@ export function useOpenRouter() {
         stream: true,
       }, { signal: abortRef.current.signal });
 
+      clearTimeout(timeoutId);
+
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content;
         if (content) {
@@ -160,10 +167,15 @@ export function useOpenRouter() {
         }
       }
     } catch (err) {
-      if ((err as Error).name === 'AbortError') return;
+      clearTimeout(timeoutId);
+      if ((err as Error).name === 'AbortError') {
+        onError('Request timed out. The AI provider took too long to respond.');
+        return;
+      }
       const msg = (err as Error).message || 'An error occurred while streaming.';
       onError(msg);
     } finally {
+      clearTimeout(timeoutId);
       setIsStreaming(false);
       abortRef.current = null;
     }

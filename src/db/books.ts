@@ -1,4 +1,5 @@
 import { db } from './database';
+import { generateId } from '@/lib/utils';
 import type { Book } from '@/types';
 import { pushBook, deleteBookCloud } from '@/services/sync';
 
@@ -17,7 +18,7 @@ export async function putBook(book: Book): Promise<void> {
 export async function createBook(title: string): Promise<Book> {
   const now = Date.now();
   const book: Book = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     title,
     createdAt: now,
     updatedAt: now,
@@ -34,13 +35,14 @@ export async function updateBook(id: string, updates: Partial<Book>): Promise<vo
 }
 
 export async function deleteBook(id: string): Promise<void> {
-  await db.transaction('rw', [db.books, db.chapters, db.characters, db.loreBibles, db.chatHistory, db.chatSessions], async () => {
+  await db.transaction('rw', [db.books, db.chapters, db.characters, db.loreBibles, db.chatHistory, db.chatSessions, db.styleProfiles], async () => {
     await db.books.delete(id);
     await db.chapters.where('bookId').equals(id).delete();
     await db.characters.where('bookId').equals(id).delete();
     await db.loreBibles.where('bookId').equals(id).delete();
     await db.chatHistory.where('bookId').equals(id).delete();
     await db.chatSessions.where('bookId').equals(id).delete();
+    await db.styleProfiles.where('bookId').equals(id).delete();
   });
   deleteBookCloud(id).catch(() => {});
 }

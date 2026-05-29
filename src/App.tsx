@@ -15,9 +15,10 @@ import TermsOfService from '@/pages/TermsOfService';
 import CookiePolicy from '@/pages/CookiePolicy';
 import RefundPolicy from '@/pages/RefundPolicy';
 import FAQ from '@/pages/FAQ';
+import NotFound from '@/pages/NotFound';
+import AuthGuard from '@/components/Auth/AuthGuard';
 import { initAuth } from '@/services/auth';
 import { client } from '@/lib/appwrite';
-import '@/lib/debug/appwriteTest';
 
 function App() {
   const { setTheme, loadSettings, openRouterKey, setIsConnected } = useSettingsStore();
@@ -25,7 +26,9 @@ function App() {
 
   useEffect(() => {
     initAuth();
-    client.ping().catch(() => {});
+    client.ping().catch((err) => {
+      console.warn('[App] Appwrite connectivity check failed:', err);
+    });
   }, []);
 
   useEffect(() => {
@@ -51,25 +54,36 @@ function App() {
         <Route path="/cookies" component={CookiePolicy} />
         <Route path="/refund" component={RefundPolicy} />
         <Route path="/faq" component={FAQ} />
-        <Route path="/app" component={DashboardPage} />
+        <Route path="/app">
+          {() => (
+            <AuthGuard>
+              <DashboardPage />
+            </AuthGuard>
+          )}
+        </Route>
         <Route path="/book/:bookId">
           {(params) => (
-            <AppShell bookId={params.bookId}>
-              <ErrorBoundary>
-                <EditorPage bookId={params.bookId} />
-              </ErrorBoundary>
-            </AppShell>
+            <AuthGuard>
+              <AppShell bookId={params.bookId}>
+                <ErrorBoundary>
+                  <EditorPage bookId={params.bookId} />
+                </ErrorBoundary>
+              </AppShell>
+            </AuthGuard>
           )}
         </Route>
         <Route path="/book/:bookId/chapter/:chapterId">
           {(params) => (
-            <AppShell bookId={params.bookId} chapterId={params.chapterId}>
-              <ErrorBoundary>
-                <EditorPage bookId={params.bookId} chapterId={params.chapterId} />
-              </ErrorBoundary>
-            </AppShell>
+            <AuthGuard>
+              <AppShell bookId={params.bookId} chapterId={params.chapterId}>
+                <ErrorBoundary>
+                  <EditorPage bookId={params.bookId} chapterId={params.chapterId} />
+                </ErrorBoundary>
+              </AppShell>
+            </AuthGuard>
           )}
         </Route>
+        <Route path="*" component={NotFound} />
       </Switch>
       <ToastContainer />
       <CookieBanner />

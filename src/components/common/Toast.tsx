@@ -18,7 +18,9 @@ function notifyListeners() {
 }
 
 export function toast(message: string, type: ToastType = 'info') {
-  const id = crypto.randomUUID();
+  const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36);
   toasts = [...toasts, { id, message, type }];
   notifyListeners();
   setTimeout(() => {

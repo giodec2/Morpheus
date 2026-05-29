@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Models } from 'appwrite';
+import { refreshProfile as refreshProfileService } from '@/services/auth';
 
 interface AuthState {
   user: Models.User<Models.Preferences> | null;
@@ -13,6 +14,7 @@ interface AuthState {
   setIsLoading: (loading: boolean) => void;
   setIsSyncing: (syncing: boolean) => void;
   setLastSyncAt: (timestamp: number | null) => void;
+  refreshProfile: () => Promise<void>;
 }
 
 export interface UserProfile {
@@ -49,6 +51,9 @@ export const useAuthStore = create<AuthState>()(
       setIsLoading: (isLoading) => set({ isLoading }),
       setIsSyncing: (isSyncing) => set({ isSyncing }),
       setLastSyncAt: (lastSyncAt) => set({ lastSyncAt }),
+      refreshProfile: async () => {
+        await refreshProfileService();
+      },
     }),
     {
       name: 'morpheus-auth',

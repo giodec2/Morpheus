@@ -1,4 +1,5 @@
 import { db } from './database';
+import { generateId } from '@/lib/utils';
 import type { LoreBible } from '@/types';
 import { pushLoreBible } from '@/services/sync';
 
@@ -13,7 +14,7 @@ export async function putLoreBible(lore: LoreBible): Promise<void> {
 export async function createLoreBible(bookId: string): Promise<LoreBible> {
   const now = Date.now();
   const lore: LoreBible = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     bookId,
     content: { type: 'doc', content: [{ type: 'paragraph' }] },
     updatedAt: now,

@@ -26,9 +26,14 @@ function normalizeProfile(profile: UserProfile): UserProfile {
   const isExplicitlyInactive = status === 'cancelled' || status === 'expired' || status === 'past_due' || status === 'unpaid' || status === 'paused';
   const effectiveTier = isExplicitlyInactive ? 'free' : tier;
 
-  const defaults = TIER_DEFAULTS[effectiveTier] || TIER_DEFAULTS.free;
+  // Sanitize invalid tier values to 'free' to prevent frontend/backend disagreement
+  const validTiers: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'novelist', 'architect'];
+  const sanitizedTier = validTiers.includes(effectiveTier) ? effectiveTier : 'free';
+
+  const defaults = TIER_DEFAULTS[sanitizedTier] || TIER_DEFAULTS.free;
   return {
     ...profile,
+    subscriptionTier: sanitizedTier,
     maxBooks: defaults.maxBooks,
     maxWeeklyTokensStandard: defaults.maxWeeklyTokensStandard,
     maxWeeklyTokensPremium: defaults.maxWeeklyTokensPremium,
@@ -54,7 +59,16 @@ function getTokenResetUpdate(profile: UserProfile): Partial<UserProfile> | null 
 export async function getCurrentUser(): Promise<Models.User<Models.Preferences> | null> {
   try {
     return await account.get();
-  } catch {
+  } catch (err) {
+    // Only return null for auth errors (no session). Re-throw for other errors.
+    const isAuthError = err instanceof Error && (
+      err.message?.includes('User (role: guests)') ||
+      err.message?.includes('missing scope') ||
+      err.message?.includes('Unauthorized')
+    );
+    if (isAuthError) return null;
+    // For network/server errors, log and return null gracefully
+    console.warn('[Auth] getCurrentUser error:', err);
     return null;
   }
 }
@@ -91,13 +105,13 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function register(email: string, password: string, name: string): Promise<void> {
-  const { setUser, setProfile } = useAuthStore.getState();
+  const { setUser } = useAuthStore.getState();
   await account.create(ID.unique(), email, password, name);
   await account.createEmailPasswordSession(email, password);
   const user = await account.get();
   setUser(user);
-  const profile = await createProfile(user);
-  setProfile(profile);
+  // Run full post-auth setup: create profile, sync local books to cloud, etc.
+  await postAuthSetup(user);
 }
 
 export async function logout(): Promise<void> {
@@ -182,4 +196,38 @@ export async function updateProfile(updates: Partial<Omit<UserProfile, '$id'>>):
 
   const updated = { ...profile, ...updates };
   setProfile(normalizeProfile(updated));
+}
+
+/** Re-fetch the user's profile from Appwrite and update the store.
+ *  Call this periodically or when focus returns to detect subscription changes.
+ */
+export async function refreshProfile(): Promise<void> {
+  const { user, setProfile } = useAuthStore.getState();
+  if (!user) return;
+
+  try {
+    const doc = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.collections.profiles,
+      user.$id
+    );
+    const rawProfile = doc as unknown as UserProfile;
+    let normalized = normalizeProfile(rawProfile);
+
+    // Check if weekly tokens need resetting
+    const tokenReset = getTokenResetUpdate(normalized);
+    if (tokenReset) {
+      await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.profiles,
+        user.$id,
+        tokenReset
+      );
+      normalized = { ...normalized, ...tokenReset };
+    }
+
+    setProfile(normalized);
+  } catch (err) {
+    console.error('[Auth] refreshProfile failed:', err);
+  }
 }

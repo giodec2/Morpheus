@@ -1,4 +1,5 @@
 import { db } from './database';
+import { generateId } from '@/lib/utils';
 import type { Character } from '@/types';
 import { pushCharacter, deleteCharacterCloud } from '@/services/sync';
 
@@ -17,7 +18,7 @@ export async function putCharacter(character: Character): Promise<void> {
 export async function createCharacter(bookId: string, name: string): Promise<Character> {
   const now = Date.now();
   const character: Character = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     bookId,
     name,
     appearance: '',
