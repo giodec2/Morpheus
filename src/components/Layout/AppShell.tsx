@@ -56,47 +56,43 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
       return DEFAULT_SIDEBAR_WIDTH;
     }
   });
-  const isResizingRef = useRef(false);
-  const startXRef = useRef(0);
-  const startWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
 
-  const stopResize = useCallback(() => {
-    if (!isResizingRef.current) return;
-    isResizingRef.current = false;
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-    try {
-      localStorage.setItem(SIDEBAR_WIDTH_KEY, String(rightWidth));
-    } catch {
-      // ignore
-    }
-  }, [rightWidth]);
-
-  const onMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizingRef.current) return;
-    const delta = e.clientX - startXRef.current;
-    const newWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, startWidthRef.current - delta));
-    setRightWidth(newWidth);
-  }, []);
+  // Keep a live ref so the mouseup handler always sees the final width
+  const rightWidthRef = useRef(rightWidth);
+  useEffect(() => { rightWidthRef.current = rightWidth; }, [rightWidth]);
 
   const startResize = useCallback((e: React.MouseEvent) => {
-    isResizingRef.current = true;
-    startXRef.current = e.clientX;
-    startWidthRef.current = rightWidth;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = rightWidthRef.current;
+
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
-  }, [rightWidth]);
 
-  useEffect(() => {
-    if (!isResizingRef.current) return;
-    const handleUp = () => stopResize();
-    window.addEventListener('mouseup', handleUp);
-    window.addEventListener('mousemove', onMouseMove);
-    return () => {
-      window.removeEventListener('mouseup', handleUp);
-      window.removeEventListener('mousemove', onMouseMove);
+    const onMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      const newWidth = Math.max(
+        MIN_SIDEBAR_WIDTH,
+        Math.min(MAX_SIDEBAR_WIDTH, startWidth - delta)
+      );
+      setRightWidth(newWidth);
     };
-  }, [onMouseMove, stopResize]);
+
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      try {
+        localStorage.setItem(SIDEBAR_WIDTH_KEY, String(rightWidthRef.current));
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
