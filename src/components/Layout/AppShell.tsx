@@ -1,10 +1,17 @@
 import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react';
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
+import { useAuthStore } from '@/stores/authStore';
 import { getBook } from '@/db/books';
 import { getChaptersByBook } from '@/db/chapters';
 import { getCharactersByBook } from '@/db/characters';
 import { getLoreBibleByBook } from '@/db/loreBibles';
+import { putBook } from '@/db/books';
+import { putChapter } from '@/db/chapters';
+import { putCharacter } from '@/db/characters';
+import { putLoreBible } from '@/db/loreBibles';
+import { resolveBookConflicts } from '@/services/sync';
+import { toast } from '@/components/common/Toast';
 import TopBar from './TopBar';
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
@@ -31,6 +38,8 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(false);
   const prevBookIdRef = useRef<string>(bookId);
+  const conflictResolvedRef = useRef<string | null>(null);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +79,44 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
         } else {
           setActiveChapter(null);
         }
+
+        // Resolve cloud conflicts per-entity (only once per book, and only if logged in)
+        if (user && conflictResolvedRef.current !== bookId) {
+          conflictResolvedRef.current = bookId;
+          try {
+            const summary = await resolveBookConflicts(bookId, putBook, putChapter, putCharacter, putLoreBible);
+            const pulled = summary.chaptersPulled + summary.charactersPulled + (summary.lorePulled ? 1 : 0);
+            const pushed = summary.chaptersPushed + summary.charactersPushed + (summary.lorePushed ? 1 : 0);
+
+            if (pulled > 0 || summary.book === 'cloud') {
+              // Cloud was newer — reload stores with fresh data
+              const [freshBook, freshChapters, freshChars, freshLore] = await Promise.all([
+                getBook(bookId),
+                getChaptersByBook(bookId),
+                getCharactersByBook(bookId),
+                getLoreBibleByBook(bookId),
+              ]);
+              if (!cancelled) {
+                if (freshBook) setActiveBook(freshBook);
+                setChapters(freshChapters);
+                setCharacters(freshChars);
+                setLoreBible(freshLore || null);
+                // Re-select active chapter in case it changed
+                if (chapterId) {
+                  const ch = freshChapters.find((c) => c.id === chapterId);
+                  if (ch) setActiveChapter(ch);
+                } else if (freshChapters.length > 0) {
+                  setActiveChapter(freshChapters[0]);
+                }
+              }
+              toast(`Synced ${pulled} update${pulled === 1 ? '' : 's'} from cloud`, 'info');
+            } else if (pushed > 0 || summary.book === 'local') {
+              toast(`Synced ${pushed} update${pushed === 1 ? '' : 's'} to cloud`, 'success');
+            }
+          } catch (err) {
+            console.error('[AppShell] Conflict resolution failed:', err);
+          }
+        }
       } catch (err) {
         console.error('AppShell load error:', err);
       }
@@ -77,13 +124,18 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
 
     load();
     return () => { cancelled = true; };
-  }, [bookId, chapterId, setActiveBook, setChapters, setCharacters, setLoreBible, setActiveChapter]);
+  }, [bookId, chapterId, setActiveBook, setChapters, setCharacters, setLoreBible, setActiveChapter, user]);
 
   // Close sidebars when switching books
   useEffect(() => {
     setShowLeft(false);
     setShowRight(false);
   }, [bookId]);
+
+  // Reset conflict resolution tracker when user changes (login/logout)
+  useEffect(() => {
+    conflictResolvedRef.current = null;
+  }, [user]);
 
   const anySidebarOpen = showLeft || showRight;
 

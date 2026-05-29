@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'wouter';
-import { Feather, Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash } from 'lucide-react';
+import { Feather, Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
@@ -8,12 +8,15 @@ const AuthModal = lazy(() => import('@/components/Auth/AuthModal'));
 const UpgradeModal = lazy(() => import('@/components/common/UpgradeModal'));
 const TierSelectorModal = lazy(() => import('@/components/common/TierSelectorModal'));
 const ConfirmModal = lazy(() => import('@/components/common/ConfirmModal'));
-import { getAllBooks, createBook, deleteBook } from '@/db/books';
+import { getAllBooks, createBook, deleteBook, putBook } from '@/db/books';
 import { TIER_DEFAULTS } from '@/services/auth';
 import { getChaptersByBook } from '@/db/chapters';
 import { createLoreBible } from '@/db/loreBibles';
-import { createChapter } from '@/db/chapters';
+import { createChapter, putChapter } from '@/db/chapters';
 import type { Book } from '@/types';
+import { putCharacter } from '@/db/characters';
+import { putLoreBible } from '@/db/loreBibles';
+import { getCloudBookIds, pushBookAndChildren, syncBookFromCloud } from '@/services/sync';
 import { formatRelativeTime } from '@/lib/utils';
 
 export default function DashboardPage() {
@@ -37,6 +40,8 @@ export default function DashboardPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showTierSelector, setShowTierSelector] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
+  const [orphanedBookIds, setOrphanedBookIds] = useState<Set<string>>(new Set());
+  const [syncingOrphanId, setSyncingOrphanId] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
   const [isEditingKey, setIsEditingKey] = useState(false);
   const isDark = theme === 'dark';
@@ -56,7 +61,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadBooks();
-  }, []);
+    if (user) checkCloudSync();
+  }, [user]);
 
   useEffect(() => {
     if (lastSyncAt) loadBooks();
@@ -72,6 +78,49 @@ export default function DashboardPage() {
       counts[book.id] = chapters.length;
     }
     setChapterCounts(counts);
+  }
+
+  async function checkCloudSync() {
+    try {
+      const cloudIds = await getCloudBookIds();
+      const localBooks = await getAllBooks();
+      const localIds = new Set(localBooks.map((b) => b.id));
+      const cloudIdSet = new Set(cloudIds);
+
+      // Find orphaned local books (local but not in cloud)
+      const orphaned = localBooks.filter((b) => !cloudIdSet.has(b.id)).map((b) => b.id);
+      setOrphanedBookIds(new Set(orphaned));
+
+      // Find cloud-only books and download them
+      const cloudOnly = cloudIds.filter((id) => !localIds.has(id));
+      if (cloudOnly.length > 0) {
+        toast(`Found ${cloudOnly.length} book(s) in the cloud. Downloading...`, 'info');
+        for (const bookId of cloudOnly) {
+          await syncBookFromCloud(bookId, putBook, putChapter, putCharacter, putLoreBible);
+        }
+        await loadBooks();
+        toast('Downloaded missing books from cloud', 'success');
+      }
+    } catch (err) {
+      console.error('[Dashboard] Cloud sync check failed:', err);
+    }
+  }
+
+  async function handleSyncOrphanToCloud(bookId: string) {
+    setSyncingOrphanId(bookId);
+    try {
+      await pushBookAndChildren(bookId);
+      setOrphanedBookIds((prev) => {
+        const next = new Set(prev);
+        next.delete(bookId);
+        return next;
+      });
+      toast('Book synced to cloud successfully', 'success');
+    } catch {
+      toast('Failed to sync book to cloud', 'error');
+    } finally {
+      setSyncingOrphanId(null);
+    }
   }
 
   const tierDefaults = profile ? TIER_DEFAULTS[profile.subscriptionTier] : null;
@@ -422,6 +471,9 @@ export default function DashboardPage() {
                 book={book}
                 chapterCount={chapterCounts[book.id] || 0}
                 onDelete={() => handleDeleteBook(book.id)}
+                isOrphaned={orphanedBookIds.has(book.id)}
+                isSyncing={syncingOrphanId === book.id}
+                onSyncToCloud={() => handleSyncOrphanToCloud(book.id)}
               />
             ))}
           </div>
@@ -492,12 +544,17 @@ export default function DashboardPage() {
   );
 }
 
-function BookCard({ book, chapterCount, onDelete }: { book: Book; chapterCount: number; onDelete: () => void }) {
+function BookCard({
+  book, chapterCount, onDelete, isOrphaned, isSyncing, onSyncToCloud,
+}: {
+  book: Book; chapterCount: number; onDelete: () => void;
+  isOrphaned?: boolean; isSyncing?: boolean; onSyncToCloud?: () => void;
+}) {
   return (
-    <div className="card p-5 hover:shadow-md transition-shadow group">
+    <div className={`card p-5 hover:shadow-md transition-shadow group ${isOrphaned ? 'border-amber-300 dark:border-amber-700' : ''}`}>
       <div className="flex items-start justify-between mb-3">
-        <Link href={`/book/${book.id}`} className="flex-1">
-          <h3 className="font-semibold text-gray-900 dark:text-white text-lg hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+        <Link href={`/book/${book.id}`} className="flex-1 min-w-0">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-lg hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate">
             {book.title}
           </h3>
         </Link>
@@ -519,11 +576,41 @@ function BookCard({ book, chapterCount, onDelete }: { book: Book; chapterCount: 
           <Clock className="w-3 h-3" />
           {formatRelativeTime(book.updatedAt)}
         </span>
+        {isOrphaned && (
+          <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+            <AlertTriangle className="w-3 h-3" />
+            Not synced
+          </span>
+        )}
       </div>
 
-      <Link href={`/book/${book.id}`}>
-        <button className="w-full btn-secondary text-xs">Open Book</button>
-      </Link>
+      {isOrphaned ? (
+        <div className="space-y-2">
+          <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
+            This book only exists on this device. Sync it to the cloud or delete it.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={onSyncToCloud}
+              disabled={isSyncing}
+              className="flex-1 btn-primary text-xs flex items-center justify-center gap-1.5"
+            >
+              {isSyncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+              {isSyncing ? 'Syncing...' : 'Sync to Cloud'}
+            </button>
+            <button
+              onClick={onDelete}
+              className="px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ) : (
+        <Link href={`/book/${book.id}`}>
+          <button className="w-full btn-secondary text-xs">Open Book</button>
+        </Link>
+      )}
     </div>
   );
 }

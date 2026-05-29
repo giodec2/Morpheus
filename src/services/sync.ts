@@ -350,6 +350,243 @@ export async function pullLoreBibleForBook(bookId: string): Promise<LoreBible | 
 }
 
 /* ------------------------------------------------------------------ */
+/*  SINGLE-BOOK SYNC                                                   */
+/* ------------------------------------------------------------------ */
+
+export async function getCloudBookIds(): Promise<string[]> {
+  const userId = getUserId();
+  if (!userId || !isConfigured()) return [];
+
+  try {
+    const { documents } = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.collections.books,
+      [Query.equal('userId', userId)]
+    );
+    return documents.map((d) => d.$id);
+  } catch (err) {
+    logSyncError('getCloudBookIds', err);
+    return [];
+  }
+}
+
+/** Download a single book and all its children from cloud → local */
+export async function syncBookFromCloud(
+  bookId: string,
+  putBook: (b: Book) => Promise<void>,
+  putChapter: (c: Chapter) => Promise<void>,
+  putCharacter: (c: Character) => Promise<void>,
+  putLore: (l: LoreBible) => Promise<void>
+): Promise<void> {
+  const userId = getUserId();
+  if (!userId || !isConfigured()) return;
+
+  try {
+    const doc = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.collections.books,
+      bookId
+    );
+    const cloudBook: Book = {
+      id: doc.$id,
+      title: doc.title,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    };
+    await putBook(cloudBook);
+
+    const [cloudChapters, cloudChars, cloudLore] = await Promise.all([
+      pullChaptersForBook(bookId),
+      pullCharactersForBook(bookId),
+      pullLoreBibleForBook(bookId),
+    ]);
+
+    for (const ch of cloudChapters) await putChapter(ch);
+    for (const c of cloudChars) await putCharacter(c);
+    if (cloudLore) await putLore(cloudLore);
+  } catch (err) {
+    logSyncError('syncBookFromCloud', err);
+  }
+}
+
+/** Push a single book and all its children from local → cloud */
+export async function pushBookAndChildren(bookId: string): Promise<void> {
+  const userId = getUserId();
+  if (!userId || !isConfigured()) return;
+
+  try {
+    const book = await getBook(bookId);
+    if (!book) return;
+    await pushBook(book);
+
+    const [chapters, characters, lore] = await Promise.all([
+      getChaptersByBook(bookId),
+      getCharactersByBook(bookId),
+      getLoreBibleByBook(bookId),
+    ]);
+
+    for (const ch of chapters) await pushChapter(ch);
+    for (const c of characters) await pushCharacter(c);
+    if (lore) await pushLoreBible(lore);
+  } catch (err) {
+    logSyncError('pushBookAndChildren', err);
+  }
+}
+
+interface ConflictSummary {
+  book: 'local' | 'cloud' | 'none';
+  chaptersPulled: number;
+  chaptersPushed: number;
+  charactersPulled: number;
+  charactersPushed: number;
+  lorePulled: boolean;
+  lorePushed: boolean;
+}
+
+/** Per-entity last-write-wins conflict resolution for a single book.
+ *  Returns a summary of what was synced and in which direction.
+ */
+export async function resolveBookConflicts(
+  bookId: string,
+  putBook: (b: Book) => Promise<void>,
+  putChapter: (c: Chapter) => Promise<void>,
+  putCharacter: (c: Character) => Promise<void>,
+  putLore: (l: LoreBible) => Promise<void>
+): Promise<ConflictSummary> {
+  const summary: ConflictSummary = {
+    book: 'none',
+    chaptersPulled: 0,
+    chaptersPushed: 0,
+    charactersPulled: 0,
+    charactersPushed: 0,
+    lorePulled: false,
+    lorePushed: false,
+  };
+
+  const userId = getUserId();
+  if (!userId || !isConfigured()) return summary;
+
+  try {
+    // Fetch cloud book
+    let cloudBook: Book | null = null;
+    try {
+      const doc = await databases.getDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.books,
+        bookId
+      );
+      cloudBook = {
+        id: doc.$id,
+        title: doc.title,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+      };
+    } catch {
+      // Book doesn't exist in cloud — will push local below
+    }
+
+    const localBook = await getBook(bookId);
+
+    // Resolve book-level conflict
+    if (cloudBook && localBook) {
+      if (cloudBook.updatedAt > localBook.updatedAt) {
+        await putBook(cloudBook);
+        summary.book = 'cloud';
+      } else if (localBook.updatedAt > cloudBook.updatedAt) {
+        await pushBook(localBook);
+        summary.book = 'local';
+      }
+    } else if (cloudBook && !localBook) {
+      await putBook(cloudBook);
+      summary.book = 'cloud';
+    } else if (localBook && !cloudBook) {
+      await pushBook(localBook);
+      summary.book = 'local';
+    }
+
+    // Fetch local children
+    const [localChapters, localChars, localLore] = await Promise.all([
+      getChaptersByBook(bookId),
+      getCharactersByBook(bookId),
+      getLoreBibleByBook(bookId),
+    ]);
+
+    // Fetch cloud children
+    const [cloudChapters, cloudChars, cloudLore] = await Promise.all([
+      pullChaptersForBook(bookId),
+      pullCharactersForBook(bookId),
+      pullLoreBibleForBook(bookId),
+    ]);
+
+    // Resolve chapters
+    const chapterIds = new Set([...localChapters.map((c) => c.id), ...cloudChapters.map((c) => c.id)]);
+    for (const id of chapterIds) {
+      const local = localChapters.find((c) => c.id === id);
+      const cloud = cloudChapters.find((c) => c.id === id);
+      if (local && cloud) {
+        if (cloud.updatedAt > local.updatedAt) {
+          await putChapter(cloud);
+          summary.chaptersPulled++;
+        } else if (local.updatedAt > cloud.updatedAt) {
+          await pushChapter(local);
+          summary.chaptersPushed++;
+        }
+      } else if (cloud && !local) {
+        await putChapter(cloud);
+        summary.chaptersPulled++;
+      } else if (local && !cloud) {
+        await pushChapter(local);
+        summary.chaptersPushed++;
+      }
+    }
+
+    // Resolve characters
+    const charIds = new Set([...localChars.map((c) => c.id), ...cloudChars.map((c) => c.id)]);
+    for (const id of charIds) {
+      const local = localChars.find((c) => c.id === id);
+      const cloud = cloudChars.find((c) => c.id === id);
+      if (local && cloud) {
+        if (cloud.updatedAt > local.updatedAt) {
+          await putCharacter(cloud);
+          summary.charactersPulled++;
+        } else if (local.updatedAt > cloud.updatedAt) {
+          await pushCharacter(local);
+          summary.charactersPushed++;
+        }
+      } else if (cloud && !local) {
+        await putCharacter(cloud);
+        summary.charactersPulled++;
+      } else if (local && !cloud) {
+        await pushCharacter(local);
+        summary.charactersPushed++;
+      }
+    }
+
+    // Resolve lore bible
+    if (localLore && cloudLore) {
+      if (cloudLore.updatedAt > localLore.updatedAt) {
+        await putLore(cloudLore);
+        summary.lorePulled = true;
+      } else if (localLore.updatedAt > cloudLore.updatedAt) {
+        await pushLoreBible(localLore);
+        summary.lorePushed = true;
+      }
+    } else if (cloudLore && !localLore) {
+      await putLore(cloudLore);
+      summary.lorePulled = true;
+    } else if (localLore && !cloudLore) {
+      await pushLoreBible(localLore);
+      summary.lorePushed = true;
+    }
+
+    return summary;
+  } catch (err) {
+    logSyncError('resolveBookConflicts', err);
+    return summary;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /*  BIDIRECTIONAL SYNC                                                 */
 /* ------------------------------------------------------------------ */
 
