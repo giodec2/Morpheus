@@ -98,7 +98,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
   };
 
   return (
-    <aside className="w-64 panel flex flex-col overflow-hidden">
+    <aside className="w-64 panel flex flex-col overflow-hidden h-full">
       <div className="p-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
           My Books
@@ -113,7 +113,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
         {/* Chapters Section */}
         <div>
           <button
@@ -232,7 +232,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
         </button>
       </div>
 
-      {/* Character Panel (when viewing characters) */}
+      {/* Character Panel — anchored at bottom of sidebar */}
       {sidebarView === 'characters' && (
         <CharacterPanel
           characters={characters}
@@ -256,6 +256,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
         />
       )}
 
+      {/* Lore Panel — anchored at bottom of sidebar */}
       {sidebarView === 'loreBible' && loreBible && (
         <LorePanel loreBible={loreBible} onUpdate={async (content) => {
           await updateLoreBible(loreBible.id, { content });
