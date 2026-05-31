@@ -8,6 +8,7 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import CookieBanner from '@/components/Legal/CookieBanner';
 import AuthGuard from '@/components/Auth/AuthGuard';
 import { initAuth } from '@/services/auth';
+import { useAuthStore } from '@/stores/authStore';
 import { client } from '@/lib/appwrite';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
@@ -67,7 +68,7 @@ function App() {
   useEffect(() => {
     const { refreshProfile } = useAuthStore.getState();
     const onFocus = () => {
-      refreshProfile().catch((err) => {
+      refreshProfile().catch((err: unknown) => {
         console.warn('[App] refreshProfile on focus failed:', err);
       });
     };
