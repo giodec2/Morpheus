@@ -126,7 +126,7 @@ export default function DashboardPage() {
   }
 
   const tierDefaults = profile ? TIER_DEFAULTS[profile.subscriptionTier] : null;
-  const maxBooks = tierDefaults?.maxBooks ?? profile?.maxBooks ?? Infinity;
+  const maxBooks = tierDefaults?.maxBooks ?? profile?.maxBooks ?? 1; // default to free tier when profile unavailable
   const canCreateBook = books.length < maxBooks;
 
   const handleCreateBook = async () => {

@@ -39,7 +39,9 @@ function App() {
   useOnlineStatus();
 
   useEffect(() => {
-    initAuth();
+    initAuth().catch((err) => {
+      console.error('[App] initAuth failed:', err);
+    });
     client.ping().catch((err) => {
       console.warn('[App] Appwrite connectivity check failed:', err);
     });
@@ -60,6 +62,18 @@ function App() {
       }
     });
   }, [loadSettings, setTheme, setIsConnected, openRouterKey]);
+
+  // Refresh profile when user returns to the tab (webhooks may have updated it)
+  useEffect(() => {
+    const { refreshProfile } = useAuthStore.getState();
+    const onFocus = () => {
+      refreshProfile().catch((err) => {
+        console.warn('[App] refreshProfile on focus failed:', err);
+      });
+    };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, []);
 
   return (
     <ErrorBoundary>

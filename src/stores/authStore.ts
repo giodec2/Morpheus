@@ -58,6 +58,8 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'morpheus-auth',
       partialize: (state) => ({
+        user: state.user,
+        profile: state.profile,
         lastSyncAt: state.lastSyncAt,
       }),
     }

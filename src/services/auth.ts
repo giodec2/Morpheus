@@ -20,6 +20,8 @@ function normalizeProfile(profile: UserProfile): UserProfile {
   const tier = profile.subscriptionTier;
   const status = profile.subscriptionStatus;
 
+  console.log('[Auth] normalizeProfile raw:', { tier, status, name: profile.name });
+
   // Only downgrade when subscription is explicitly inactive.
   // Null/undefined status preserves the tier (handles legacy profiles,
   // admin-set tiers, or webhook delays).
@@ -30,8 +32,12 @@ function normalizeProfile(profile: UserProfile): UserProfile {
   const validTiers: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'novelist', 'architect'];
   const sanitizedTier = validTiers.includes(effectiveTier) ? effectiveTier : 'free';
 
+  if (sanitizedTier !== tier) {
+    console.warn('[Auth] Tier sanitized:', { from: tier, to: sanitizedTier, reason: isExplicitlyInactive ? 'inactive_status' : 'invalid_value' });
+  }
+
   const defaults = TIER_DEFAULTS[sanitizedTier] || TIER_DEFAULTS.free;
-  return {
+  const normalized = {
     ...profile,
     subscriptionTier: sanitizedTier,
     maxBooks: defaults.maxBooks,
@@ -39,6 +45,8 @@ function normalizeProfile(profile: UserProfile): UserProfile {
     maxWeeklyTokensPremium: defaults.maxWeeklyTokensPremium,
     weeklyTokensUsedPremium: profile.weeklyTokensUsedPremium || 0,
   };
+  console.log('[Auth] normalizeProfile result:', { tier: normalized.subscriptionTier, maxBooks: normalized.maxBooks });
+  return normalized;
 }
 
 /** Check if weekly tokens need resetting (7 days passed) */
@@ -83,13 +91,19 @@ async function postAuthSetup(user: Models.User<Models.Preferences>): Promise<voi
 }
 
 export async function initAuth(): Promise<void> {
-  const { setUser, setIsLoading } = useAuthStore.getState();
+  const { setUser, setProfile, setIsLoading } = useAuthStore.getState();
   setIsLoading(true);
   try {
     const user = await getCurrentUser();
     setUser(user);
     if (user) {
-      await postAuthSetup(user);
+      try {
+        await postAuthSetup(user);
+      } catch (setupErr) {
+        console.error('[Auth] postAuthSetup failed:', setupErr);
+        // Keep the user logged in but clear the stale profile so UI shows "needs reload"
+        setProfile(null);
+      }
     }
   } finally {
     setIsLoading(false);
@@ -123,11 +137,13 @@ export async function logout(): Promise<void> {
 
 async function fetchOrCreateProfile(user: Models.User<Models.Preferences>): Promise<UserProfile> {
   try {
+    console.log('[Auth] Fetching profile for user:', user.$id);
     const doc = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.collections.profiles,
       user.$id
     );
+    console.log('[Auth] Profile document fetched:', doc.$id);
     const rawProfile = doc as unknown as UserProfile;
     let normalized = normalizeProfile(rawProfile);
 
@@ -144,8 +160,21 @@ async function fetchOrCreateProfile(user: Models.User<Models.Preferences>): Prom
     }
 
     return normalized;
-  } catch {
-    return createProfile(user);
+  } catch (err) {
+    const code = (err as Record<string, unknown>)?.code;
+    const type = (err as Record<string, unknown>)?.type;
+    const message = (err as Error)?.message;
+    console.error('[Auth] fetchOrCreateProfile error:', { code, type, message, userId: user.$id });
+
+    // Only create a new profile if the document truly doesn't exist (404)
+    const isNotFound = code === 404 || type === 'document_not_found' || message?.includes('Document with the requested ID could not be found');
+    if (isNotFound) {
+      console.log('[Auth] Profile not found, creating new free profile for:', user.$id);
+      return createProfile(user);
+    }
+
+    // For permission errors or other issues, re-throw so the caller can handle it
+    throw err;
   }
 }
 
