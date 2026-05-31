@@ -51,10 +51,20 @@ function App() {
   useEffect(() => {
     getSettings().then((settings) => {
       const current = useSettingsStore.getState();
+      // Prefer live Zustand values (from localStorage persist) over stale IndexedDB defaults
       const merged = {
         ...settings,
         openRouterKey: openRouterKey || settings.openRouterKey,
-        aiMode: current.aiMode, // preserve user's choice from localStorage/Zustand
+        aiMode: current.aiMode,
+        defaultModel: current.defaultModel,
+        temperature: current.temperature,
+        maxTokens: current.maxTokens,
+        theme: current.theme,
+        advancedMode: current.advancedMode,
+        language: current.language,
+        modelTier: current.modelTier,
+        writingGenre: current.writingGenre,
+        adaptiveMemory: current.adaptiveMemory,
       };
       loadSettings(merged);
       setTheme(merged.theme);

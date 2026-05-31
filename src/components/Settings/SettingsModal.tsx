@@ -317,8 +317,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   max={1}
                   step={0.05}
                   value={temperature}
+                  disabled={!advancedMode}
                   onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  className="w-full accent-primary-600"
+                  className={`w-full accent-primary-600 ${!advancedMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
                 <div className="text-xs text-gray-400 text-right">{temperature.toFixed(2)}</div>
               </div>
@@ -331,8 +332,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   max={4096}
                   step={256}
                   value={maxTokens}
+                  disabled={!advancedMode}
                   onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                  className="w-full accent-primary-600"
+                  className={`w-full accent-primary-600 ${!advancedMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
                 <div className="text-xs text-gray-400 text-right">{maxTokens}</div>
               </div>
