@@ -69,14 +69,20 @@ export function useOpenRouter() {
       console.log('[Hosted AI] Execution result:', result);
 
       if (result.responseStatusCode >= 400) {
-        let errorMsg = 'Hosted AI request failed.';
+        let errorMsg = `Hosted AI request failed (HTTP ${result.responseStatusCode}).`;
+        let rawBody = result.responseBody || '';
         try {
-          const errorBody = JSON.parse(result.responseBody);
+          const errorBody = JSON.parse(rawBody);
           errorMsg = errorBody.error || errorBody.message || errorMsg;
         } catch {
-          errorMsg = result.responseBody || errorMsg;
+          errorMsg = rawBody ? `${errorMsg} ${rawBody.slice(0, 300)}` : errorMsg;
         }
-        console.error('[Hosted AI] Function error:', errorMsg, result);
+        console.error('[Hosted AI] Function error:', {
+          status: result.responseStatusCode,
+          body: rawBody,
+          parsed: errorMsg,
+          functionId: HOSTED_AI_FUNCTION_ID,
+        });
         onError(errorMsg);
         return;
       }
@@ -119,7 +125,11 @@ export function useOpenRouter() {
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       const msg = (err as Error).message || 'Hosted AI request failed.';
-      console.error('[Hosted AI] Exception:', err);
+      console.error('[Hosted AI] Exception:', {
+        message: msg,
+        functionId: HOSTED_AI_FUNCTION_ID,
+        error: err,
+      });
       onError(msg);
     } finally {
       setIsStreaming(false);

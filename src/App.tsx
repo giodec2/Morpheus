@@ -47,9 +47,11 @@ function App() {
 
   useEffect(() => {
     getSettings().then((settings) => {
+      const current = useSettingsStore.getState();
       const merged = {
         ...settings,
         openRouterKey: openRouterKey || settings.openRouterKey,
+        aiMode: current.aiMode, // preserve user's choice from localStorage/Zustand
       };
       loadSettings(merged);
       setTheme(merged.theme);
