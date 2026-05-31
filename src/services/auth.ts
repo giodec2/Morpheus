@@ -150,13 +150,25 @@ async function fetchOrCreateProfile(user: Models.User<Models.Preferences>): Prom
     // Check if weekly tokens need resetting
     const tokenReset = getTokenResetUpdate(normalized);
     if (tokenReset) {
-      await databases.updateDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.profiles,
-        user.$id,
-        tokenReset
-      );
-      normalized = { ...normalized, ...tokenReset };
+      try {
+        await databases.updateDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.collections.profiles,
+          user.$id,
+          tokenReset
+        );
+        normalized = { ...normalized, ...tokenReset };
+      } catch (tokenErr) {
+        const tokenMsg = (tokenErr as Error)?.message || '';
+        const isMissingAttr = tokenMsg.includes('Unknown attribute') || tokenMsg.includes('document_invalid_structure');
+        if (isMissingAttr) {
+          console.warn('[Auth] Token reset skipped — DB schema missing attribute:', tokenMsg);
+          // Still apply reset locally so the UI doesn't keep trying
+          normalized = { ...normalized, ...tokenReset };
+        } else {
+          console.error('[Auth] Token reset failed:', tokenErr);
+        }
+      }
     }
 
     return normalized;
@@ -246,13 +258,24 @@ export async function refreshProfile(): Promise<void> {
     // Check if weekly tokens need resetting
     const tokenReset = getTokenResetUpdate(normalized);
     if (tokenReset) {
-      await databases.updateDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.profiles,
-        user.$id,
-        tokenReset
-      );
-      normalized = { ...normalized, ...tokenReset };
+      try {
+        await databases.updateDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.collections.profiles,
+          user.$id,
+          tokenReset
+        );
+        normalized = { ...normalized, ...tokenReset };
+      } catch (tokenErr) {
+        const tokenMsg = (tokenErr as Error)?.message || '';
+        const isMissingAttr = tokenMsg.includes('Unknown attribute') || tokenMsg.includes('document_invalid_structure');
+        if (isMissingAttr) {
+          console.warn('[Auth] Token reset skipped — DB schema missing attribute:', tokenMsg);
+          normalized = { ...normalized, ...tokenReset };
+        } else {
+          console.error('[Auth] Token reset failed:', tokenErr);
+        }
+      }
     }
 
     setProfile(normalized);
