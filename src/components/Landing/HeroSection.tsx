@@ -1,7 +1,7 @@
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Link } from 'wouter';
-import { ArrowRight, Sparkles, PenTool, BookOpen } from 'lucide-react';
+import { ArrowRight, Sparkles, Feather, Clock, Shield } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 import AuthModal from '@/components/Auth/AuthModal';
@@ -32,6 +32,16 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-primary-950/30'
             : 'bg-gradient-to-br from-primary-50/40 via-white to-paper-50'
         }`} />
+
+        {/* Aurora flow overlay */}
+        <div
+          className="absolute inset-0 opacity-30 dark:opacity-20"
+          style={{
+            background: 'linear-gradient(90deg, rgba(20,184,166,0.08) 0%, rgba(99,102,241,0.06) 25%, rgba(245,158,11,0.05) 50%, rgba(20,184,166,0.08) 75%, rgba(99,102,241,0.06) 100%)',
+            backgroundSize: '400% 100%',
+            animation: 'aurora-flow 20s ease-in-out infinite',
+          }}
+        />
 
         {/* Blob 1 - top right */}
         <div
@@ -66,6 +76,19 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             backgroundSize: '60px 60px',
           }}
         />
+
+        {/* Ambient dust particles */}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-primary-400/20 dark:bg-primary-400/15"
+            style={{
+              left: `${15 + i * 14}%`,
+              top: `${20 + (i % 3) * 25}%`,
+              animation: `drift ${12 + i * 4}s ease-in-out infinite ${i * 2}s`,
+            }}
+          />
+        ))}
       </div>
 
       <div className="max-w-7xl mx-auto px-6 w-full">
@@ -73,26 +96,27 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
         <div className={`text-center max-w-3xl mx-auto transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8 border border-primary-200 dark:border-primary-800 backdrop-blur-sm">
             <Sparkles className="w-3.5 h-3.5" />
-            Start writing for free
+            Be among the first to write with Morpheus
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
-            Write Your{' '}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white leading-[1.08] tracking-tight mb-6">
+            The AI Co-Writer That{' '}
             <span className="relative inline-block">
-              <span className="relative z-10 text-primary-600 dark:text-primary-400">Story</span>
-              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
-                <path d="M2 8C50 2 150 2 198 8" stroke="currentColor" strokeWidth="4" className="text-primary-400/40 dark:text-primary-500/30" strokeLinecap="round" />
+              <span className="relative z-10 text-primary-600 dark:text-primary-400">Remembers</span>
+              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 240 12" fill="none" preserveAspectRatio="none">
+                <path d="M2 8C60 2 180 2 238 8" stroke="currentColor" strokeWidth="4" className="text-primary-400/40 dark:text-primary-500/30" strokeLinecap="round" />
               </svg>
             </span>
             <br />
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-primary-400 bg-clip-text text-transparent">
-              With an AI That Gets It
+              Every Character, Every Plot
             </span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto">
-            The AI co-writer that learns your voice. Plan worlds, develop characters,
-            and banish blank-page syndrome for good.
+            Plan worlds, develop characters, and write chapters in half the time.
+            Morpheus reads your lore bible so every suggestion stays true to your vision —
+            <span className="font-semibold text-gray-700 dark:text-gray-300"> no generic AI fluff.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -121,21 +145,22 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             </button>
           </div>
 
-          {/* Social proof mini */}
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <div className="flex -space-x-2">
-              {[PenTool, BookOpen, Sparkles].map((Icon, i) => (
-                <div
-                  key={i}
-                  className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 border-2 border-white dark:border-slate-900 flex items-center justify-center"
-                >
-                  <Icon className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
-                </div>
-              ))}
+          {/* Credibility bar */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <Feather className="w-4 h-4 text-primary-500" />
+              <span>Built for <span className="font-semibold text-gray-700 dark:text-gray-300">novelists</span> who world-build</span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-500">
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Be among the first</span> to build your world
-            </p>
+            <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-slate-700" />
+            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+              <Clock className="w-4 h-4 text-primary-500" />
+              <span>Cut drafting time <span className="font-semibold text-gray-700 dark:text-gray-300">in half</span></span>
+            </div>
+            <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-slate-700" />
+            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+              <Shield className="w-4 h-4 text-primary-500" />
+              <span><span className="font-semibold text-gray-700 dark:text-gray-300">Your creations stay yours</span></span>
+            </div>
           </div>
         </div>
 
@@ -145,10 +170,18 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             {/* Glow behind image */}
             <div className="absolute -inset-2 -z-10 rounded-[2rem] bg-primary-500/10 blur-3xl opacity-50" />
 
+            {/* Light mode screenshot */}
             <img
               src="/assets/hero-editor.png"
               alt="Morpheus editor with AI co-writer — writing The Cartographer of Lost Things"
-              className="w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30"
+              className={`w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30 transition-opacity duration-700 ${isDark ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'}`}
+              loading="eager"
+            />
+            {/* Dark mode screenshot */}
+            <img
+              src="/assets/hero-editor-dark.png"
+              alt="Morpheus editor in dark mode with AI co-writer"
+              className={`w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30 transition-opacity duration-700 ${isDark ? 'opacity-100 relative' : 'opacity-0 absolute inset-0'}`}
               loading="eager"
             />
 

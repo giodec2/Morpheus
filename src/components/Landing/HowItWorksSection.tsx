@@ -1,32 +1,34 @@
-import { BookOpen, Users, MessageSquare, ArrowRight } from 'lucide-react';
+import { BookOpen, Users, MessageSquare, ArrowRight, Feather } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
+import AuthModal from '@/components/Auth/AuthModal';
+import { useLocation } from 'wouter';
 
 const steps = [
   {
     number: '01',
     icon: BookOpen,
-    title: 'Create a Book',
+    title: 'Start Your Novel',
     description:
-      'Start with a title. Set up your first book for free with a world bible, chapters, and everything you need to start writing.',
+      'Create your first book in seconds. A clean editor, an organized chapter system, and a dedicated space for your world bible — everything you need to go from idea to first sentence.',
     gradient: 'from-primary-500 via-teal-400 to-emerald-400',
     shadow: 'shadow-primary-500/25',
   },
   {
     number: '02',
     icon: Users,
-    title: 'Build Your World',
+    title: 'Populate Your Universe',
     description:
-      'Add characters, locations, and rules. The AI reads everything to stay consistent with your vision.',
+      "Fill your lore bible with characters, locations, and world rules. The AI ingests it all — so when you ask for a scene, the suggestions respect the rules you have already established.",
     gradient: 'from-amber-500 via-orange-400 to-rose-400',
     shadow: 'shadow-amber-500/25',
   },
   {
     number: '03',
     icon: MessageSquare,
-    title: 'Write with AI',
+    title: 'Draft with Your Co-Writer',
     description:
-      "Chat, brainstorm, expand scenes. Morpheus follows your style and your world's logic—so it never feels like a chatbot.",
+      'Stuck on dialogue? Need a scene transition? Want to explore a what-if? Chat with an AI that knows your story inside and out — and generates prose that sounds like you.',
     gradient: 'from-purple-500 via-violet-400 to-pink-400',
     shadow: 'shadow-purple-500/25',
   },
@@ -42,20 +44,17 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
       const timer = setTimeout(() => setEntered(true), index * 200);
       return () => clearTimeout(timer);
     }
-    if (!isInView && entered) {
-      setEntered(false);
-    }
   }, [isInView, entered, index]);
 
   return (
     <div
       key={step.number}
       ref={ref}
-      className={`relative group transition-all duration-300 ${
+      className={`relative group transition-all duration-300 h-full ${
         isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}
     >
-      <div className="relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden">
+      <div className="relative h-full flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden">
         {/* Top gradient accent on hover */}
         <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${step.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
@@ -72,13 +71,13 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
           {step.title}
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-5">
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1">
           {step.description}
         </p>
 
-        {/* Arrow for non-last on mobile/tablet */}
+        {/* Arrow for non-last on medium screens */}
         {index < steps.length - 1 && (
-          <div className="hidden md:flex lg:hidden items-center justify-center">
+          <div className="hidden md:flex lg:hidden items-center justify-center mt-5">
             <ArrowRight className="w-5 h-5 text-gray-300 dark:text-gray-600" />
           </div>
         )}
@@ -92,12 +91,22 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
 
 export default function HowItWorksSection() {
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
+  const [showAuth, setShowAuth] = useState(false);
+  const [, navigate] = useLocation();
 
   return (
     <section id="how-it-works" className="py-28 md:py-36 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 -z-10">
+      {/* Background glow with animated mesh */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-primary-500/5 blur-3xl" />
+        <div
+          className="absolute top-1/3 left-1/4 w-[400px] h-[400px] rounded-full bg-amber-500/3 blur-3xl"
+          style={{ animation: 'drift 25s ease-in-out infinite' }}
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-purple-500/3 blur-3xl"
+          style={{ animation: 'drift 20s ease-in-out infinite 5s' }}
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-6">
@@ -126,6 +135,13 @@ export default function HowItWorksSection() {
           <div className="hidden lg:block absolute top-20 left-[20%] right-[20%]">
             <div className="relative h-1 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div className="absolute inset-y-0 left-0 w-0 bg-gradient-to-r from-primary-500 via-amber-500 to-purple-500 rounded-full animate-[draw-line_2s_ease-out_forwards]" style={{ width: '100%' }} />
+              {/* Traveling light pulse */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-20 h-3 rounded-full bg-white/60 dark:bg-white/30 blur-sm"
+                style={{
+                  animation: 'traveling-pulse 4s ease-in-out infinite',
+                }}
+              />
             </div>
             {/* Step dots on line */}
             {steps.map((_, i) => (
@@ -143,7 +159,26 @@ export default function HowItWorksSection() {
             ))}
           </div>
         </div>
+
+        {/* CTA after steps */}
+        <div className="mt-16 text-center">
+          <button
+            onClick={() => setShowAuth(true)}
+            className="group btn-primary text-base px-8 py-4 inline-flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
+          >
+            <Feather className="w-4 h-4" />
+            Start Your First Book — It is Free
+          </button>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">No credit card required · Cancel anytime</p>
+        </div>
       </div>
+
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={() => navigate('/app')}
+        />
+      )}
     </section>
   );
 }

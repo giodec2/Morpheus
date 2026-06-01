@@ -1,37 +1,38 @@
-import { MessageSquare, Users, Shield, Zap } from 'lucide-react';
+import { MessageSquare, Users, Shield, Zap, ArrowRight } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 const features = [
   {
     icon: MessageSquare,
-    title: 'AI That Remembers Your World',
+    title: 'A Lore Bible That Never Forgets',
     description:
-      'Chat about your plot, your characters, your rules. Morpheus recalls every detail—so your AI partner never feels like a stranger.',
+      "Every character trait, plot twist, and world rule lives in your lore bible. The AI references it with every suggestion — so continuity errors become a thing of the past.",
     gradient: 'from-primary-500 to-teal-400',
     shadow: 'shadow-primary-500/20',
   },
   {
     icon: Users,
-    title: 'Your World, Organized',
+    title: 'Characters, Lore & Locations — Structured',
     description:
-      'Keep characters, locations, and lore in one dedicated space. Build the backbone of your story without juggling notes, tabs, or spreadsheets.',
+      'Build a living wiki for your novel. Organize people, places, and mythologies in dedicated panels so your world stays coherent from chapter one to the epilogue.',
     gradient: 'from-amber-500 to-orange-400',
     shadow: 'shadow-amber-500/20',
   },
   {
     icon: Shield,
-    title: 'Your Ideas Stay Private',
+    title: 'Your Manuscript, Your Property',
     description:
-      'We only use AI providers with strict zero data retention policies. Your prompts are never logged, never stored, and never used to train models.',
+      'Your creative work is never used to train AI models. Our providers process prompts and discard them immediately. Write with confidence knowing your ideas stay exclusively yours.',
     gradient: 'from-emerald-500 to-teal-400',
     shadow: 'shadow-emerald-500/20',
   },
   {
     icon: Zap,
-    title: 'Pick Your Brain',
+    title: 'Choose Your Creative Engine',
     description:
-      'Use your own API key for full control, or tap our hosted models. From quick brainstorming to deep literary analysis, you choose the mind behind the pen.',
+      "Switch between state-of-the-art language models to match your project's needs. Use our hosted AI for convenience, or connect your own key for unlimited flexibility.",
     gradient: 'from-purple-500 to-pink-400',
     shadow: 'shadow-purple-500/20',
   },
@@ -47,9 +48,6 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       const timer = setTimeout(() => setEntered(true), index * 150);
       return () => clearTimeout(timer);
     }
-    if (!isInView && entered) {
-      setEntered(false);
-    }
   }, [isInView, entered, index]);
 
   return (
@@ -61,8 +59,16 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           : 'opacity-0 translate-y-10'
       }`}
     >
-      {/* Top gradient bar */}
+      {/* Top gradient bar with shimmer */}
       <div className={`absolute top-0 left-4 right-4 h-1 rounded-b-full bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+      <div
+        className={`absolute top-0 left-4 right-4 h-1 rounded-b-full opacity-0 group-hover:opacity-60 transition-opacity duration-500`}
+        style={{
+          background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)`,
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 2s linear infinite',
+        }}
+      />
 
       {/* Icon */}
       <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
@@ -89,11 +95,19 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 
 export default function FeaturesSection() {
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
+  const [, setLocation] = useLocation();
 
   return (
     <section id="features" className="py-28 md:py-36 relative">
       {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-800 to-transparent" />
+      <div
+        className="absolute top-0 left-0 w-full h-px"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, rgba(20,184,166,0.3) 25%, rgba(99,102,241,0.2) 50%, rgba(20,184,166,0.3) 75%, transparent 100%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 8s linear infinite',
+        }}
+      />
 
       <div className="max-w-7xl mx-auto px-6">
         <div
@@ -121,6 +135,18 @@ export default function FeaturesSection() {
           {features.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}
+        </div>
+
+        {/* CTA after features */}
+        <div className="mt-16 text-center">
+          <button
+            onClick={() => setLocation('/app')}
+            className="group btn-primary text-base px-8 py-4 inline-flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
+          >
+            Start Writing Free
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">No credit card required</p>
         </div>
       </div>
     </section>

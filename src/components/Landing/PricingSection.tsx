@@ -1,6 +1,6 @@
 import { Check, X, Sparkles, Star, Crown, Zap, Loader2 } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
 import { createCheckout, getVariantIdForTier } from '@/services/billing';
@@ -120,7 +120,7 @@ const comparisonFeatures = [
   { name: 'Priority support', free: false, scribe: false, novelist: false, architect: true },
 ];
 
-function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) {
+function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: number; isAnnual: boolean }) {
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
   const [hovered, setHovered] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -166,7 +166,7 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
     : 'hover:shadow-md hover:shadow-gray-400/10 dark:hover:shadow-black/30';
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {/* Badge — outside card so it can exceed bounds */}
       {tier.badge && (
         <div className={`absolute -top-2.5 -right-2.5 z-30 ${
@@ -182,7 +182,7 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
         ref={ref}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`relative flex flex-col rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
+        className={`relative flex flex-col h-full rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
           isCurrent
             ? `border-emerald-500 dark:border-emerald-600 ${hoverLift} ${hoverShadow}`
             : isSuggested
@@ -219,13 +219,25 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
           {tier.price > 0 ? (
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                  ${tier.price}
+                <span
+                  key={isAnnual ? 'annual' : 'monthly'}
+                  className="text-4xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums transition-all duration-300 animate-in fade-in zoom-in-95"
+                >
+                  ${isAnnual ? Math.round(tier.price * 10) : tier.price}
                 </span>
-                <span className="text-sm text-gray-400 font-medium">/mo</span>
+                <span className="text-sm text-gray-400 font-medium transition-all duration-300">
+                  /{isAnnual ? 'yr' : 'mo'}
+                </span>
+                <span
+                  className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
+                    isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                  }`}
+                >
+                  Save ${tier.price * 2}
+                </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                + applicable taxes at checkout
+              <p className="text-xs text-gray-400 mt-1.5 transition-all duration-300">
+                {isAnnual ? `Billed annually ($${Math.round(tier.price * 10)}/year). ` : 'Billed monthly. '}Cancel anytime.
               </p>
             </div>
           ) : (
@@ -312,18 +324,99 @@ function PricingCard({ tier, index }: { tier: typeof tiers[0]; index: number }) 
   );
 }
 
+function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v: boolean) => void }) {
+  const monthlyRef = useRef<HTMLButtonElement>(null);
+  const annualRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 });
+
+  const measure = () => {
+    const active = isAnnual ? annualRef.current : monthlyRef.current;
+    const parent = containerRef.current;
+    if (active && parent) {
+      const parentRect = parent.getBoundingClientRect();
+      const activeRect = active.getBoundingClientRect();
+      setPillStyle({
+        width: activeRect.width,
+        left: activeRect.left - parentRect.left,
+      });
+    }
+  };
+
+  useLayoutEffect(() => {
+    measure();
+  }, [isAnnual]);
+
+  // Also measure on mount and window resize
+  useEffect(() => {
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative inline-flex items-center p-1 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+      {/* Sliding background pill */}
+      <div
+        className="absolute top-1 bottom-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm transition-all duration-300 ease-out"
+        style={{
+          width: pillStyle.width,
+          left: pillStyle.left,
+        }}
+      />
+      <button
+        ref={monthlyRef}
+        onClick={() => onChange(false)}
+        className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 whitespace-nowrap ${
+          !isAnnual
+            ? 'text-gray-900 dark:text-white'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+        }`}
+      >
+        Monthly
+      </button>
+      <button
+        ref={annualRef}
+        onClick={() => onChange(true)}
+        className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center gap-2 whitespace-nowrap ${
+          isAnnual
+            ? 'text-gray-900 dark:text-white'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+        }`}
+      >
+        Annual
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all duration-300 ${
+          isAnnual
+            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30'
+            : 'text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-slate-700'
+        }`}>
+          Save 2 months
+        </span>
+      </button>
+    </div>
+  );
+}
+
 export default function PricingSection() {
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
+  const [isAnnual, setIsAnnual] = useState(false);
 
   return (
     <section id="pricing" className="py-28 md:py-36 relative">
       {/* Top divider */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-800 to-transparent" />
+      <div
+        className="absolute top-0 left-0 w-full h-px"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, rgba(20,184,166,0.25) 25%, rgba(245,158,11,0.2) 50%, rgba(20,184,166,0.25) 75%, transparent 100%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 10s linear infinite',
+        }}
+      />
 
       <div className="max-w-7xl mx-auto px-6">
         <div
           ref={titleRef}
-          className={`text-center max-w-2xl mx-auto mb-20 transition-all duration-1000 ${
+          className={`text-center max-w-2xl mx-auto mb-12 transition-all duration-1000 ${
             titleInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -341,10 +434,15 @@ export default function PricingSection() {
           </p>
         </div>
 
+        {/* Annual/Monthly toggle — sliding pill */}
+        <div className="flex justify-center mb-14">
+          <BillingToggle isAnnual={isAnnual} onChange={setIsAnnual} />
+        </div>
+
         {/* Pricing cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20 items-start">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20 items-stretch">
           {tiers.map((tier, index) => (
-            <PricingCard key={tier.name} tier={tier} index={index} />
+            <PricingCard key={tier.name} tier={tier} index={index} isAnnual={isAnnual} />
           ))}
         </div>
 

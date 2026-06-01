@@ -117,6 +117,16 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
                   <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-primary w-full">Get Started</button>
                 </>
               )}
+              <button
+                onClick={() => {
+                  setTheme(isDark ? 'light' : 'dark');
+                  setMobileOpen(false);
+                }}
+                className="flex items-center justify-center gap-2 py-2.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {isDark ? 'Light Mode' : 'Dark Mode'}
+              </button>
             </div>
           </div>
         )}

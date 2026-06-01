@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Feather, ChevronDown, ChevronUp, ArrowLeft, HelpCircle, Lock, Brain, CreditCard, BookOpen, Globe } from 'lucide-react';
+import { Feather, ChevronDown, ArrowLeft, HelpCircle, Lock, Brain, CreditCard, BookOpen, Globe } from 'lucide-react';
 import LandingNavbar from '@/components/Landing/LandingNavbar';
 import Footer from '@/components/Landing/Footer';
+import { useInView } from '@/hooks/useInView';
 
-interface FAQItem {
+interface FAQItemData {
   question: string;
   answer: React.ReactNode;
   category: string;
 }
 
-const faqs: FAQItem[] = [
+const faqs: FAQItemData[] = [
   // Account & Billing
   {
     category: 'Account & Billing',
@@ -18,7 +19,7 @@ const faqs: FAQItem[] = [
     answer: (
       <>
         You can cancel your subscription at any time through your account settings in the Morpheus app, or by emailing us at{' '}
-        <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a>. Cancellation takes effect at the end of your current billing period — you'll keep access until then. There are no cancellation fees.
+        <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a>. Cancellation takes effect at the end of your current billing period — you will keep access until then. There are no cancellation fees.
       </>
     ),
   },
@@ -27,7 +28,7 @@ const faqs: FAQItem[] = [
     question: 'What is your refund policy?',
     answer: (
       <>
-        EU consumers have a 14-day statutory right of withdrawal. If you haven't used the service, you get a full refund. If you have used it, you can still request a refund within 14 days of your first payment if usage was minimal — we verify this through our database. See our full{' '}
+        EU consumers have a 14-day statutory right of withdrawal. If you have not used the service, you get a full refund. If you have used it, you can still request a refund within 14 days of your first payment if usage was minimal — we verify this through our database. See our full{' '}
         <Link href="/refund" className="text-primary-600 dark:text-primary-400 underline">Refund Policy</Link> for details.
       </>
     ),
@@ -35,7 +36,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Account & Billing',
     question: 'Do you offer a free trial?',
-    answer: 'We may offer a 7-day free trial for new subscribers, especially during launch periods. The trial gives you full access to the selected plan. If you don\'t cancel before the trial ends, it automatically converts to a paid subscription. We\'ll send you a reminder email before that happens.',
+    answer: "We offer a 7-day free trial for new subscribers on any paid plan. The trial gives you full access to all features. If you do not cancel before the trial ends, it automatically converts to a paid subscription. We will send you a reminder email before that happens.",
   },
   {
     category: 'Account & Billing',
@@ -131,7 +132,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Features & Usage',
     question: 'Can I use Morpheus for professional or commercial writing?',
-    answer: 'Yes. You retain full ownership and rights to everything you create in Morpheus. Whether you\'re writing a novel to publish, a screenplay, or any other commercial work, your content is yours to use, sell, or license as you see fit.',
+    answer: 'Yes. You retain full ownership and rights to everything you create in Morpheus. Whether you are writing a novel to publish, a screenplay, or any other commercial work, your content is yours to use, sell, or license as you see fit.',
   },
   {
     category: 'Features & Usage',
@@ -172,9 +173,61 @@ const categoryIcons: Record<string, React.ReactNode> = {
   'Compliance': <Globe className="w-4 h-4" />,
 };
 
+function AnimatedFAQItem({ faq, index, isOpen, onToggle }: {
+  faq: FAQItemData;
+  index: number;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
+  const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    if (isInView && !entered) {
+      const timer = setTimeout(() => setEntered(true), Math.min(index * 60, 400));
+      return () => clearTimeout(timer);
+    }
+  }, [isInView, entered, index]);
+
+  return (
+    <div
+      ref={ref}
+      className={`border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden transition-all duration-500 hover:border-gray-300 dark:hover:border-slate-600 ${
+        isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+    >
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between gap-4 p-4 md:p-5 text-left group"
+        aria-expanded={isOpen}
+      >
+        <span className="font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+          {faq.question}
+        </span>
+        <ChevronDown
+          className={`w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300 ${
+            isOpen ? 'rotate-180 text-primary-500' : ''
+          }`}
+        />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-4 md:px-5 pb-4 md:pb-5 text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-slate-800">
+          <div className="pt-3 text-sm">{faq.answer}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FAQ() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { ref: headerRef, isInView: headerInView } = useInView<HTMLDivElement>({ threshold: 0.2 });
+  const { ref: ctaRef, isInView: ctaInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
 
   const filteredFaqs = activeCategory === 'All'
     ? faqs
@@ -196,14 +249,21 @@ export default function FAQ() {
           </Link>
 
           {/* Header */}
-          <div className="mb-10">
+          <div
+            ref={headerRef}
+            className={`mb-10 transition-all duration-1000 ${
+              headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
             <div className="flex items-center gap-2 mb-4">
               <Feather className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               <span className="text-sm font-medium text-primary-600 dark:text-primary-400">Morpheus</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Frequently Asked Questions</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+              Frequently Asked Questions
+            </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Everything you need to know about Morpheus. Can't find what you're looking for?{' '}
+              Everything you need to know about Morpheus. Can not find what you are looking for?{' '}
               <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">Get in touch</a>.
             </p>
           </div>
@@ -214,9 +274,9 @@ export default function FAQ() {
               <button
                 key={cat}
                 onClick={() => { setActiveCategory(cat); setOpenIndex(null); }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
                   activeCategory === cat
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'
                     : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-700'
                 }`}
               >
@@ -229,38 +289,27 @@ export default function FAQ() {
           {/* FAQ Items */}
           <div className="space-y-3">
             {filteredFaqs.map((faq, index) => (
-              <div
+              <AnimatedFAQItem
                 key={`${faq.category}-${index}`}
-                className="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <span className="font-medium text-gray-900 dark:text-white">{faq.question}</span>
-                  {openIndex === index ? (
-                    <ChevronUp className="w-5 h-5 text-gray-400 shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
-                  )}
-                </button>
-                {openIndex === index && (
-                  <div className="px-4 pb-4 text-gray-600 dark:text-gray-400 leading-relaxed">
-                    <div className="pt-1 border-t border-gray-100 dark:border-slate-800">
-                      <p className="pt-3">{faq.answer}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                faq={faq}
+                index={index}
+                isOpen={openIndex === index}
+                onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+              />
             ))}
           </div>
 
           {/* Contact CTA */}
-          <div className="mt-12 p-6 bg-gray-50 dark:bg-slate-800/50 rounded-xl text-center">
+          <div
+            ref={ctaRef}
+            className={`mt-12 p-6 md:p-8 bg-gray-50 dark:bg-slate-800/50 rounded-2xl text-center border border-gray-100 dark:border-slate-800 transition-all duration-1000 ${
+              ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
             <HelpCircle className="w-8 h-8 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Still have questions?</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              We're here to help. Send us an email and we'll get back to you within 24 hours.
+              We are here to help. Send us an email and we will get back to you within 24 hours.
             </p>
             <a
               href="mailto:giovannidecaprio04@pec.it"

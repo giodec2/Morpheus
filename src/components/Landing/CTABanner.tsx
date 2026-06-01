@@ -1,6 +1,6 @@
 import { Link } from 'wouter';
 import { useAuthStore } from '@/stores/authStore';
-import { ArrowRight, Feather, Sparkles } from 'lucide-react';
+import { ArrowRight, Feather } from 'lucide-react';
 import AuthModal from '@/components/Auth/AuthModal';
 import { useState } from 'react';
 import { useLocation } from 'wouter';
@@ -22,16 +22,20 @@ export default function CTABanner() {
             backgroundSize: '200% 200%',
           }}
         />
-        {/* Floating shapes */}
-        <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-white/10 blur-xl" style={{ animation: 'float-slow 10s ease-in-out infinite' }} />
-        <div className="absolute bottom-10 right-20 w-32 h-32 rounded-full bg-white/10 blur-xl" style={{ animation: 'float-slow 12s ease-in-out infinite 2s' }} />
-        <div className="absolute top-1/2 left-1/3 w-16 h-16 rounded-full bg-white/5 blur-lg" style={{ animation: 'float-slow 8s ease-in-out infinite 1s' }} />
+        {/* Floating shapes with varied drift patterns */}
+        <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-white/10 blur-xl" style={{ animation: 'drift 14s ease-in-out infinite' }} />
+        <div className="absolute bottom-10 right-20 w-32 h-32 rounded-full bg-white/10 blur-xl" style={{ animation: 'drift 18s ease-in-out infinite 3s' }} />
+        <div className="absolute top-1/2 left-1/3 w-16 h-16 rounded-full bg-white/5 blur-lg" style={{ animation: 'drift 10s ease-in-out infinite 1.5s' }} />
+        <div className="absolute top-20 right-1/4 w-12 h-12 rounded-full bg-white/5 blur-lg hidden md:block" style={{ animation: 'drift 16s ease-in-out infinite 5s' }} />
       </div>
 
       <div className="relative max-w-4xl mx-auto px-6 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-semibold mb-8">
-          <Sparkles className="w-3.5 h-3.5" />
-          50% off your first month on any paid plan
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+          </span>
+          Launch pricing — lock in early-adopter rates forever
         </div>
 
         <Feather className="w-14 h-14 text-white/80 mx-auto mb-8" />
@@ -63,7 +67,7 @@ export default function CTABanner() {
         )}
 
         <p className="mt-6 text-sm text-white/60">
-          Free forever tier available. Upgrade anytime.
+          Free forever tier available. Upgrade anytime. 7-day free trial on paid plans.
         </p>
       </div>
 
