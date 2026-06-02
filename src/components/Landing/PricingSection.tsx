@@ -229,7 +229,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                   key={isAnnual ? 'annual' : 'monthly'}
                   className="text-4xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums transition-all duration-300 animate-in fade-in zoom-in-95"
                 >
-                  ${isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price}
+                  €{isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price}
                 </span>
                 <span className="text-sm text-gray-400 font-medium transition-all duration-300">
                   /mo
@@ -243,7 +243,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1.5 transition-all duration-300">
-                {isAnnual ? `Billed annually ($${tier.annualPrice}/year). ` : 'Billed monthly. '}Cancel anytime. + applicable tax
+                {isAnnual ? `Billed annually (€${tier.annualPrice}/year). ` : 'Billed monthly. '}Cancel anytime. + applicable tax
               </p>
             </div>
           ) : (

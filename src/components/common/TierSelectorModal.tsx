@@ -143,7 +143,7 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                         {tier.price > 0 ? (
                           <>
                             <span className="text-lg font-black text-gray-900 dark:text-white">
-                              ${tier.price}
+                              €{tier.price}
                             </span>
                             <span className="text-xs text-gray-400">+ applicable tax</span>
                           </>

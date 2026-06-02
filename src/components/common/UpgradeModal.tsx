@@ -79,9 +79,9 @@ const nextTierBenefits: Record<string, string[]> = {
 };
 
 const prices: Record<string, string> = {
-  scribe: '$9',
-  novelist: '$19',
-  architect: '$49',
+  scribe: '€9',
+  novelist: '€19',
+  architect: '€49',
 };
 
 export default function UpgradeModal({ currentTier, currentCount, maxCount, onClose }: UpgradeModalProps) {
