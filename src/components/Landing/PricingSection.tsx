@@ -36,6 +36,8 @@ const tiers = [
   {
     name: 'Scribe',
     price: 9,
+    annualPrice: 96,
+    annualDiscount: 11,
     description: 'For dedicated writers',
     badge: null,
     gradient: 'from-primary-50 to-white dark:from-slate-800 dark:to-slate-900',
@@ -60,6 +62,8 @@ const tiers = [
   {
     name: 'Novelist',
     price: 19,
+    annualPrice: 192,
+    annualDiscount: 16,
     description: 'For serious novelists',
     badge: 'Popular',
     gradient: 'from-amber-50 to-white dark:from-slate-800 dark:to-slate-900',
@@ -85,6 +89,8 @@ const tiers = [
   {
     name: 'Architect',
     price: 49,
+    annualPrice: 468,
+    annualDiscount: 20,
     description: 'For writing at scale',
     badge: 'Best Value',
     gradient: 'from-purple-100 to-white dark:from-slate-800 dark:to-slate-900',
@@ -223,21 +229,21 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                   key={isAnnual ? 'annual' : 'monthly'}
                   className="text-4xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums transition-all duration-300 animate-in fade-in zoom-in-95"
                 >
-                  ${isAnnual ? Math.round(tier.price * 10) : tier.price}
+                  ${isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price}
                 </span>
                 <span className="text-sm text-gray-400 font-medium transition-all duration-300">
-                  /{isAnnual ? 'yr' : 'mo'}
+                  /mo
                 </span>
                 <span
                   className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
                     isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                   }`}
                 >
-                  Save ${tier.price * 2}
+                  Save ~{tier.annualDiscount}%
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1.5 transition-all duration-300">
-                {isAnnual ? `Billed annually ($${Math.round(tier.price * 10)}/year). ` : 'Billed monthly. '}Cancel anytime. + applicable tax
+                {isAnnual ? `Billed annually ($${tier.annualPrice}/year). ` : 'Billed monthly. '}Cancel anytime. + applicable tax
               </p>
             </div>
           ) : (
@@ -358,7 +364,11 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
     <div ref={containerRef} className="relative inline-flex items-center p-1 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
       {/* Sliding background pill */}
       <div
-        className="absolute top-1 bottom-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm transition-all duration-300 ease-out"
+        className={`absolute top-1 bottom-1 rounded-lg transition-all duration-300 ease-out ${
+          isAnnual
+            ? 'bg-purple-600 dark:bg-purple-500 shadow-lg shadow-purple-500/50'
+            : 'bg-white dark:bg-slate-700 shadow-sm'
+        }`}
         style={{
           width: pillStyle.width,
           left: pillStyle.left,
@@ -380,18 +390,11 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
         onClick={() => onChange(true)}
         className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center gap-2 whitespace-nowrap ${
           isAnnual
-            ? 'text-gray-900 dark:text-white'
+            ? 'text-white'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
         }`}
       >
         Annual
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all duration-300 ${
-          isAnnual
-            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30'
-            : 'text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-slate-700'
-        }`}>
-          Save 2 months
-        </span>
       </button>
     </div>
   );
@@ -399,7 +402,7 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
 
 export default function PricingSection() {
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   return (
     <section id="pricing" className="py-28 md:py-36 relative">
