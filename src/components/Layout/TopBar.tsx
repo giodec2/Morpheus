@@ -43,7 +43,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
           >
             <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
-          <img src="/logo.png" alt="Morpheus" className="w-6 h-6 object-contain" />
+          <img src="/logo.png" alt="Morpheus" className="w-8 h-8 object-contain" />
           <Link href="/" className="text-lg font-bold text-gray-900 dark:text-white tracking-tight hover:opacity-80 transition-opacity hidden sm:block">
             MORPHEUS
           </Link>

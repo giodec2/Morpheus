@@ -44,7 +44,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
         <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <img src="/logo.png" alt="Morpheus" className="w-7 h-7 object-contain group-hover:scale-110 transition-transform" />
+            <img src="/logo.png" alt="Morpheus" className="w-9 h-9 object-contain group-hover:scale-110 transition-transform" />
             <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Morpheus</span>
           </Link>
 

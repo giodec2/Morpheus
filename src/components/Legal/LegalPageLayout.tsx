@@ -29,7 +29,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }: LegalP
           {/* Header */}
           <div className="mb-10">
             <div className="flex items-center gap-2 mb-4">
-              <img src="/logo.png" alt="Morpheus" className="w-6 h-6 object-contain" />
+              <img src="/logo.png" alt="Morpheus" className="w-8 h-8 object-contain" />
               <span className="text-sm font-medium text-primary-600 dark:text-primary-400">Morpheus</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{title}</h1>

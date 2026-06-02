@@ -18,7 +18,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
-              <img src="/logo.png" alt="Morpheus" className="w-5 h-5 object-contain" />
+              <img src="/logo.png" alt="Morpheus" className="w-7 h-7 object-contain" />
               <span className="font-bold text-gray-900 dark:text-white">Morpheus</span>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">

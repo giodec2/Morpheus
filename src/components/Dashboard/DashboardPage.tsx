@@ -219,7 +219,7 @@ export default function DashboardPage() {
       <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="Morpheus" className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
+            <img src="/logo.png" alt="Morpheus" className="w-11 h-11 object-contain group-hover:scale-110 transition-transform" />
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">MORPHEUS</h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">AI Co-Writer for Your Dreams</p>
