@@ -68,7 +68,7 @@ export default function RefundPolicy() {
           <h3 className="font-semibold text-gray-900 dark:text-white mt-3 mb-2">3.3 How to Exercise Your Withdrawal Right</h3>
           <p>To exercise your right of withdrawal, you must inform us of your decision by an unequivocal statement. You may use the model withdrawal form below or simply email us:</p>
           <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg mt-2 text-sm">
-            <p>Email: <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a></p>
+            <p>Email: <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a></p>
             <p>Include: Your name, email address, subscription date, and a clear statement that you wish to withdraw.</p>
           </div>
           <p className="mt-2">
@@ -111,7 +111,7 @@ export default function RefundPolicy() {
           <p>You may cancel your subscription at any time:</p>
           <ul className="list-disc pl-5 space-y-1 mt-2">
             <li>Through your account settings in the Morpheus app (when available).</li>
-            <li>By emailing us at <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a> with your account email address.</li>
+            <li>By emailing us at <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a> with your account email address.</li>
           </ul>
           <p className="mt-2">
             Cancellation takes effect at the end of your current billing period. You will continue to have access to paid features until that date. No partial refunds are provided for the remainder of the billing period except as specified above.
@@ -135,7 +135,7 @@ export default function RefundPolicy() {
           </p>
           <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg mt-2 text-sm font-mono whitespace-pre-wrap border border-gray-200 dark:border-slate-700">
 {`To: Giovanni de Caprio
-Email: giovannidecaprio04@pec.it
+Email: hello@morpheusink.com
 Address: Via Gaspare Gozzi 113, 00145 Roma (RM), Italy
 
 I hereby give notice that I withdraw from my contract of sale / subscription for the provision of the following service:
@@ -168,7 +168,7 @@ Signature: (only if this form is notified on paper)`}
           <p>If you have any questions about refunds, withdrawals, or cancellations, please contact us:</p>
           <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg mt-2 text-sm">
             <p><strong>Giovanni de Caprio</strong></p>
-            <p>Email: <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a></p>
+            <p>Email: <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a></p>
             <p>Address: Via Gaspare Gozzi 113, 00145 Roma (RM), Italy</p>
           </div>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">

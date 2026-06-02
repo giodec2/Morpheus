@@ -24,6 +24,7 @@ const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('@/pages/CookiePolicy'));
 const RefundPolicy = lazy(() => import('@/pages/RefundPolicy'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
+const Contact = lazy(() => import('@/pages/Contact'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function PageLoader() {
@@ -96,6 +97,7 @@ function App() {
           <Route path="/cookies" component={CookiePolicy} />
           <Route path="/refund" component={RefundPolicy} />
           <Route path="/faq" component={FAQ} />
+          <Route path="/contact" component={Contact} />
           <Route path="/app">
             {() => (
               <AuthGuard>

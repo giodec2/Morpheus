@@ -46,8 +46,8 @@ export default function Footer() {
                 </button>
               </li>
               <li>
-                <Link href="/faq" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  FAQ
+                <Link href="/contact" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -91,8 +91,8 @@ export default function Footer() {
             <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Contact</h4>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:giovannidecaprio04@pec.it" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  giovannidecaprio04@pec.it
+                <a href="mailto:hello@morpheusink.com" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  hello@morpheusink.com
                 </a>
               </li>
               <li>
@@ -131,10 +131,6 @@ export default function Footer() {
             {' · '}C.F.: DCPGNN04P28H501W
             {' · '}P.IVA: 18340151002
             {' · '}Codice ATECO: 62.10.00 (Attività di programmazione informatica)
-            {' · '}PEC:{' '}
-            <a href="mailto:giovannidecaprio04@pec.it" className="underline hover:no-underline">
-              giovannidecaprio04@pec.it
-            </a>
             {' · '}Regime fiscale: Regime Forfettario
           </p>
         </div>

@@ -131,13 +131,13 @@ export default function FAQSection() {
             All Questions
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <a
-            href="mailto:giovannidecaprio04@pec.it"
+          <Link
+            href="/contact"
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
           >
             Contact Support
             <span className="text-lg">→</span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

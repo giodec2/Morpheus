@@ -213,7 +213,7 @@ export default function CookiePolicy() {
           <p>If you have any questions about our use of cookies or this Cookie Policy, please contact us:</p>
           <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg mt-2 text-sm">
             <p><strong>Giovanni de Caprio</strong></p>
-            <p>Email: <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a></p>
+            <p>Email: <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a></p>
             <p>Address: Via Gaspare Gozzi 113, 00145 Roma (RM), Italy</p>
           </div>
         </section>

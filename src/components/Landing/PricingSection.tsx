@@ -237,7 +237,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1.5 transition-all duration-300">
-                {isAnnual ? `Billed annually ($${Math.round(tier.price * 10)}/year). ` : 'Billed monthly. '}Cancel anytime.
+                {isAnnual ? `Billed annually ($${Math.round(tier.price * 10)}/year). ` : 'Billed monthly. '}Cancel anytime. + applicable tax
               </p>
             </div>
           ) : (

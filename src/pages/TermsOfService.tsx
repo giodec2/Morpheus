@@ -233,7 +233,7 @@ export default function TermsOfService() {
             <p><strong>Giovanni de Caprio</strong></p>
             <p>Ditta Individuale — P.IVA 18340151002</p>
             <p>Via Gaspare Gozzi 113, 00145 Roma (RM), Italy</p>
-            <p>Email: <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a></p>
+            <p>Email: <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a></p>
           </div>
         </section>
       </div>

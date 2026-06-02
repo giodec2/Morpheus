@@ -148,7 +148,7 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
                 {prices[nextTierKey]}/mo
               </span>
               <span className="text-xs text-gray-400">
-                + taxes
+                + applicable tax
               </span>
             </div>
           </div>

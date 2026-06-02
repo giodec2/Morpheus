@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
             <p>00145 Roma (RM), Italy</p>
             <p>C.F.: DCPGNN04P28H501W</p>
             <p>P.IVA: 18340151002</p>
-            <p>Email: giovannidecaprio04@pec.it</p>
+            <p>Email: hello@morpheusink.com</p>
           </div>
           <p className="mt-3">
             You can contact us regarding data protection matters at the email address above. We have not appointed a Data Protection Officer (DPO) as we do not meet the thresholds requiring one under Article 37 GDPR.
@@ -192,7 +192,7 @@ export default function PrivacyPolicy() {
             <li><strong>Right to lodge a complaint (Art. 77):</strong> You have the right to complain to the Italian Data Protection Authority (Garante per la Protezione dei Dati Personali) or your local supervisory authority.</li>
           </ul>
           <p className="mt-3">
-            To exercise any of these rights, please contact us at <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a>. We will respond within 30 days of receiving your request. We may need to verify your identity before processing your request.
+            To exercise any of these rights, please contact us at <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a>. We will respond within 30 days of receiving your request. We may need to verify your identity before processing your request.
           </p>
         </section>
 
@@ -251,7 +251,7 @@ export default function PrivacyPolicy() {
           <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
           <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg mt-2 text-sm">
             <p><strong>Giovanni de Caprio</strong></p>
-            <p>Email: <a href="mailto:giovannidecaprio04@pec.it" className="text-primary-600 dark:text-primary-400 underline">giovannidecaprio04@pec.it</a></p>
+            <p>Email: <a href="mailto:hello@morpheusink.com" className="text-primary-600 dark:text-primary-400 underline">hello@morpheusink.com</a></p>
             <p>Address: Via Gaspare Gozzi 113, 00145 Roma (RM), Italy</p>
             <p className="mt-2">You also have the right to lodge a complaint with the Italian Data Protection Authority:</p>
             <p><a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 underline">www.garanteprivacy.it</a></p>
