@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'wouter';
-import { Feather, Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload } from 'lucide-react';
+import { Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
@@ -219,7 +219,7 @@ export default function DashboardPage() {
       <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <Feather className="w-8 h-8 text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform" />
+            <img src="/logo.png" alt="Morpheus" className="w-8 h-8 object-contain group-hover:scale-110 transition-transform" />
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">MORPHEUS</h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">AI Co-Writer for Your Dreams</p>

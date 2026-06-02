@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { Feather, ChevronDown, ArrowLeft, HelpCircle, Lock, Brain, CreditCard, BookOpen, Globe } from 'lucide-react';
+import { ChevronDown, ArrowLeft, HelpCircle, Lock, Brain, CreditCard, BookOpen, Globe } from 'lucide-react';
 import LandingNavbar from '@/components/Landing/LandingNavbar';
 import Footer from '@/components/Landing/Footer';
 import { useInView } from '@/hooks/useInView';
@@ -256,7 +256,7 @@ export default function FAQ() {
             }`}
           >
             <div className="flex items-center gap-2 mb-4">
-              <Feather className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              <img src="/logo.png" alt="Morpheus" className="w-6 h-6 object-contain" />
               <span className="text-sm font-medium text-primary-600 dark:text-primary-400">Morpheus</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">

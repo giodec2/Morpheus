@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { Feather, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import LandingNavbar from '@/components/Landing/LandingNavbar';
 import Footer from '@/components/Landing/Footer';
 import type { ReactNode } from 'react';
@@ -29,7 +29,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }: LegalP
           {/* Header */}
           <div className="mb-10">
             <div className="flex items-center gap-2 mb-4">
-              <Feather className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              <img src="/logo.png" alt="Morpheus" className="w-6 h-6 object-contain" />
               <span className="text-sm font-medium text-primary-600 dark:text-primary-400">Morpheus</span>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{title}</h1>
