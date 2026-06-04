@@ -14,15 +14,6 @@ function estimateTokens(text) {
 }
 
 // ───────────────────────────────────────────────
-// CORS Headers
-// ───────────────────────────────────────────────
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Appwrite-User-Id');
-}
-
-// ───────────────────────────────────────────────
 // Simple in-memory rate limiter
 // ───────────────────────────────────────────────
 const rateLimits = new Map(); // userId -> { count, resetAt }
@@ -61,14 +52,13 @@ function validateEnv() {
   }
 }
 
-export default async ({ req, res, log, error }) => {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.text('', 204);
+export default async (context) => {
+  const { req, res } = context;
 
   try {
     validateEnv();
   } catch (err) {
-    error(`Env validation failed: ${err.message}`);
+    console.error(`Env validation failed: ${err.message}`);
     return res.json({ error: 'Server misconfiguration' }, 500);
   }
 
@@ -129,7 +119,7 @@ export default async ({ req, res, log, error }) => {
     try {
       profile = await databases.getDocument(databaseId, profilesCollection, userId);
     } catch (err) {
-      error(`Profile fetch failed: ${err.message || err}`);
+      console.error(`Profile fetch failed: ${err.message || err}`);
       const isNotFound = err.code === 404 || err.type === 'document_not_found';
       if (isNotFound) {
         return res.json({ error: 'User profile not found' }, 404);
@@ -189,7 +179,7 @@ export default async ({ req, res, log, error }) => {
         const resetMsg = resetErr.message || '';
         const isMissingAttr = resetMsg.includes('Unknown attribute') || resetMsg.includes('document_invalid_structure');
         if (isMissingAttr) {
-          error(`Token reset skipped — DB schema missing attribute: ${resetMsg}`);
+          console.error(`Token reset skipped — DB schema missing attribute: ${resetMsg}`);
         } else {
           throw resetErr;
         }
@@ -273,7 +263,7 @@ export default async ({ req, res, log, error }) => {
 
     if (!response.ok) {
       const errBody = await response.text();
-      error(`OpenRouter error ${response.status}: ${errBody.slice(0, 500)}`);
+      console.error(`OpenRouter error ${response.status}: ${errBody.slice(0, 500)}`);
       let parsedError;
       try { parsedError = JSON.parse(errBody); } catch { /* ignore */ }
       return res.json({
@@ -304,10 +294,10 @@ export default async ({ req, res, log, error }) => {
       const errMsg = err.message || '';
       const isMissingAttr = errMsg.includes('Unknown attribute') || errMsg.includes('document_invalid_structure');
       if (isMissingAttr) {
-        error(`Token usage update skipped — DB schema missing attribute: ${errMsg}`);
+        console.error(`Token usage update skipped — DB schema missing attribute: ${errMsg}`);
         // Continue — deliver AI content even if we can't record tokens
       } else {
-        error(`Failed to update token usage: ${errMsg}`);
+        console.error(`Failed to update token usage: ${errMsg}`);
         return res.json({ error: 'Failed to record token usage. Please retry.' }, 500);
       }
     }
@@ -320,7 +310,7 @@ export default async ({ req, res, log, error }) => {
       weeklyTokensUsedPremium: isPremium ? premiumUsed + actualTokens : premiumUsed,
     });
   } catch (err) {
-    error(`Unhandled error: ${err.message}`);
+    console.error(`Unhandled error: ${err.message}`);
     return res.json({ error: 'Internal server error' }, 500);
   }
 };
