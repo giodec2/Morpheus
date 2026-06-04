@@ -100,7 +100,16 @@ For each table:
 | email                   | Varchar   | 255            | yes      |
 | name                    | Varchar   | 255            | yes      |
 | subscriptionTier        | Varchar   | 32             | yes      |
+| subscriptionStatus      | Varchar   | 32             | no       |
+| subscriptionId          | Varchar   | 255            | no       |
+| subscriptionRenewsAt    | Integer   | —              | no       |
+| subscriptionEndsAt      | Integer   | —              | no       |
+| lemonSqueezyCustomerId  | Varchar   | 255            | no       |
+| lemonSqueezyVariantId   | Varchar   | 255            | no       |
+| customerPortalUrl       | Varchar   | 500            | no       |
+| trialEndsAt             | Integer   | —              | no       |
 | weeklyTokensUsed        | Integer   | 0              | yes      |
+| weeklyTokensUsedPremium | Integer   | 0              | yes      |
 | weeklyTokensResetAt     | Integer   | —              | yes      |
 | maxBooks                | Integer   | —              | yes      |
 | maxWeeklyTokensStandard | Integer   | —              | yes      |

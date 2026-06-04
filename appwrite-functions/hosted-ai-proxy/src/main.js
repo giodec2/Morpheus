@@ -179,11 +179,21 @@ export default async ({ req, res, log, error }) => {
 
     // Fix: treat null/undefined/0 as "never reset" — set to now on first call
     if (!weeklyResetAt || now - weeklyResetAt >= oneWeek) {
-      await databases.updateDocument(databaseId, profilesCollection, userId, {
-        weeklyTokensUsed: 0,
-        weeklyTokensUsedPremium: 0,
-        weeklyTokensResetAt: now,
-      });
+      try {
+        await databases.updateDocument(databaseId, profilesCollection, userId, {
+          weeklyTokensUsed: 0,
+          weeklyTokensUsedPremium: 0,
+          weeklyTokensResetAt: now,
+        });
+      } catch (resetErr) {
+        const resetMsg = resetErr.message || '';
+        const isMissingAttr = resetMsg.includes('Unknown attribute') || resetMsg.includes('document_invalid_structure');
+        if (isMissingAttr) {
+          error(`Token reset skipped — DB schema missing attribute: ${resetMsg}`);
+        } else {
+          throw resetErr;
+        }
+      }
       profile.weeklyTokensUsed = 0;
       profile.weeklyTokensUsedPremium = 0;
     }
@@ -291,9 +301,15 @@ export default async ({ req, res, log, error }) => {
         });
       }
     } catch (err) {
-      error(`Failed to update token usage: ${err.message || err}`);
-      // Do NOT return the AI content if we couldn't charge tokens
-      return res.json({ error: 'Failed to record token usage. Please retry.' }, 500);
+      const errMsg = err.message || '';
+      const isMissingAttr = errMsg.includes('Unknown attribute') || errMsg.includes('document_invalid_structure');
+      if (isMissingAttr) {
+        error(`Token usage update skipped — DB schema missing attribute: ${errMsg}`);
+        // Continue — deliver AI content even if we can't record tokens
+      } else {
+        error(`Failed to update token usage: ${errMsg}`);
+        return res.json({ error: 'Failed to record token usage. Please retry.' }, 500);
+      }
     }
 
     return res.json({
