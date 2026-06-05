@@ -9,6 +9,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
+import Typography from '@tiptap/extension-typography';
 import { Loader2 } from 'lucide-react';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
@@ -74,6 +75,7 @@ export default function TiptapEditor() {
       CharacterCount,
       Highlight,
       Underline,
+      Typography,
       FontSize,
     ],
     content: activeChapter?.content || { type: 'doc', content: [{ type: 'paragraph' }] },
@@ -139,7 +141,11 @@ export default function TiptapEditor() {
 
   return (
     <div className="h-full flex flex-col">
-      <EditorToolbar editor={editor} />
+      <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+        <div className="max-w-4xl mx-auto">
+          <EditorToolbar editor={editor} />
+        </div>
+      </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto">

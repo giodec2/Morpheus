@@ -32,6 +32,7 @@ export default function CustomSelect({
   const [openUp, setOpenUp] = useState(false);
   const [hoveredValue, setHoveredValue] = useState<string | null>(null);
   const [descPos, setDescPos] = useState<{ top: number; right: number } | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const selected = options.find((o) => o.value === value);
@@ -39,7 +40,10 @@ export default function CustomSelect({
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        // also allow clicks inside the ported menu
+        if (menuRef.current && menuRef.current.contains(target)) return;
         setIsOpen(false);
       }
     }
@@ -47,6 +51,26 @@ export default function CustomSelect({
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
+  }, [isOpen]);
+
+  // Close menu on window resize or scroll so the fixed position doesn't drift.
+  // Allow scrolling inside the menu itself without closing.
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = () => setIsOpen(false);
+    const handleScroll = (e: Event) => {
+      const target = e.target as Node;
+      // Don't close if the scroll originates inside the menu or the trigger container
+      if (menuRef.current && menuRef.current.contains(target)) return;
+      if (containerRef.current && containerRef.current.contains(target)) return;
+      setIsOpen(false);
+    };
+    window.addEventListener('resize', close);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      window.removeEventListener('resize', close);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
   }, [isOpen]);
 
   // Update description panel position when hover changes
@@ -70,7 +94,13 @@ export default function CustomSelect({
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
       const estimatedHeight = Math.min(options.length * 36 + 8, 240);
-      setOpenUp(spaceBelow < estimatedHeight && spaceAbove > spaceBelow);
+      const up = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+      setOpenUp(up);
+      setMenuPos({
+        top: up ? rect.top - estimatedHeight - 4 : rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+      });
     }
     setIsOpen(next);
     setHoveredValue(null);
@@ -107,13 +137,13 @@ export default function CustomSelect({
         </div>
       </button>
 
-      {isOpen && (
+      {isOpen && menuPos && createPortal(
         <div
           ref={menuRef}
           className={cn(
-            'absolute z-50 left-0 right-0 max-h-60 overflow-y-auto rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700',
-            openUp ? 'bottom-full mb-1' : 'top-full mt-1'
+            'fixed z-[100] max-h-60 overflow-y-auto rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700',
           )}
+          style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
         >
           {options.map((option) => (
             <button
@@ -143,7 +173,8 @@ export default function CustomSelect({
               )}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Description panel — portal to body to escape all parent clipping */}

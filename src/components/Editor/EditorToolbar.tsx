@@ -10,8 +10,13 @@ import CustomSelect from '@/components/common/CustomSelect';
 const FONTS = [
   { label: 'Inter', value: 'Inter' },
   { label: 'Roboto', value: 'Roboto' },
+  { label: 'Open Sans', value: "'Open Sans'" },
+  { label: 'Arimo', value: 'Arimo' },
   { label: 'Merriweather', value: 'Merriweather' },
   { label: 'Georgia', value: 'Georgia' },
+  { label: 'Lora', value: 'Lora' },
+  { label: 'Crimson Pro', value: "'Crimson Pro'" },
+  { label: 'Literata', value: 'Literata' },
   { label: 'Monospace', value: 'monospace' },
 ];
 
@@ -60,7 +65,7 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
   if (!editor) return null;
 
   return (
-    <div className="shrink-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-2 md:px-4 py-2 flex items-center gap-1 overflow-x-auto scrollbar-hide">
+    <div className="px-2 md:px-4 py-2 flex items-center gap-1 overflow-x-auto scrollbar-hide">
       {/* Formatting */}
       <ToolbarGroup>
         <ToolbarButton
