@@ -19,6 +19,7 @@ import EditorToolbar from './EditorToolbar';
 import ChapterHeader from './ChapterHeader';
 import CharacterTags from './CharacterTags';
 import { FontSize } from '@/lib/tiptapFontSize';
+import { LineHeight } from '@/lib/tiptapLineHeight';
 
 /**
  * Apply CSS Custom Highlight to search terms in the editor DOM.
@@ -77,6 +78,7 @@ export default function TiptapEditor() {
       Underline,
       Typography,
       FontSize,
+      LineHeight,
     ],
     content: activeChapter?.content || { type: 'doc', content: [{ type: 'paragraph' }] },
     editorProps: {

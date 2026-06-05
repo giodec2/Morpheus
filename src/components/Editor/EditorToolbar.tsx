@@ -30,6 +30,14 @@ const SIZES = [
   { label: '32px', value: '32px' },
 ];
 
+const SPACINGS = [
+  { label: 'Single', value: '1' },
+  { label: '1.15', value: '1.15' },
+  { label: '1.5', value: '1.5' },
+  { label: '1.75', value: '1.75' },
+  { label: 'Double', value: '2' },
+];
+
 const COLORS = [
   '#000000', '#333333', '#666666', '#999999', '#cccccc',
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6',
@@ -47,12 +55,18 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
   const [activeSize, setActiveSize] = useState(
     editor?.getAttributes('textStyle').fontSize || '16px'
   );
+  const [activeLineHeight, setActiveLineHeight] = useState(
+    editor?.state.selection.$from.parent.attrs.lineHeight || '1.5'
+  );
 
   useEffect(() => {
     if (!editor) return;
     const updateAttrs = () => {
       setActiveFont(editor.getAttributes('textStyle').fontFamily || 'Inter');
       setActiveSize(editor.getAttributes('textStyle').fontSize || '16px');
+      setActiveLineHeight(
+        editor.state.selection.$from.parent.attrs.lineHeight || '1.5'
+      );
     };
     editor.on('selectionUpdate', updateAttrs);
     editor.on('update', updateAttrs);
@@ -139,6 +153,16 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
           onChange={(val) => {
             setActiveSize(val);
             editor.chain().focus().setFontSize(val).run();
+          }}
+        />
+
+        <CustomSelect
+          className="w-[88px]"
+          value={activeLineHeight}
+          options={SPACINGS}
+          onChange={(val) => {
+            setActiveLineHeight(val);
+            editor.chain().focus().setLineHeight(val).run();
           }}
         />
       </ToolbarGroup>
