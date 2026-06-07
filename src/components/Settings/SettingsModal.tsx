@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Modal from '@/components/common/Modal';
-import { X, AlertTriangle, Lock, Zap, Cloud } from 'lucide-react';
+import { X, AlertTriangle, Lock, Zap, Cloud, ExternalLink } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -179,6 +179,29 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       <p>
                         Premium: {formatTokenCount(profile.weeklyTokensUsedPremium)} / {formatTokenCount(profile.maxWeeklyTokensPremium)}
                       </p>
+                    )}
+                    {profile.subscriptionTier !== 'free' && (
+                      <div className="pt-1.5">
+                        {profile.customerPortalUrl ? (
+                          <a
+                            href={profile.customerPortalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Manage Subscription
+                          </a>
+                        ) : (
+                          <a
+                            href="mailto:hello@morpheusink.com?subject=Subscription%20Management%20Request"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Contact us to manage your subscription
+                          </a>
+                        )}
+                      </div>
                     )}
                   </>
                 ) : (

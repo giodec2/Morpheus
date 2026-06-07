@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'wouter';
-import { Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload } from 'lucide-react';
+import { Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload, ExternalLink } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
@@ -253,19 +253,32 @@ export default function DashboardPage() {
               </button>
             )}
             {profile && (
-              <button
-                onClick={() => setShowTierSelector(true)}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors text-xs font-medium"
-                title={`${books.length}${Number.isFinite(maxBooks) ? ` / ${maxBooks}` : ''} books used — Click to see upgrade options`}
-              >
-                <Crown className="w-3.5 h-3.5" />
-                <span className="capitalize">{profile.subscriptionTier}</span>
-                {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && (
-                  <span className="text-[10px] opacity-70 uppercase">({profile.subscriptionStatus})</span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setShowTierSelector(true)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors text-xs font-medium"
+                  title={`${books.length}${Number.isFinite(maxBooks) ? ` / ${maxBooks}` : ''} books used — Click to see upgrade options`}
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  <span className="capitalize">{profile.subscriptionTier}</span>
+                  {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && (
+                    <span className="text-[10px] opacity-70 uppercase">({profile.subscriptionStatus})</span>
+                  )}
+                  <span className="text-primary-400 dark:text-primary-500">·</span>
+                  <span>{Number.isFinite(maxBooks) ? `${books.length}/${maxBooks}` : 'Unlimited'}</span>
+                </button>
+                {profile.subscriptionTier !== 'free' && profile.customerPortalUrl && (
+                  <a
+                    href={profile.customerPortalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                    title="Manage subscription"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                  </a>
                 )}
-                <span className="text-primary-400 dark:text-primary-500">·</span>
-                <span>{Number.isFinite(maxBooks) ? `${books.length}/${maxBooks}` : 'Unlimited'}</span>
-              </button>
+              </div>
             )}
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
