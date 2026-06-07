@@ -1,10 +1,11 @@
-import { X, Crown, Check, Sparkles, Star, Zap, Loader2 } from 'lucide-react';
+import { X, Crown, Check, Sparkles, Star, Zap, Loader2, ExternalLink } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
 import { useState } from 'react';
 import Modal from './Modal';
 import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
-import { createCheckout, getVariantIdForTier } from '@/services/billing';
+import { createCheckout, getVariantIdForTier, getCustomerPortalUrl } from '@/services/billing';
 import { toast } from '@/components/common/Toast';
+import { useAuthStore } from '@/stores/authStore';
 
 interface TierSelectorModalProps {
   currentTier: UserProfile['subscriptionTier'];
@@ -79,6 +80,42 @@ const tiers = [
     badge: 'Best Value',
   },
 ];
+
+function ManageSubscriptionLink() {
+  const { profile } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!profile || profile.subscriptionTier === 'free') return null;
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    try {
+      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not open subscription portal', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={isLoading}
+      className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50"
+    >
+      {isLoading ? (
+        <Loader2 className="w-3 h-3 animate-spin" />
+      ) : (
+        <ExternalLink className="w-3 h-3" />
+      )}
+      {isLoading ? 'Opening portal...' : 'Manage Subscription'}
+    </button>
+  );
+}
 
 export default function TierSelectorModal({ currentTier, onClose }: TierSelectorModalProps) {
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
@@ -184,6 +221,13 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                     </span>
                   ) : null}
                 </div>
+
+                {/* Manage subscription link for current paid tier */}
+                {isCurrent && tier.key !== 'free' && (
+                  <div className="mt-2">
+                    <ManageSubscriptionLink />
+                  </div>
+                )}
 
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
                   {tier.features.map((feature) => (

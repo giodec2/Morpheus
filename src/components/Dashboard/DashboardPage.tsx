@@ -10,6 +10,7 @@ const TierSelectorModal = lazy(() => import('@/components/common/TierSelectorMod
 const ConfirmModal = lazy(() => import('@/components/common/ConfirmModal'));
 import { getAllBooks, createBook, deleteBook, putBook, updateBook } from '@/db/books';
 import { TIER_DEFAULTS } from '@/services/auth';
+import { getCustomerPortalUrl } from '@/services/billing';
 import { getChaptersByBook } from '@/db/chapters';
 import { createLoreBible } from '@/db/loreBibles';
 import { createChapter, putChapter } from '@/db/chapters';
@@ -46,7 +47,20 @@ export default function DashboardPage() {
   const [syncingOrphanId, setSyncingOrphanId] = useState<string | null>(null);
   const [showKey, setShowKey] = useState(false);
   const [isEditingKey, setIsEditingKey] = useState(false);
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
   const isDark = theme === 'dark';
+
+  const handleManageSubscription = async () => {
+    setIsPortalLoading(true);
+    try {
+      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not open subscription portal', 'error');
+    } finally {
+      setIsPortalLoading(false);
+    }
+  };
 
   // Handle checkout success/cancel query params
   useEffect(() => {
@@ -267,16 +281,20 @@ export default function DashboardPage() {
                   <span className="text-primary-400 dark:text-primary-500">·</span>
                   <span>{Number.isFinite(maxBooks) ? `${books.length}/${maxBooks}` : 'Unlimited'}</span>
                 </button>
-                {profile.subscriptionTier !== 'free' && profile.customerPortalUrl && (
-                  <a
-                    href={profile.customerPortalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                {profile.subscriptionTier !== 'free' && (
+                  <button
+                    type="button"
+                    onClick={handleManageSubscription}
+                    disabled={isPortalLoading}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
                     title="Manage subscription"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                  </a>
+                    {isPortalLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 animate-spin" />
+                    ) : (
+                      <ExternalLink className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                    )}
+                  </button>
                 )}
               </div>
             )}

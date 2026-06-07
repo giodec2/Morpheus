@@ -329,6 +329,115 @@ async function handleWebhook({ req, res, log, error }) {
 }
 
 // ───────────────────────────────────────────────
+// Customer Portal URL Generator
+// ───────────────────────────────────────────────
+
+async function getStoreUrl(apiKey, storeId, error) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    const response = await fetch(`https://api.lemonsqueezy.com/v1/stores/${encodeURIComponent(storeId)}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/vnd.api+json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      error(`LemonSqueezy store API error: ${response.status} - ${errText}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.data?.attributes?.url || null;
+  } catch (err) {
+    error(`Failed to fetch store URL: ${err.message}`);
+    return null;
+  }
+}
+
+async function handlePortal({ req, res, log, error }) {
+  try {
+    if (req.method !== 'POST') {
+      return res.json({ error: 'Method not allowed' }, 405);
+    }
+
+    const userId = req.headers['x-appwrite-user-id'];
+    if (!userId) {
+      return res.json({ error: 'Authentication required' }, 401);
+    }
+
+    let payload;
+    try {
+      payload = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    } catch {
+      return res.json({ error: 'Invalid JSON body' }, 400);
+    }
+
+    const { customerId } = payload;
+    const apiKey = process.env.LEMONSQUEEZY_API_KEY;
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+
+    if (!apiKey || !storeId) {
+      return res.json({ error: 'Payment provider not configured' }, 500);
+    }
+
+    // If we have a customer ID, try to generate a direct portal URL
+    if (customerId) {
+      log(`Generating portal URL for user ${userId}, customer ${customerId}`);
+
+      const portalResponse = await fetch('https://api.lemonsqueezy.com/v1/customer-portal-urls', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.api+json',
+          'Content-Type': 'application/vnd.api+json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          data: {
+            type: 'customer-portal-urls',
+            attributes: {
+              customer_id: String(customerId),
+            },
+          },
+        }),
+      });
+
+      if (portalResponse.ok) {
+        const portalData = await portalResponse.json();
+        const portalUrl = portalData.data?.attributes?.url;
+        if (portalUrl) {
+          log(`Portal URL generated successfully`);
+          return res.json({ portalUrl });
+        }
+      }
+
+      // If specific portal generation fails, fall through to generic portal
+      const errText = await portalResponse.text();
+      error(`Direct portal generation failed: ${portalResponse.status} - ${errText}. Falling back to generic portal.`);
+    }
+
+    // Generic customer portal fallback — user enters their email on LemonSqueezy's page
+    log(`Returning generic portal URL for user ${userId}`);
+    const storeUrl = await getStoreUrl(apiKey, storeId, error);
+    if (!storeUrl) {
+      return res.json({ error: 'Could not retrieve store portal URL' }, 502);
+    }
+
+    const genericPortalUrl = storeUrl.endsWith('/') ? `${storeUrl}billing` : `${storeUrl}/billing`;
+    return res.json({ portalUrl: genericPortalUrl });
+  } catch (err) {
+    error(`Unhandled portal error: ${err.message}`);
+    return res.json({ error: 'Internal server error' }, 500);
+  }
+}
+
+// ───────────────────────────────────────────────
 // Main Router
 // ───────────────────────────────────────────────
 
@@ -342,9 +451,11 @@ export default async (context) => {
     return res.json({ error: 'Server misconfiguration' }, 500);
   }
 
-  // Route based on headers:
+  // Route based on headers and path:
   // - Webhooks have X-Signature and no X-Appwrite-User-Id
   // - Frontend calls have X-Appwrite-User-Id (auto-injected by Appwrite SDK)
+  //   path === '/portal' -> customer portal URL generation
+  //   default -> checkout creation
 
   const hasSignature = req.headers['x-signature'];
   const hasUserId = req.headers['x-appwrite-user-id'];
@@ -354,8 +465,12 @@ export default async (context) => {
   }
 
   if (req.method === 'POST' && hasUserId) {
+    const path = req.path || '/';
+    if (path === '/portal' || path === 'portal') {
+      return handlePortal(context);
+    }
     return handleCheckout(context);
   }
 
-  return res.json({ error: 'Invalid request. Expected authenticated checkout or signed webhook.' }, 400);
+  return res.json({ error: 'Invalid request. Expected authenticated checkout, portal request, or signed webhook.' }, 400);
 };

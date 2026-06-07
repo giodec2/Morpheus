@@ -45,6 +45,37 @@ export function getVariantIdForTier(tier: string): string | null {
   return TIER_VARIANT_MAP[tier] || null;
 }
 
+export async function getCustomerPortalUrl(customerId?: string | null): Promise<string> {
+  if (!CREATE_CHECKOUT_FUNCTION_ID) {
+    throw new Error('Payment system is not configured yet. Please try again later.');
+  }
+
+  const execution = await functions.createExecution(
+    CREATE_CHECKOUT_FUNCTION_ID,
+    JSON.stringify({ customerId: customerId || undefined }),
+    false,
+    '/portal',
+    ExecutionMethod.POST
+  );
+
+  let result: { portalUrl?: string; error?: string };
+  try {
+    result = JSON.parse(execution.responseBody);
+  } catch {
+    throw new Error('Invalid response from payment server');
+  }
+
+  if (result.error) {
+    throw new Error(result.error);
+  }
+
+  if (!result.portalUrl) {
+    throw new Error('No portal URL returned');
+  }
+
+  return result.portalUrl;
+}
+
 export function isBillingConfigured(): boolean {
   return Boolean(
     import.meta.env.VITE_APPWRITE_FUNCTION_CREATE_CHECKOUT_ID &&

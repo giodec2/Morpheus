@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
+import { getCustomerPortalUrl } from '@/services/billing';
 import type { Language } from '@/types';
 
 function formatTokenCount(n: number): string {
@@ -45,6 +46,19 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [apiInput, setApiInput] = useState(openRouterKey);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    setIsPortalLoading(true);
+    try {
+      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not open subscription portal', 'error');
+    } finally {
+      setIsPortalLoading(false);
+    }
+  };
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
   const canUsePremium = aiMode === 'byok' || subscriptionTier === 'novelist' || subscriptionTier === 'architect';
@@ -162,52 +176,68 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               </div>
             </div>
 
-            {aiMode === 'hosted' && (
+            {aiMode === 'hosted' && profile && (
               <div className="text-xs text-primary-600 dark:text-primary-400 mt-2 space-y-0.5">
-                {profile ? (
-                  <>
-                    <p className="font-medium capitalize">
-                      {profile.subscriptionTier} Plan
-                      {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && profile.subscriptionStatus !== 'on_trial' && (
-                        <span className="text-amber-500 ml-1">({profile.subscriptionStatus})</span>
-                      )}
-                    </p>
-                    <p>
-                      Standard: {formatTokenCount(profile.weeklyTokensUsed)} / {formatTokenCount(profile.maxWeeklyTokensStandard)}
-                    </p>
-                    {(profile.subscriptionTier === 'novelist' || profile.subscriptionTier === 'architect') && (
-                      <p>
-                        Premium: {formatTokenCount(profile.weeklyTokensUsedPremium)} / {formatTokenCount(profile.maxWeeklyTokensPremium)}
-                      </p>
-                    )}
-                    {profile.subscriptionTier !== 'free' && (
-                      <div className="pt-1.5">
-                        {profile.customerPortalUrl ? (
-                          <a
-                            href={profile.customerPortalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            Manage Subscription
-                          </a>
-                        ) : (
-                          <a
-                            href="mailto:hello@morpheusink.com?subject=Subscription%20Management%20Request"
-                            className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            Contact us to manage your subscription
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p>Sign in to track token usage.</p>
+                <p>
+                  Standard: {formatTokenCount(profile.weeklyTokensUsed)} / {formatTokenCount(profile.maxWeeklyTokensStandard)}
+                </p>
+                {(profile.subscriptionTier === 'novelist' || profile.subscriptionTier === 'architect') && (
+                  <p>
+                    Premium: {formatTokenCount(profile.weeklyTokensUsedPremium)} / {formatTokenCount(profile.maxWeeklyTokensPremium)}
+                  </p>
                 )}
               </div>
+            )}
+          </section>
+
+          <hr className="border-gray-200 dark:border-slate-800" />
+
+          {/* Subscription */}
+          <section>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Subscription</h3>
+            {profile ? (
+              <div className="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium capitalize text-gray-900 dark:text-white">
+                    {profile.subscriptionTier} Plan
+                  </span>
+                  {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && profile.subscriptionStatus !== 'on_trial' && (
+                    <span className="text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                      {profile.subscriptionStatus}
+                    </span>
+                  )}
+                  {profile.subscriptionStatus === 'active' && (
+                    <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full">
+                      Active
+                    </span>
+                  )}
+                </div>
+
+                {profile.subscriptionTier === 'free' ? (
+                  <a
+                    href="/?scrollTo=pricing"
+                    onClick={(e) => { e.preventDefault(); onClose(); window.location.href = '/?scrollTo=pricing'; }}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Upgrade to a paid plan
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={handleManageSubscription}
+                      disabled={isPortalLoading}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline disabled:opacity-50"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      {isPortalLoading ? 'Opening portal...' : 'Manage Subscription'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sign in to see your subscription.</p>
             )}
           </section>
 
