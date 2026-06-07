@@ -72,9 +72,9 @@ const tierMeta: Record<string, {
 };
 
 const nextTierBenefits: Record<string, string[]> = {
-  free: ['Up to 3 books', '1M tokens/week', 'All standard models'],
-  scribe: ['Up to 10 books', '2M tokens/week', 'Premium models included', 'Signature finetunes'],
-  novelist: ['Up to 50 books', '10M tokens/week', '1M premium tokens/week', 'Self-learning models', 'Priority support'],
+  free: ['Up to 3 books', '500k tokens/week', 'All standard models'],
+  scribe: ['Up to 10 books', '1M tokens/week', 'Premium models included', 'Signature finetunes'],
+  novelist: ['Unlimited books', '5M tokens/week', '500k premium tokens/week', 'Self-learning models', 'Priority support'],
   architect: [],
 };
 
@@ -103,7 +103,7 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Book Limit Reached</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {currentCount} of {maxCount} books used
+                {currentCount} of {Number.isFinite(maxCount) ? `${maxCount} books` : 'Unlimited books'} used
               </p>
             </div>
           </div>
@@ -121,7 +121,11 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Your <strong className="text-gray-700 dark:text-gray-300">{tierMeta[currentTier].name}</strong> plan includes{' '}
-            <strong className="text-gray-700 dark:text-gray-300">{maxCount}</strong> book{maxCount > 1 ? 's' : ''}.
+            {Number.isFinite(maxCount) ? (
+              <><strong className="text-gray-700 dark:text-gray-300">{maxCount}</strong> book{maxCount > 1 ? 's' : ''}</>
+            ) : (
+              <><strong className="text-gray-700 dark:text-gray-300">Unlimited</strong> books</>
+            )}.
           </p>
         </div>
 

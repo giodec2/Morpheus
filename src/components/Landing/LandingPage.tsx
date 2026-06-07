@@ -3,7 +3,7 @@ import LandingNavbar from './LandingNavbar';
 import HeroSection from './HeroSection';
 import TrustBar from './TrustBar';
 import FeaturesSection from './FeaturesSection';
-import HowItWorksSection from './HowItWorksSection';
+import SecurityTrustSection from './SecurityTrustSection';
 import GenreShowcase from './GenreShowcase';
 
 import PricingSection from './PricingSection';
@@ -40,7 +40,7 @@ export default function LandingPage() {
         <HeroSection onScrollTo={scrollToSection} />
         <TrustBar />
         <FeaturesSection />
-        <HowItWorksSection />
+        <SecurityTrustSection />
         <GenreShowcase />
         <PricingSection />
         <FAQSection />

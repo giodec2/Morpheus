@@ -129,10 +129,10 @@ export default async (context) => {
 
     // Tier defaults
     const tierDefaults = {
-      free: { maxBooks: 1, maxWeeklyTokensStandard: 100_000, maxWeeklyTokensPremium: 0 },
-      scribe: { maxBooks: 3, maxWeeklyTokensStandard: 1_000_000, maxWeeklyTokensPremium: 0 },
-      novelist: { maxBooks: 10, maxWeeklyTokensStandard: 2_000_000, maxWeeklyTokensPremium: 100_000 },
-      architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
+      free: { maxBooks: 1, maxWeeklyTokensStandard: 50_000, maxWeeklyTokensPremium: 0 },
+      scribe: { maxBooks: 3, maxWeeklyTokensStandard: 500_000, maxWeeklyTokensPremium: 0 },
+      novelist: { maxBooks: 10, maxWeeklyTokensStandard: 1_000_000, maxWeeklyTokensPremium: 50_000 },
+      architect: { maxBooks: Infinity, maxWeeklyTokensStandard: 5_000_000, maxWeeklyTokensPremium: 500_000 },
     };
 
     // Only enforce free tier when subscription is explicitly inactive

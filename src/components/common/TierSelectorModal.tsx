@@ -26,7 +26,7 @@ const tiers = [
     btnBg: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
     badgeBg: 'bg-gray-500',
     gradient: 'from-gray-400 to-gray-300',
-    features: ['1 book', '100k tokens/week', 'BYOK', 'Cloud sync'],
+    features: ['1 book', '50k tokens/week', 'BYOK', 'Cloud sync'],
   },
   {
     key: 'scribe',
@@ -42,7 +42,7 @@ const tiers = [
     btnBg: 'bg-primary-600 hover:bg-primary-700 text-white',
     badgeBg: 'bg-primary-500',
     gradient: 'from-primary-500 to-teal-400',
-    features: ['3 books', '1M tokens/week', 'BYOK', 'Cloud sync'],
+    features: ['3 books', '500k tokens/week', 'BYOK', 'Cloud sync'],
     badge: 'Popular',
   },
   {
@@ -59,7 +59,7 @@ const tiers = [
     btnBg: 'bg-amber-500 hover:bg-amber-600 text-white',
     badgeBg: 'bg-amber-500',
     gradient: 'from-amber-500 to-orange-400',
-    features: ['10 books', '2M + 100k premium/week', 'New features first', 'Signature finetunes'],
+    features: ['10 books', '1M + 50k premium/week', 'New features first', 'Signature finetunes'],
   },
   {
     key: 'architect',
@@ -75,7 +75,7 @@ const tiers = [
     btnBg: 'bg-purple-600 hover:bg-purple-700 text-white',
     badgeBg: 'bg-purple-500',
     gradient: 'from-purple-500 to-pink-400',
-    features: ['50 books', '10M + 1M premium/week', 'Self-learning models', 'Priority support'],
+    features: ['Unlimited books', '5M + 500k premium/week', 'Self-learning models', 'Priority support'],
     badge: 'Best Value',
   },
 ];

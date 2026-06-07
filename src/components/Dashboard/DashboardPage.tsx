@@ -127,14 +127,14 @@ export default function DashboardPage() {
 
   const tierDefaults = profile ? TIER_DEFAULTS[profile.subscriptionTier] : null;
   const maxBooks = tierDefaults?.maxBooks ?? profile?.maxBooks ?? 1; // default to free tier when profile unavailable
-  const canCreateBook = books.length < maxBooks;
+  const canCreateBook = !Number.isFinite(maxBooks) || books.length < maxBooks;
 
   const handleCreateBook = async () => {
     if (!newTitle.trim()) return;
     if (!canCreateBook) {
       setShowCreateModal(false);
       setShowUpgrade(true);
-      toast(`You've reached your book limit (${maxBooks}). Upgrade to create more.`, 'error');
+      toast(`You've reached your book limit (${Number.isFinite(maxBooks) ? maxBooks : 'Unlimited'}). Upgrade to create more.`, 'error');
       return;
     }
     const book = await createBook(newTitle.trim());
@@ -256,7 +256,7 @@ export default function DashboardPage() {
               <button
                 onClick={() => setShowTierSelector(true)}
                 className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors text-xs font-medium"
-                title={`${books.length} / ${maxBooks} books used — Click to see upgrade options`}
+                title={`${books.length}${Number.isFinite(maxBooks) ? ` / ${maxBooks}` : ''} books used — Click to see upgrade options`}
               >
                 <Crown className="w-3.5 h-3.5" />
                 <span className="capitalize">{profile.subscriptionTier}</span>
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                   <span className="text-[10px] opacity-70 uppercase">({profile.subscriptionStatus})</span>
                 )}
                 <span className="text-primary-400 dark:text-primary-500">·</span>
-                <span>{books.length}/{maxBooks}</span>
+                <span>{Number.isFinite(maxBooks) ? `${books.length}/${maxBooks}` : 'Unlimited'}</span>
               </button>
             )}
             <button

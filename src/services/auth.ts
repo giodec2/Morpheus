@@ -8,10 +8,10 @@ import { putLoreBible } from '@/db/loreBibles';
 import type { Models } from 'appwrite';
 
 export const TIER_DEFAULTS: Record<UserProfile['subscriptionTier'], { maxBooks: number; maxWeeklyTokensStandard: number; maxWeeklyTokensPremium: number }> = {
-  free: { maxBooks: 1, maxWeeklyTokensStandard: 100_000, maxWeeklyTokensPremium: 0 },
-  scribe: { maxBooks: 3, maxWeeklyTokensStandard: 1_000_000, maxWeeklyTokensPremium: 0 },
-  novelist: { maxBooks: 10, maxWeeklyTokensStandard: 2_000_000, maxWeeklyTokensPremium: 100_000 },
-  architect: { maxBooks: 50, maxWeeklyTokensStandard: 10_000_000, maxWeeklyTokensPremium: 1_000_000 },
+  free: { maxBooks: 1, maxWeeklyTokensStandard: 50_000, maxWeeklyTokensPremium: 0 },
+  scribe: { maxBooks: 3, maxWeeklyTokensStandard: 500_000, maxWeeklyTokensPremium: 0 },
+  novelist: { maxBooks: 10, maxWeeklyTokensStandard: 1_000_000, maxWeeklyTokensPremium: 50_000 },
+  architect: { maxBooks: Infinity, maxWeeklyTokensStandard: 5_000_000, maxWeeklyTokensPremium: 500_000 },
 };
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;

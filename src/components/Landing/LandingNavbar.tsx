@@ -54,8 +54,8 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
               Features
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
             </button>
-            <button onClick={() => handleNavClick('#how-it-works')} className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-              How It Works
+            <button onClick={() => handleNavClick('#trust')} className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
+              Trust & Security
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
             </button>
             <button onClick={() => handleNavClick('#pricing')} className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
@@ -108,7 +108,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
         {mobileOpen && (
           <div className="md:hidden bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-6 py-4 space-y-3">
             <button onClick={() => handleNavClick('#features')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">Features</button>
-            <button onClick={() => handleNavClick('#how-it-works')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">How It Works</button>
+            <button onClick={() => handleNavClick('#trust')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">Trust & Security</button>
             <button onClick={() => handleNavClick('#pricing')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">Pricing</button>
             <Link href="/faq" onClick={() => setMobileOpen(false)} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">FAQ</Link>
             <div className="pt-3 border-t border-gray-200 dark:border-slate-800 flex flex-col gap-2">
