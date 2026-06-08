@@ -1,8 +1,37 @@
 # Morpheus — From Indie Project to Production & Profit
 ## Complete End-to-End Roadmap
 
-> **Status:** Draft | **Last Updated:** 2026-05-22
+> **Status:** Live & Iterating | **Last Updated:** 2026-06-07
 > **Goal:** Take Morpheus from local-only experiment to monetized SaaS with zero-to-low marketing spend.
+
+---
+
+## Current Status
+
+Morpheus is **live and monetized**. The foundation is solid; current work focuses on growth features and international expansion.
+
+### ✅ Already Shipped
+- **Auth & BYOK** — Supabase auth + Bring Your Own Key path fully functional
+- **Hosted AI Proxy** — Token-budgeted edge function with weekly resets
+- **Tiered Pricing** — LemonSqueezy checkout wired for Free / Scribe / Novelist / Architect
+- **Export Engine** — HTML, JSON, DOCX, and PDF exports live (DOCX/PDF paywalled)
+- **Cloud Sync** — Bi-directional Dexie ↔ Supabase sync with conflict resolution
+- **Context Tuning** — Advanced context controls for Novelist+ tiers
+- **Continuity Keeper** — AI-powered manuscript consistency auditing (lore & character drift detection)
+- **Landing Page & Pricing Section** — Live with animated cards and roadmap grid
+
+### 🚧 In Progress / Next Up
+- **Referral Program** — Viral token rewards (Q3 2026)
+- **Writing Analytics Dashboard** — Daily word count, streaks, and session stats (Q4 2026)
+- **Beta Reader Sharing** — Read-only manuscript links with inline commenting (Q4 2026)
+- **Publish-Ready Translations** — Full-book AI translation preserving voice & terminology (Q1 2027)
+- **Product Hunt Launch** — Listing prep + maker comment
+- **Content Marketing** — SEO blog posts & Reddit organic campaign
+
+### ❌ Deprioritized / Not Planned
+- **Writing Sprints** — Cut; not enough differentiation
+- **Community Discord** — Cut; moving to async support channels
+- **AI Audiobook Narration** — Cut; API costs too high for current unit economics
 
 ---
 
@@ -58,16 +87,11 @@
 
 ---
 
-## 2. Critical Fixes Before Monetization
+## 2. Ongoing Hardening
 
-These are non-negotiable. Ship them before any pricing page goes live.
+These are active hygiene tasks, not blockers.
 
-### 2.1 Wire Up Unused Export Dependencies
-- `jspdf` and `docx` are in `package.json` but unused.
-- **Action:** Implement DOCX and PDF export in the export modal.
-- **Paywall:** Gate DOCX/PDF behind paid tiers. HTML/JSON remains free for all.
-
-### 2.2 Component Refactoring (Optional but Recommended)
+### 2.1 Component Refactoring (Optional but Recommended)
 - `src/components/AIChat/`, `Characters/`, `LoreBible/` are empty.
 - **Action:** Either delete empty dirs or migrate sidebar logic into them. This is technical debt that will slow down feature gates later.
 
@@ -275,8 +299,8 @@ insert into tier_config values
 
 ## 5. Implementation Phases (12 Weeks)
 
-### Phase 1: Foundation (Weeks 1–3)
-**Goal:** Infrastructure is live. BYOK works. Auth works. No payments yet.
+### Phase 1: Foundation (Weeks 1–3) ✅ COMPLETED
+**Goal:** Infrastructure is live. BYOK works. Auth works.
 
 | Week | Task | Deliverable |
 |------|------|-------------|
@@ -287,7 +311,7 @@ insert into tier_config values
 | **W3** | Wire up DOCX + PDF export using existing dependencies. | Export modal has all formats |
 | **W3** | Add weekly reset cron (Supabase Edge Function triggered by pg_cron or external cron). | Quotas reset every Monday 00:00 UTC |
 
-### Phase 2: Monetization Logic (Weeks 4–6)
+### Phase 2: Monetization Logic (Weeks 4–6) ✅ COMPLETED
 **Goal:** Feature gates are active. Payments are wired. Test transactions work.
 
 | Week | Task | Deliverable |
@@ -299,15 +323,14 @@ insert into tier_config values
 | **W6** | Build cloud sync engine: Dexie ↔ Supabase bi-directional sync. Conflict resolution = last-write-wins. | Data syncs across devices |
 | **W6** | Add usage analytics dashboard (for you only): daily API cost, active users, conversion rate. | You can monitor burn |
 
-### Phase 3: Polish & Pre-Launch (Weeks 7–8)
+### Phase 3: Polish & Pre-Launch (Weeks 7–8) 🚧 IN PROGRESS
 **Goal:** App feels finished. Landing page exists. Beta invites sent.
 
 | Week | Task | Deliverable |
 |------|------|-------------|
-| **W7** | Create landing page (`/landing` or separate repo). Sections: Hero, Demo GIF, Pricing, Comparison vs Sudowrite, FAQ. | Live landing page |
+| **W7** | Create landing page (`/landing` or separate repo). Sections: Hero, Demo GIF, Pricing, FAQ. | Live landing page |
 | **W7** | Write 3 blog posts: "Why I Built a Local-First Alternative to Sudowrite", "The Real Cost of AI Writing Tools", "Weekly vs Monthly Token Resets". | SEO content live |
 | **W8** | Invite 20 beta testers from your network. Give them free Novelist tier for 30 days. Collect feedback. | Beta cohort active |
-| **W8** | Set up Discord server. Create channels: #general, #showcase, #bugs, #feature-requests. | Community hub ready |
 
 ### Phase 4: Public Launch (Weeks 9–10)
 **Goal:** First public users. First revenue. First reviews.
@@ -445,26 +468,26 @@ Before you flip the "live" switch, verify every item below.
 
 ### Technical
 - [ ] All model IDs resolve correctly on OpenRouter
-- [ ] DOCX and PDF export work and are gated behind paid tiers
-- [ ] Auth flow works (signup, login, password reset)
-- [ ] Token budget is enforced server-side (never trust the client)
-- [ ] Weekly reset cron runs reliably
-- [ ] API key never leaves the browser for BYOK users
-- [ ] Cloud sync handles conflicts gracefully
+- [x] DOCX and PDF export work and are gated behind paid tiers
+- [x] Auth flow works (signup, login, password reset)
+- [x] Token budget is enforced server-side (never trust the client)
+- [x] Weekly reset cron runs reliably
+- [x] API key never leaves the browser for BYOK users
+- [x] Cloud sync handles conflicts gracefully
 - [ ] Usage dashboard shows real-time API spend
 
 ### Business
-- [ ] LemonSqueezy products created for all 3 paid tiers
-- [ ] Checkout flow tested with real card (then refund it)
-- [ ] Pricing page is clear and honest about limits
+- [x] LemonSqueezy products created for all 3 paid tiers
+- [x] Checkout flow tested with real card (then refund it)
+- [x] Pricing page is clear and honest about limits
 - [ ] Refund policy defined (recommend: 7-day no-questions-asked)
 - [ ] Privacy policy drafted (needed for auth + payments)
 - [ ] Terms of service drafted
 
 ### Marketing
-- [ ] Landing page live with pricing, demo, and signup
+- [x] Landing page live with pricing, demo, and signup
 - [ ] 2+ blog posts published
-- [ ] Discord server created with rules and channels
+- [ ] ~~Discord server created with rules and channels~~ → *Deprioritized*
 - [ ] Product Hunt listing prepared (images, copy, maker comment)
 - [ ] AlternativeTo listing submitted
 - [ ] 10 Reddit replies posted (warm-up phase)

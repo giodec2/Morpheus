@@ -1,4 +1,4 @@
-import { Check, X, Sparkles, Star, Crown, Zap, Loader2 } from 'lucide-react';
+import { Check, X, Sparkles, Star, Crown, Zap, Loader2, Languages, Gift, BarChart3, Share2 } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
@@ -114,17 +114,6 @@ const tiers = [
   },
 ];
 
-const comparisonFeatures = [
-  { name: 'Bring your own key', free: true, scribe: true, novelist: true, architect: true },
-  { name: 'Cloud sync', free: true, scribe: true, novelist: true, architect: true },
-  { name: 'Books', free: '1', scribe: '3', novelist: '10', architect: 'Unlimited' },
-  { name: 'Standard tokens/week', free: '50k', scribe: '500k', novelist: '1M', architect: '5M' },
-  { name: 'Premium tokens/week', free: '—', scribe: '—', novelist: '50k', architect: '500k' },
-  { name: 'New features first', free: false, scribe: false, novelist: true, architect: true },
-  { name: 'Genre-tuned writing assistance', free: false, scribe: false, novelist: true, architect: true },
-  { name: 'Echo (Beta)', free: false, scribe: false, novelist: false, architect: true },
-  { name: 'Priority support', free: false, scribe: false, novelist: false, architect: true },
-];
 
 function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: number; isAnnual: boolean }) {
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
@@ -400,6 +389,103 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
   );
 }
 
+const upcomingFeatures = [
+  {
+    icon: Gift,
+    title: 'Referral Rewards',
+    description: 'Invite fellow writers and earn premium tokens for both you and your friends.',
+    eta: 'Q3 2026',
+  },
+  {
+    icon: BarChart3,
+    title: 'Writing Analytics',
+    description: 'Track daily word count, writing streaks, session length, and chapter velocity — gamify your writing habit.',
+    eta: 'Q4 2026',
+  },
+  {
+    icon: Share2,
+    title: 'Beta Reader Sharing',
+    description: 'Generate read-only share links for your manuscript with inline commenting. Let beta readers leave feedback without touching your draft.',
+    eta: 'Q4 2026',
+  },
+  {
+    icon: Languages,
+    title: 'Publish-Ready Translations',
+    description: 'One-click full-book translation that preserves your voice, terminology, and style — output ready for international publishers.',
+    eta: 'Q1 2027',
+  },
+];
+
+function UpcomingFeaturesSection() {
+  const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
+
+  return (
+    <div ref={ref} className="relative">
+      <div
+        className={`text-center max-w-2xl mx-auto mb-14 transition-all duration-1000 ${
+          isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+      >
+        <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
+          Roadmap
+        </span>
+        <h3 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 leading-tight">
+          What&apos;s{' '}
+          <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
+            coming next
+          </span>
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 text-lg">
+          We&apos;re just getting started. Here&apos;s a sneak peek at what&apos;s on the horizon.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
+        {upcomingFeatures.map((feature, index) => {
+          const Icon = feature.icon;
+          return (
+            <div
+              key={feature.title}
+              className={`transition-[opacity,transform] duration-500 ${
+                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              <div className="group relative h-full min-h-[300px] flex flex-col rounded-2xl border border-gray-300 dark:border-slate-700 bg-gradient-to-br from-primary-50/60 via-white to-white dark:from-primary-900/20 dark:via-slate-900 dark:to-slate-900 p-7 shadow-sm shadow-gray-200/60 dark:shadow-black/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary-500/20 dark:hover:shadow-primary-900/30 hover:border-primary-300 dark:hover:border-primary-600 overflow-hidden ring-1 ring-transparent group-hover:ring-primary-500/10">
+                {/* Animated top accent line */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-teal-400 to-primary-500 opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+
+                {/* Pulsing live indicator */}
+                <div className="absolute top-4 right-4">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-40" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500 shadow-sm shadow-primary-500/50" />
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between mb-5">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-200 to-primary-100 dark:from-primary-800/40 dark:to-primary-900/20 flex items-center justify-center shadow-sm shadow-primary-200/50 dark:shadow-primary-900/20">
+                    <Icon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800 shadow-sm shadow-primary-100/50 dark:shadow-primary-900/20">
+                    {feature.eta}
+                  </span>
+                </div>
+                <h4 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2">
+                  {feature.title}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1">
+                  {feature.description}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function PricingSection() {
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
   const [isAnnual, setIsAnnual] = useState(true);
@@ -449,74 +535,8 @@ export default function PricingSection() {
           ))}
         </div>
 
-        {/* Comparison table */}
-        <div className="overflow-x-auto">
-          <div className="rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
-            <table className="w-full min-w-[640px]">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-slate-800">
-                  <th className="text-left py-4 px-5 text-sm font-bold text-gray-900 dark:text-white bg-gray-50/80 dark:bg-slate-800/80">Feature</th>
-                  <th className="text-center py-4 px-3 text-sm font-bold text-gray-600 dark:text-gray-400 bg-gray-50/80 dark:bg-slate-800/80">
-                    <div className="flex flex-col items-center gap-1">
-                      <Zap className="w-4 h-4" />
-                      Free
-                    </div>
-                  </th>
-                  <th className="text-center py-4 px-3 text-sm font-bold text-primary-600 dark:text-primary-400 bg-primary-50/50 dark:bg-primary-900/20">
-                    <div className="flex flex-col items-center gap-1">
-                      <Sparkles className="w-4 h-4" />
-                      Scribe
-                    </div>
-                  </th>
-                  <th className="text-center py-4 px-3 text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/20">
-                    <div className="flex flex-col items-center gap-1">
-                      <Star className="w-4 h-4" />
-                      Novelist
-                    </div>
-                  </th>
-                  <th className="text-center py-4 px-3 text-sm font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/20">
-                    <div className="flex flex-col items-center gap-1">
-                      <Crown className="w-4 h-4" />
-                      Architect
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonFeatures.map((feature, i) => (
-                  <tr
-                    key={feature.name}
-                    className={`border-b border-gray-100 dark:border-slate-800/50 transition-colors hover:bg-gray-50/50 dark:hover:bg-slate-800/30 ${
-                      i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-gray-50/30 dark:bg-slate-800/20'
-                    }`}
-                  >
-                    <td className="py-3.5 px-5 text-sm font-semibold text-gray-800 dark:text-gray-200">{feature.name}</td>
-                    {['free', 'scribe', 'novelist', 'architect'].map((tierKey) => {
-                      const value = feature[tierKey as keyof typeof feature];
-                      return (
-                        <td key={tierKey} className="text-center py-3.5 px-3">
-                          {typeof value === 'boolean' ? (
-                            value ? (
-                              <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30">
-                                <Check className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
-                              </div>
-                            ) : (
-                              <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-slate-800">
-                                <X className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
-                              </div>
-                            )
-                          ) : (
-                            <span className={`text-sm font-semibold ${value === '—' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300'}`}>{value as string}</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {/* Upcoming Features */}
+        <UpcomingFeaturesSection />
       </div>
     </section>
   );
