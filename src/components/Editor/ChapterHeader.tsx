@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FileText, ChevronDown, ChevronUp, Loader2, Sparkles } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import { toast } from '@/components/common/Toast';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
@@ -21,6 +22,7 @@ interface ChapterHeaderProps {
 }
 
 export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setIsSummaryOpen }: ChapterHeaderProps) {
+  const { t } = useI18n();
   const { updateActiveChapter } = useEditorStore();
   const { updateChapter: updateChapterInStore } = useBookStore();
   const { openRouterKey, adaptiveMemory } = useSettingsStore();
@@ -75,7 +77,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
           await setStyleProfile(chapter.bookId, parsed.styleProfile);
         }
 
-        toast('Summary generated' + (parsed.styleProfile ? ' & style learned' : ''), 'success');
+        toast(parsed.styleProfile ? t('editor.summaryStyleLearned') : t('editor.summaryGenerated'), 'success');
       } else {
         // Fallback: treat entire response as summary
         const fallbackSummary = rawResponse.trim();
@@ -83,9 +85,9 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
           await updateChapter(chapter.id, { summary: fallbackSummary, summaryPreparedAt: Date.now() });
           updateChapterInStore({ ...chapter, summary: fallbackSummary, summaryPreparedAt: Date.now() });
           updateActiveChapter({ summary: fallbackSummary, summaryPreparedAt: Date.now() });
-          toast('Summary generated (style learning skipped)', 'info');
+          toast(t('editor.summaryStyleSkipped'), 'info');
         } else {
-          toast('Failed to generate summary', 'error');
+          toast(t('editor.summaryFailed'), 'error');
         }
       }
     } else {
@@ -105,9 +107,9 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
         await updateChapter(chapter.id, { summary: summary.trim(), summaryPreparedAt: Date.now() });
         updateChapterInStore({ ...chapter, summary: summary.trim(), summaryPreparedAt: Date.now() });
         updateActiveChapter({ summary: summary.trim(), summaryPreparedAt: Date.now() });
-        toast('Summary generated', 'success');
+        toast(t('editor.summaryGenerated'), 'success');
       } else {
-        toast('Failed to generate summary', 'error');
+        toast(t('editor.summaryFailed'), 'error');
       }
     }
 
@@ -139,7 +141,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
           <h1
             className="text-2xl font-bold text-gray-900 dark:text-white cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
             onClick={() => setIsEditingTitle(true)}
-            title="Click to edit"
+            title={t('editor.clickToEdit')}
           >
             {chapter.title}
           </h1>
@@ -148,12 +150,12 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
         <div className="flex items-center gap-2">
           {saveStatus === 'saving' && (
             <span className="text-xs text-gray-400 flex items-center gap-1">
-              <Loader2 className="w-3 h-3 animate-spin" /> Saving...
+              <Loader2 className="w-3 h-3 animate-spin" /> {t('editor.saving')}
             </span>
           )}
           {saveStatus === 'saved' && (
             <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Synced
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {t('editor.synced')}
             </span>
           )}
         </div>
@@ -166,7 +168,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
           className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-50"
         >
           {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-          Prepare Summary
+          {t('editor.prepareSummary')}
         </button>
 
         {chapter.summary && (
@@ -175,7 +177,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
             className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           >
             <FileText className="w-3 h-3" />
-            Summary
+            {t('editor.summary')}
             {isSummaryOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
         )}
@@ -188,7 +190,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
             rows={4}
             value={chapter.summary}
             onChange={(e) => handleSummaryEdit(e.target.value)}
-            placeholder="Chapter summary..."
+            placeholder={t('editor.summaryPlaceholder')}
           />
         </div>
       )}

@@ -6,12 +6,12 @@ import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
 import { createCheckout, getVariantIdForTier } from '@/services/billing';
 import { toast } from '@/components/common/Toast';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
 const tiers = [
   {
     name: 'Free',
     price: 0,
-    description: 'Perfect for getting started',
     badge: null,
     gradient: 'from-gray-100 to-gray-50 dark:from-slate-800 dark:to-slate-900',
     border: 'border-gray-200 dark:border-slate-700',
@@ -20,25 +20,23 @@ const tiers = [
     iconColor: 'text-gray-500 dark:text-gray-400',
     ctaBg: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
     features: [
-      { text: '1 book', included: true },
-      { text: 'Bring your own key', included: true },
-      { text: '50k tokens/week (standard)', included: true },
-      { text: 'Cloud sync', included: true },
-      { text: 'Up to 3 books', included: false },
-      { text: 'Premium tokens', included: false },
-      { text: 'New features first', included: false },
-      { text: 'Genre-tuned writing assistance', included: false },
-      { text: 'Echo (Beta)', included: false },
-      { text: 'Priority support', included: false },
+      { key: 'oneBook', included: true },
+      { key: 'bringYourOwnKey', included: true },
+      { key: 'tokensStandard', count: '50k', included: true },
+      { key: 'cloudSync', included: true },
+      { key: 'upToBooks', count: '3', included: false },
+      { key: 'premiumTokens', included: false },
+      { key: 'newFeaturesFirst', included: false },
+      { key: 'genreAssistance', included: false },
+      { key: 'echoBeta', included: false },
+      { key: 'prioritySupport', included: false },
     ],
-    cta: 'Start Free',
   },
   {
     name: 'Scribe',
     price: 9,
     annualPrice: 96,
     annualDiscount: 11,
-    description: 'For dedicated writers',
     badge: null,
     gradient: 'from-primary-50 to-white dark:from-slate-800 dark:to-slate-900',
     border: 'border-primary-300 dark:border-primary-700',
@@ -47,24 +45,22 @@ const tiers = [
     iconColor: 'text-primary-600 dark:text-primary-400',
     ctaBg: 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40',
     features: [
-      { text: 'Up to 3 books', included: true },
-      { text: 'Bring your own key', included: true },
-      { text: '500k tokens/week (standard)', included: true },
-      { text: 'Cloud sync', included: true },
-      { text: 'Premium tokens', included: false },
-      { text: 'New features first', included: false },
-      { text: 'Genre-tuned writing assistance', included: false },
-      { text: 'Echo (Beta)', included: false },
-      { text: 'Priority support', included: false },
+      { key: 'upToBooks', count: '3', included: true },
+      { key: 'bringYourOwnKey', included: true },
+      { key: 'tokensStandard', count: '500k', included: true },
+      { key: 'cloudSync', included: true },
+      { key: 'premiumTokens', included: false },
+      { key: 'newFeaturesFirst', included: false },
+      { key: 'genreAssistance', included: false },
+      { key: 'echoBeta', included: false },
+      { key: 'prioritySupport', included: false },
     ],
-    cta: 'Start Free Trial',
   },
   {
     name: 'Novelist',
     price: 19,
     annualPrice: 192,
     annualDiscount: 16,
-    description: 'For serious novelists',
     badge: 'Popular',
     gradient: 'from-amber-50 to-white dark:from-slate-800 dark:to-slate-900',
     border: 'border-amber-200 dark:border-amber-800',
@@ -73,17 +69,16 @@ const tiers = [
     iconColor: 'text-amber-600 dark:text-amber-400',
     ctaBg: 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40',
     features: [
-      { text: 'Up to 10 books', included: true },
-      { text: 'Bring your own key', included: true },
-      { text: '1M tokens/week (standard)', included: true },
-      { text: '50k tokens/week (premium)', included: true },
-      { text: 'Cloud sync', included: true },
-      { text: 'New features first', included: true },
-      { text: 'Genre-tuned writing assistance', included: true },
-      { text: 'Echo (Beta)', included: false },
-      { text: 'Priority support', included: false },
+      { key: 'upToBooks', count: '10', included: true },
+      { key: 'bringYourOwnKey', included: true },
+      { key: 'tokensStandard', count: '1M', included: true },
+      { key: 'tokensPremium', count: '50k', included: true },
+      { key: 'cloudSync', included: true },
+      { key: 'newFeaturesFirst', included: true },
+      { key: 'genreAssistance', included: true },
+      { key: 'echoBeta', included: false },
+      { key: 'prioritySupport', included: false },
     ],
-    cta: 'Start Free Trial',
     highlight: true,
   },
   {
@@ -91,7 +86,6 @@ const tiers = [
     price: 49,
     annualPrice: 468,
     annualDiscount: 20,
-    description: 'For writing at scale',
     badge: 'Best Value',
     gradient: 'from-purple-100 to-white dark:from-slate-800 dark:to-slate-900',
     border: 'border-purple-400 dark:border-purple-500',
@@ -100,22 +94,22 @@ const tiers = [
     iconColor: 'text-purple-600 dark:text-purple-400',
     ctaBg: 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40',
     features: [
-      { text: 'Unlimited books', included: true },
-      { text: 'Bring your own key', included: true },
-      { text: '5M tokens/week (standard)', included: true },
-      { text: '500k tokens/week (premium)', included: true },
-      { text: 'Cloud sync', included: true },
-      { text: 'New features first', included: true },
-      { text: 'Genre-tuned writing assistance', included: true },
-      { text: 'Echo (Beta)', included: true },
-      { text: 'Priority support', included: true },
+      { key: 'unlimitedBooks', included: true },
+      { key: 'bringYourOwnKey', included: true },
+      { key: 'tokensStandard', count: '5M', included: true },
+      { key: 'tokensPremium', count: '500k', included: true },
+      { key: 'cloudSync', included: true },
+      { key: 'newFeaturesFirst', included: true },
+      { key: 'genreAssistance', included: true },
+      { key: 'echoBeta', included: true },
+      { key: 'prioritySupport', included: true },
     ],
-    cta: 'Start Free Trial',
   },
 ];
 
 
 function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: number; isAnnual: boolean }) {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
   const [hovered, setHovered] = useState(false);
   const [entered, setEntered] = useState(false);
@@ -123,6 +117,13 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
   const { user } = useAuthStore();
   const { openCheckout } = useLemonSqueezy();
   const [, setLocation] = useLocation();
+
+  const tierDescKey: Record<string, string> = {
+    Free: 'landing.pricing.tierFreeDesc',
+    Scribe: 'landing.pricing.tierScribeDesc',
+    Novelist: 'landing.pricing.tierNovelistDesc',
+    Architect: 'landing.pricing.tierArchitectDesc',
+  };
 
   const { profile } = useAuthStore();
   const currentTier = profile?.subscriptionTier ?? 'free';
@@ -169,7 +170,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
             ? 'bg-amber-400 shadow-md shadow-amber-500/20'
             : 'bg-purple-400 shadow-md shadow-purple-500/20'
         } text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg ring-2 ring-white dark:ring-slate-900`}>
-          {tier.badge}
+          {t(tier.badge === 'Popular' ? 'states.popular' : 'states.bestValue')}
         </div>
       )}
 
@@ -205,7 +206,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
           </div>
           <div>
             <h3 className={`text-lg font-bold ${tier.accent}`}>{tier.name}</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{tier.description}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t(tierDescKey[tier.name] as never)}</p>
           </div>
         </div>
 
@@ -221,24 +222,26 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                   €{isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price}
                 </span>
                 <span className="text-sm text-gray-400 font-medium transition-all duration-300">
-                  /mo
+                  {t('landing.pricing.perMonth')}
                 </span>
                 <span
                   className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
                     isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
                   }`}
                 >
-                  Save ~{tier.annualDiscount}%
+                  {t('landing.pricing.save', { percent: tier.annualDiscount ?? 0 })}
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1.5 transition-all duration-300">
-                {isAnnual ? `Billed annually (€${tier.annualPrice}/year). ` : 'Billed monthly. '}Cancel anytime. + applicable tax
+                {isAnnual
+                  ? t('landing.pricing.billedAnnually', { price: tier.annualPrice ?? 0 })
+                  : t('landing.pricing.billedMonthly')}
               </p>
             </div>
           ) : (
             <div>
-              <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Free</span>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">Forever, no credit card</p>
+              <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">{t('landing.pricing.freeLabel')}</span>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">{t('landing.pricing.foreverFree')}</p>
             </div>
           )}
         </div>
@@ -246,7 +249,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
         {/* Features */}
         <ul className="space-y-2 mb-8 flex-1">
           {tier.features.map((feature) => (
-            <li key={feature.text} className="flex items-start gap-2.5">
+            <li key={feature.key} className="flex items-start gap-2.5">
               {feature.included ? (
                 <div className={`w-5 h-5 rounded-full ${tier.iconBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
                   <Check className={`w-3 h-3 ${tier.iconColor}`} />
@@ -263,7 +266,10 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                     : 'text-gray-400 dark:text-gray-600'
                 }`}
               >
-                {feature.text}
+                {t(
+                  `landing.pricing.features.${feature.key}` as never,
+                  feature.count ? { count: feature.count } : undefined
+                )}
               </span>
             </li>
           ))}
@@ -273,11 +279,11 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
         {isCurrent ? (
           <div className="w-full py-3 rounded-xl text-sm font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
             <Check className="w-4 h-4" />
-            Current Plan
+            {t('landing.pricing.currentPlan')}
           </div>
         ) : isIncluded ? (
           <div className="w-full py-3 rounded-xl text-sm font-bold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
-            Included
+            {t('landing.pricing.included')}
           </div>
         ) : (
           <button
@@ -293,15 +299,15 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
               }
               const variantId = getVariantIdForTier(tier.name.toLowerCase());
               if (!variantId) {
-                toast('Payment system is not fully configured yet', 'error');
+                toast(t('landing.pricing.paymentNotConfigured'), 'error');
                 return;
               }
               setIsLoading(true);
               try {
-                const url = await createCheckout(variantId);
+                const url = await createCheckout(variantId, t as (key: string) => string);
                 openCheckout(url);
               } catch (err) {
-                toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+                toast(err instanceof Error ? err.message : t('landing.pricing.checkoutError'), 'error');
               } finally {
                 setIsLoading(false);
               }
@@ -310,7 +316,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
               hovered && tier.price > 0 ? 'scale-[1.02]' : ''
             } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
           >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : tier.cta}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : tier.price === 0 ? t('landing.pricing.startFree') : t('landing.pricing.startTrial')}
           </button>
         )}
       </div>
@@ -320,6 +326,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
 }
 
 function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v: boolean) => void }) {
+  const { t } = useI18n();
   const monthlyRef = useRef<HTMLButtonElement>(null);
   const annualRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -372,7 +379,7 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
         }`}
       >
-        Monthly
+        {t('landing.pricing.monthly')}
       </button>
       <button
         ref={annualRef}
@@ -383,40 +390,21 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
         }`}
       >
-        Annual
+        {t('landing.pricing.annual')}
       </button>
     </div>
   );
 }
 
 const upcomingFeatures = [
-  {
-    icon: Gift,
-    title: 'Referral Rewards',
-    description: 'Invite fellow writers and earn premium tokens for both you and your friends.',
-    eta: 'Q3 2026',
-  },
-  {
-    icon: BarChart3,
-    title: 'Writing Analytics',
-    description: 'Track daily word count, writing streaks, session length, and chapter velocity — gamify your writing habit.',
-    eta: 'Q4 2026',
-  },
-  {
-    icon: Share2,
-    title: 'Beta Reader Sharing',
-    description: 'Generate read-only share links for your manuscript with inline commenting. Let beta readers leave feedback without touching your draft.',
-    eta: 'Q4 2026',
-  },
-  {
-    icon: Languages,
-    title: 'Publish-Ready Translations',
-    description: 'One-click full-book translation that preserves your voice, terminology, and style — output ready for international publishers.',
-    eta: 'Q1 2027',
-  },
+  { icon: Gift, key: 'referral', eta: 'Q3 2026' },
+  { icon: BarChart3, key: 'analytics', eta: 'Q4 2026' },
+  { icon: Share2, key: 'betaSharing', eta: 'Q4 2026' },
+  { icon: Languages, key: 'translations', eta: 'Q1 2027' },
 ];
 
 function UpcomingFeaturesSection() {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
 
   return (
@@ -427,16 +415,16 @@ function UpcomingFeaturesSection() {
         }`}
       >
         <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-          Roadmap
+          {t('landing.pricing.roadmap.label')}
         </span>
         <h3 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 leading-tight">
-          What&apos;s{' '}
+          {t('landing.pricing.roadmap.titlePrefix')}{' '}
           <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-            coming next
+            {t('landing.pricing.roadmap.titleHighlight')}
           </span>
         </h3>
         <p className="text-gray-600 dark:text-gray-400 text-lg">
-          We&apos;re just getting started. Here&apos;s a sneak peek at what&apos;s on the horizon.
+          {t('landing.pricing.roadmap.intro')}
         </p>
       </div>
 
@@ -445,7 +433,7 @@ function UpcomingFeaturesSection() {
           const Icon = feature.icon;
           return (
             <div
-              key={feature.title}
+              key={feature.key}
               className={`transition-[opacity,transform] duration-500 ${
                 isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
@@ -472,10 +460,10 @@ function UpcomingFeaturesSection() {
                   </span>
                 </div>
                 <h4 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2">
-                  {feature.title}
+                  {t(`landing.pricing.roadmap.${feature.key}Title` as never)}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1">
-                  {feature.description}
+                  {t(`landing.pricing.roadmap.${feature.key}Desc` as never)}
                 </p>
               </div>
             </div>
@@ -487,6 +475,7 @@ function UpcomingFeaturesSection() {
 }
 
 export default function PricingSection() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
   const [isAnnual, setIsAnnual] = useState(true);
 
@@ -510,16 +499,16 @@ export default function PricingSection() {
           }`}
         >
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-            Pricing
+            {t('landing.pricing.label')}
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            Simple, transparent{' '}
+            {t('landing.pricing.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              pricing
+              {t('landing.pricing.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Start free, upgrade when you need more. No hidden fees, no surprises.
+            {t('landing.pricing.intro')}
           </p>
         </div>
 

@@ -3,38 +3,34 @@ import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
 import AuthModal from '@/components/Auth/AuthModal';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
-const steps = [
+const stepDefs = [
   {
     number: '01',
     icon: BookOpen,
-    title: 'Start Your Novel',
-    description:
-      'Create your first book in seconds. A clean editor, an organized chapter system, and a dedicated space for your world bible — everything you need to go from idea to first sentence.',
+    key: 'step1',
     gradient: 'from-primary-500 via-teal-400 to-emerald-400',
     shadow: 'shadow-primary-500/25',
   },
   {
     number: '02',
     icon: Users,
-    title: 'Populate Your Universe',
-    description:
-      "Fill your lore bible with characters, locations, and world rules. The AI ingests it all — so when you ask for a scene, the suggestions respect the rules you have already established.",
+    key: 'step2',
     gradient: 'from-amber-500 via-orange-400 to-rose-400',
     shadow: 'shadow-amber-500/25',
   },
   {
     number: '03',
     icon: MessageSquare,
-    title: 'Draft with Your Co-Writer',
-    description:
-      'Stuck on dialogue? Need a scene transition? Want to explore a what-if? Chat with an AI that knows your story inside and out — and generates prose that sounds like you.',
+    key: 'step3',
     gradient: 'from-purple-500 via-violet-400 to-pink-400',
     shadow: 'shadow-purple-500/25',
   },
 ];
 
-function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
+function StepCard({ step, index }: { step: typeof stepDefs[0]; index: number }) {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.2 });
   const [entered, setEntered] = useState(false);
   const Icon = step.icon;
@@ -69,14 +65,14 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
         </div>
 
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-          {step.title}
+          {t(`landing.howItWorks.${step.key}Title` as never)}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1">
-          {step.description}
+          {t(`landing.howItWorks.${step.key}Desc` as never)}
         </p>
 
         {/* Arrow for non-last on medium screens */}
-        {index < steps.length - 1 && (
+        {index < stepDefs.length - 1 && (
           <div className="hidden md:flex lg:hidden items-center justify-center mt-5">
             <ArrowRight className="w-5 h-5 text-gray-300 dark:text-gray-600" />
           </div>
@@ -90,6 +86,7 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
 }
 
 export default function HowItWorksSection() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
   const [showAuth, setShowAuth] = useState(false);
   const [, navigate] = useLocation();
@@ -117,16 +114,16 @@ export default function HowItWorksSection() {
           }`}
         >
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-            How It Works
+            {t('landing.howItWorks.label')}
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            From idea to draft in{' '}
+            {t('landing.howItWorks.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              three steps
+              {t('landing.howItWorks.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            No setup, no learning curve — just write.
+            {t('landing.howItWorks.intro')}
           </p>
         </div>
 
@@ -144,7 +141,7 @@ export default function HowItWorksSection() {
               />
             </div>
             {/* Step dots on line */}
-            {steps.map((_, i) => (
+            {stepDefs.map((_, i) => (
               <div
                 key={i}
                 className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-4 border-gray-300 dark:border-slate-600"
@@ -154,7 +151,7 @@ export default function HowItWorksSection() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 lg:gap-10">
-            {steps.map((step, index) => (
+            {stepDefs.map((step, index) => (
               <StepCard key={step.number} step={step} index={index} />
             ))}
           </div>
@@ -167,9 +164,9 @@ export default function HowItWorksSection() {
             className="group btn-primary text-base px-8 py-4 inline-flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
           >
             <Feather className="w-4 h-4" />
-            Start Your First Book — It is Free
+            {t('landing.cta.startFirstBook')}
           </button>
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">No credit card required · Cancel anytime</p>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">{t('landing.cta.noCreditCardCancel')}</p>
         </div>
       </div>
 

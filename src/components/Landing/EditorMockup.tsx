@@ -1,6 +1,8 @@
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useI18n } from '@/i18n/useI18n';
 
 export default function EditorMockup() {
+  const { t } = useI18n();
   const { theme } = useSettingsStore();
   const isDark = theme === 'dark';
 
@@ -70,7 +72,7 @@ export default function EditorMockup() {
               {/* Right chat panel */}
               <div className={`hidden md:flex w-56 flex-col border-l ${isDark ? 'border-slate-700' : 'border-gray-200'} ${chatColor}`}>
                 <div className={`px-3 py-2 border-b text-xs font-medium ${isDark ? 'border-slate-700 text-slate-300' : 'border-gray-200 text-gray-600'}`}>
-                  AI Co-Writer
+                  {t('landing.editorMockup.aiCoWriter')}
                 </div>
                 <div className="flex-1 p-3 space-y-3">
                   <div className={`self-end ml-auto w-3/4 h-8 rounded-lg ${isDark ? 'bg-primary-900/30' : 'bg-primary-50'}`} />

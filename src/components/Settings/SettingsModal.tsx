@@ -4,8 +4,10 @@ import { X, AlertTriangle, Lock, Zap, Cloud, ExternalLink } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useI18n } from '@/i18n/useI18n';
 import { toast } from '@/components/common/Toast';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
+import LanguageToggle from '@/components/common/LanguageToggle';
 import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
 import { getCustomerPortalUrl } from '@/services/billing';
 import type { Language } from '@/types';
@@ -36,6 +38,7 @@ const LANGUAGES = [
 ];
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
+  const { t } = useI18n();
   const {
     openRouterKey, defaultModel, temperature, maxTokens, advancedMode, language, modelTier, aiMode, adaptiveMemory,
     setOpenRouterKey, setDefaultModel, setTemperature, setMaxTokens, setAdvancedMode, setLanguage,
@@ -51,10 +54,10 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const handleManageSubscription = async () => {
     setIsPortalLoading(true);
     try {
-      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId);
+      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId, t as (key: string) => string);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not open subscription portal', 'error');
+      toast(err instanceof Error ? err.message : t('errors.openPortalFailed'), 'error');
     } finally {
       setIsPortalLoading(false);
     }
@@ -75,12 +78,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         setOpenRouterKey(apiInput.trim());
         setIsConnected(true);
         setAiMode('byok');
-        toast('API key verified and saved! Switched to BYOK mode.', 'success');
+        toast(t('dashboard.apiKeySaved'), 'success');
       } else {
-        toast('Invalid API key. Please check and try again.', 'error');
+        toast(t('dashboard.invalidApiKeyVerify'), 'error');
       }
     } catch {
-      toast('Could not connect to OpenRouter.', 'error');
+      toast(t('dashboard.couldNotConnect'), 'error');
     }
     setIsValidating(false);
   };
@@ -91,12 +94,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     setApiInput('');
     setIsConnected(false);
     setAiMode('hosted');
-    toast('API key removed. Switched to Hosted AI mode.', 'info');
+    toast(t('dashboard.apiKeyRemoved'), 'info');
   };
 
   const handleTierChange = () => {
     if (modelTier === 'standard' && !canUsePremium) {
-      toast('Premium models are reserved for Novelist tier and above.', 'error');
+      toast(t('settings.premiumReserved'), 'error');
       return;
     }
     const next = modelTier === 'standard' ? 'premium' : 'standard';
@@ -108,9 +111,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   };
 
   return (
-    <Modal onClose={onClose} className="max-w-lg p-6" ariaLabel="Settings">
+    <Modal onClose={onClose} className="max-w-lg p-6" ariaLabel={t('settings.title')}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings.title')}</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -119,10 +122,17 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         <div className="space-y-6">
           {/* Appearance */}
           <section>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Appearance</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Theme</span>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('settings.appearance')}</h3>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-600 dark:text-gray-400">{t('settings.theme')}</span>
               <DarkModeToggle />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm text-gray-600 dark:text-gray-400 block">{t('settings.uiLanguage')}</span>
+                <span className="text-xs text-gray-400">{t('settings.uiLanguageHint')}</span>
+              </div>
+              <LanguageToggle />
             </div>
           </section>
 
@@ -130,14 +140,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
           {/* AI Provider */}
           <section>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">AI Provider</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('settings.aiProvider')}</h3>
             <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg">
               {/* Hosted AI label */}
               <div className="flex items-center gap-2 min-w-0">
                 <Cloud className={`w-4 h-4 shrink-0 ${aiMode === 'hosted' ? 'text-primary-500' : 'text-gray-400 dark:text-gray-600'}`} />
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium truncate ${aiMode === 'hosted' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-500'}`}>Hosted AI</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-500 truncate">Tier-based limits</p>
+                  <p className={`text-sm font-medium truncate ${aiMode === 'hosted' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-500'}`}>{t('settings.hostedAI')}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500 truncate">{t('settings.tierBased')}</p>
                 </div>
               </div>
 
@@ -169,8 +179,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               {/* BYOK label */}
               <div className="flex items-center gap-2 min-w-0 text-right">
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium truncate ${aiMode === 'byok' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-500'}`}>BYOK</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-500 truncate">Your own key</p>
+                  <p className={`text-sm font-medium truncate ${aiMode === 'byok' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-500'}`}>{t('settings.byok')}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500 truncate">{t('settings.yourOwnKey')}</p>
                 </div>
                 <Zap className={`w-4 h-4 shrink-0 ${aiMode === 'byok' ? 'text-amber-500' : 'text-gray-400 dark:text-gray-600'}`} />
               </div>
@@ -194,12 +204,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
           {/* Subscription */}
           <section>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Subscription</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('settings.subscription')}</h3>
             {profile ? (
               <div className="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium capitalize text-gray-900 dark:text-white">
-                    {profile.subscriptionTier} Plan
+                    {t('settings.plan', { tier: profile.subscriptionTier })}
                   </span>
                   {profile.subscriptionStatus && profile.subscriptionStatus !== 'active' && profile.subscriptionStatus !== 'on_trial' && (
                     <span className="text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
@@ -208,7 +218,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   )}
                   {profile.subscriptionStatus === 'active' && (
                     <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full">
-                      Active
+                      {t('states.active')}
                     </span>
                   )}
                 </div>
@@ -220,7 +230,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                     className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
                   >
                     <ExternalLink className="w-3 h-3" />
-                    Upgrade to a paid plan
+                    {t('settings.upgradePlan')}
                   </a>
                 ) : (
                   <div className="flex items-center gap-3 pt-0.5">
@@ -231,13 +241,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline disabled:opacity-50"
                     >
                       <ExternalLink className="w-3 h-3" />
-                      {isPortalLoading ? 'Opening portal...' : 'Manage Subscription'}
+                      {isPortalLoading ? t('settings.openingPortal') : t('settings.manageSubscription')}
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-xs text-gray-500 dark:text-gray-400">Sign in to see your subscription.</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings.signInToSeeSubscription')}</p>
             )}
           </section>
 
@@ -245,16 +255,16 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
           {/* AI Configuration */}
           <section>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">AI Configuration</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('settings.aiConfiguration')}</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs text-gray-500">Default Model</label>
+                  <label className="text-xs text-gray-500">{t('settings.defaultModel')}</label>
                   <div className="flex items-center gap-1.5 relative group">
                     <span className={`text-xs font-medium transition-colors ${
                       modelTier === 'standard' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-600'
                     }`}>
-                      Standard
+                      {t('settings.standard')}
                     </span>
                     <button
                       type="button"
@@ -272,13 +282,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                     <span className={`text-xs font-medium transition-colors ${
                       modelTier === 'premium' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-600'
                     }`}>
-                      Premium
+                      {t('settings.premium')}
                     </span>
 
                     {/* Tooltip for locked premium */}
                     {!canUsePremium && (
                       <div className="absolute -top-8 right-0 px-2 py-1 bg-gray-800 dark:bg-gray-700 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                        Premium models reserved for Novelist+
+                        {t('settings.premiumReserved')}
                       </div>
                     )}
                   </div>
@@ -287,7 +297,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                     <Lock className="w-3 h-3 text-amber-500" />
                     <span className="text-xs text-amber-700 dark:text-amber-400">
-                      Premium models locked. Upgrade to Novelist to unlock.
+                      {t('settings.premiumLocked')}
                     </span>
                   </div>
                 )}
@@ -300,14 +310,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 mb-1">AI Language</label>
+                <label className="block text-xs text-gray-500 mb-1">{t('settings.aiLanguage')}</label>
                 <CustomSelect
                   value={language}
                   options={LANGUAGES}
                   onChange={(val) => setLanguage(val as Language)}
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Sets the language Morpheus uses when responding to you.
+                  {t('settings.aiLanguageHint')}
                 </p>
               </div>
 
@@ -315,14 +325,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               <div className="p-3 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/30">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Echo</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full font-medium">Beta</span>
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{t('settings.echo')}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full font-medium">{t('states.beta')}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
                       if (!canUseEcho) {
-                        toast('Echo is reserved for Architect tier.', 'error');
+                        toast(t('settings.echoExclusive'), 'error');
                         return;
                       }
                       setAdaptiveMemory(!adaptiveMemory);
@@ -339,13 +349,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                  When enabled, Morpheus learns your writing style from chapter summaries and adapts its suggestions to match your voice.
+                  {t('settings.echoDesc')}
                 </p>
                 {!canUseEcho && (
                   <div className="flex items-center gap-1.5 mt-2 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded">
                     <Lock className="w-3 h-3 text-amber-500" />
                     <span className="text-[10px] text-amber-700 dark:text-amber-400">
-                      Echo is exclusive to Architect tier.
+                      {t('settings.echoExclusive')}
                     </span>
                   </div>
                 )}
@@ -353,7 +363,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs text-gray-500">Temperature</label>
+                  <label className="text-xs text-gray-500">{t('settings.temperature')}</label>
                   <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
                     <input
                       type="checkbox"
@@ -361,7 +371,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       onChange={(e) => setAdvancedMode(e.target.checked)}
                       className="rounded accent-primary-600"
                     />
-                    Advanced override
+                    {t('settings.advancedOverride')}
                   </label>
                 </div>
                 <input
@@ -378,7 +388,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Max Tokens</label>
+                <label className="block text-xs text-gray-500 mb-1">{t('settings.maxTokens')}</label>
                 <input
                   type="range"
                   min={512}
@@ -400,19 +410,19 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           {aiMode === 'byok' && (
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">API Key</h3>
-                <span className="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full">Sensitive</span>
+                <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">{t('settings.apiKey')}</h3>
+                <span className="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full">{t('states.sensitive')}</span>
               </div>
               
               <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">
-                Your OpenRouter API key is stored locally in your browser. Never share it.
+                {t('settings.apiKeyWarning')}
               </p>
 
               <div className="space-y-3">
                 <input
                   type="password"
                   className="input font-mono text-xs"
-                  placeholder="sk-or-..."
+                  placeholder={t('settings.apiKeyPlaceholder')}
                   value={apiInput}
                   onChange={(e) => setApiInput(e.target.value)}
                 />
@@ -423,14 +433,14 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                     disabled={isValidating || !apiInput.trim()}
                     className="flex-1 btn-primary"
                   >
-                    {isValidating ? 'Verifying...' : 'Save & Verify Key'}
+                    {isValidating ? t('settings.verifying') : t('settings.saveVerifyKey')}
                   </button>
                   {openRouterKey && (
                     <button
                       onClick={() => setShowConfirm(true)}
                       className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium transition-colors"
                     >
-                      Remove
+                      {t('actions.remove')}
                     </button>
                   )}
                 </div>
@@ -442,9 +452,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   <div className="flex items-start gap-2 mb-3">
                     <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-red-800 dark:text-red-300">Remove API Key?</p>
+                      <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('settings.removeApiKey')}</p>
                       <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                        This will switch you back to Hosted AI mode. You can add a new key anytime.
+                        {t('settings.removeApiKeyConfirm')}
                       </p>
                     </div>
                   </div>
@@ -453,13 +463,13 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                       onClick={() => setShowConfirm(false)}
                       className="btn-secondary text-xs"
                     >
-                      Cancel
+                      {t('actions.cancel')}
                     </button>
                     <button
                       onClick={handleClearKey}
                       className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors"
                     >
-                      Yes, Remove Key
+                      {t('settings.removeApiKey')}
                     </button>
                   </div>
                 </div>
@@ -469,7 +479,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <button onClick={onClose} className="btn-primary">Done</button>
+          <button onClick={onClose} className="btn-primary">{t('actions.done')}</button>
         </div>
     </Modal>
   );

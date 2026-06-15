@@ -16,6 +16,8 @@ interface SettingsState extends AppSettings {
   setTheme: (theme: 'light' | 'dark') => void;
   setAdvancedMode: (advanced: boolean) => void;
   setLanguage: (language: Language) => void;
+  setUiLocale: (locale: 'en' | 'it') => void;
+  setLanguageManuallySet: (value: boolean) => void;
   setIsConnected: (connected: boolean) => void;
   setModelTier: (tier: 'standard' | 'premium') => void;
   setAiMode: (mode: AIProviderMode) => void;
@@ -35,6 +37,8 @@ export const useSettingsStore = create<SettingsState>()(
       theme: 'light',
       advancedMode: false,
       language: 'english',
+      uiLocale: 'en',
+      languageManuallySet: false,
       isConnected: false,
       modelTier: 'standard',
       aiMode: 'hosted',
@@ -51,6 +55,8 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setAdvancedMode: (advanced) => set({ advancedMode: advanced }),
       setLanguage: (language) => set({ language }),
+      setUiLocale: (uiLocale) => set({ uiLocale }),
+      setLanguageManuallySet: (languageManuallySet) => set({ languageManuallySet }),
       setIsConnected: (connected) => set({ isConnected: connected }),
       setModelTier: (tier) => set({ modelTier: tier }),
       setAiMode: (mode) => set({ aiMode: mode }),
@@ -68,6 +74,8 @@ export const useSettingsStore = create<SettingsState>()(
         theme: state.theme,
         advancedMode: state.advancedMode,
         language: state.language,
+        uiLocale: state.uiLocale,
+        languageManuallySet: state.languageManuallySet,
         modelTier: state.modelTier,
         aiMode: state.aiMode,
         writingGenre: state.writingGenre,

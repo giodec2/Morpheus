@@ -1,53 +1,23 @@
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
 import { Star, Quote } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 
-const testimonials = [
-  {
-    quote:
-      "I finished my 90,000-word fantasy draft in 8 weeks instead of 8 months. Morpheus actually remembers my magic system rules — no other tool does that.",
-    name: 'Elena R.',
-    role: 'Fantasy Author',
-    genre: 'Fantasy',
-    stars: 5,
-    highlight: '90k words in 8 weeks',
-  },
-  {
-    quote:
-      "The character panel alone saved me hours of scrolling through notes. I mention a side character once in chapter 3, and Morpheus brings them back perfectly in chapter 12.",
-    name: 'Marcus T.',
-    role: 'Indie Novelist',
-    genre: 'Sci-Fi',
-    stars: 5,
-    highlight: 'Perfect character continuity',
-  },
-  {
-    quote:
-      "As someone who writes romance, I was worried an AI would make everything sound generic. Morpheus learns my voice. My editor can't tell which paragraphs I wrote and which the AI helped with.",
-    name: 'Sophia L.',
-    role: 'Romance Writer',
-    genre: 'Romance',
-    stars: 5,
-    highlight: 'Indistinguishable voice',
-  },
-  {
-    quote:
-      "The BYOK option is a game-changer. I use my own API key, so I know exactly where my data goes. Plus the privacy promise actually means something.",
-    name: 'James K.',
-    role: 'Thriller Author',
-    genre: 'Thriller',
-    stars: 5,
-    highlight: 'Total privacy control',
-  },
+const testimonialDefs = [
+  { key: 'item1', name: 'Elena R.', stars: 5 },
+  { key: 'item2', name: 'Marcus T.', stars: 5 },
+  { key: 'item3', name: 'Sophia L.', stars: 5 },
+  { key: 'item4', name: 'James K.', stars: 5 },
 ];
 
 function TestimonialCard({
   testimonial,
   index,
 }: {
-  testimonial: typeof testimonials[0];
+  testimonial: typeof testimonialDefs[0];
   index: number;
 }) {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.15 });
   const [entered, setEntered] = useState(false);
 
@@ -82,13 +52,13 @@ function TestimonialCard({
 
       {/* Quote text */}
       <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-6">
-        "{testimonial.quote}"
+        "{t(`landing.testimonials.${testimonial.key}.quote` as never)}"
       </p>
 
       {/* Highlight badge */}
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-5">
         <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-        {testimonial.highlight}
+        {t(`landing.testimonials.${testimonial.key}.highlight` as never)}
       </div>
 
       {/* Author */}
@@ -101,7 +71,7 @@ function TestimonialCard({
             {testimonial.name}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            {testimonial.role} · {testimonial.genre}
+            {t(`landing.testimonials.${testimonial.key}.role` as never)} · {t(`landing.testimonials.${testimonial.key}.genre` as never)}
           </p>
         </div>
       </div>
@@ -110,6 +80,7 @@ function TestimonialCard({
 }
 
 export default function TestimonialsSection() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({
     threshold: 0.3,
   });
@@ -130,23 +101,23 @@ export default function TestimonialsSection() {
           }`}
         >
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-            Loved by Writers
+            {t('landing.testimonials.label')}
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            Stories from the{' '}
+            {t('landing.testimonials.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              community
+              {t('landing.testimonials.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Writers who were skeptical at first. Now they can't imagine drafting without it.
+            {t('landing.testimonials.intro')}
           </p>
         </div>
 
         {/* Testimonial grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {testimonials.map((t, i) => (
-            <TestimonialCard key={t.name} testimonial={t} index={i} />
+          {testimonialDefs.map((testimonial, i) => (
+            <TestimonialCard key={testimonial.name} testimonial={testimonial} index={i} />
           ))}
         </div>
       </div>

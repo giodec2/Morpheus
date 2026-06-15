@@ -2,43 +2,37 @@ import { MessageSquare, Users, Shield, Zap, ArrowRight } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
-const features = [
+const featureDefs = [
   {
     icon: MessageSquare,
-    title: 'A Lore Bible That Never Forgets',
-    description:
-      "Every character trait, plot twist, and world rule lives in your lore bible. The AI references it with every suggestion — so continuity errors become a thing of the past.",
+    key: 'loreBible',
     gradient: 'from-primary-500 to-teal-400',
     shadow: 'shadow-primary-500/20',
   },
   {
     icon: Users,
-    title: 'Characters, Lore & Locations — Structured',
-    description:
-      'Build a living wiki for your novel. Organize people, places, and mythologies in dedicated panels so your world stays coherent from chapter one to the epilogue.',
+    key: 'structured',
     gradient: 'from-amber-500 to-orange-400',
     shadow: 'shadow-amber-500/20',
   },
   {
     icon: Shield,
-    title: 'Your Manuscript, Your Property',
-    description:
-      'Your creative work is never used to train AI models. Our providers process prompts and discard them immediately. Write with confidence knowing your ideas stay exclusively yours.',
+    key: 'ownership',
     gradient: 'from-emerald-500 to-teal-400',
     shadow: 'shadow-emerald-500/20',
   },
   {
     icon: Zap,
-    title: 'Choose Your Creative Engine',
-    description:
-      "Switch between state-of-the-art language models to match your project's needs. Use our hosted AI for convenience, or connect your own key for unlimited flexibility.",
+    key: 'engine',
     gradient: 'from-purple-500 to-pink-400',
     shadow: 'shadow-purple-500/20',
   },
 ];
 
-function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
+function FeatureCard({ feature, index }: { feature: typeof featureDefs[0]; index: number }) {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.15 });
   const [entered, setEntered] = useState(false);
   const Icon = feature.icon;
@@ -79,10 +73,10 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       </div>
 
       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-        {feature.title}
+        {t(`landing.features.${feature.key}Title` as never)}
       </h3>
       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-        {feature.description}
+        {t(`landing.features.${feature.key}Desc` as never)}
       </p>
 
       {/* Corner decoration */}
@@ -94,6 +88,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 }
 
 export default function FeaturesSection() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
   const [, setLocation] = useLocation();
 
@@ -117,23 +112,22 @@ export default function FeaturesSection() {
           }`}
         >
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-            Features
+            {t('landing.features.label')}
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            Everything you need to{' '}
+            {t('landing.features.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              write your book
+              {t('landing.features.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            From world-building to final draft, Morpheus gives you the tools to stay organized,
-            inspired, and in control.
+            {t('landing.features.intro')}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {features.map((feature, index) => (
-            <FeatureCard key={feature.title} feature={feature} index={index} />
+          {featureDefs.map((feature, index) => (
+            <FeatureCard key={feature.key} feature={feature} index={index} />
           ))}
         </div>
 
@@ -143,10 +137,10 @@ export default function FeaturesSection() {
             onClick={() => setLocation('/app')}
             className="group btn-primary text-base px-8 py-4 inline-flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
           >
-            Start Writing Free
+            {t('landing.cta.startFree')}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">No credit card required</p>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">{t('landing.cta.noCreditCard')}</p>
         </div>
       </div>
     </section>

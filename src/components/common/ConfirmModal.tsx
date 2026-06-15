@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useI18n } from '@/i18n/useI18n';
 import Modal from './Modal';
 import { AlertTriangle } from 'lucide-react';
 
@@ -16,11 +17,14 @@ export default function ConfirmModal({
   title,
   description,
   itemName,
-  confirmLabel = 'Delete',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onClose,
 }: ConfirmModalProps) {
+  const { t } = useI18n();
+  const resolvedConfirmLabel = confirmLabel || t('actions.delete');
+  const resolvedCancelLabel = cancelLabel || t('actions.cancel');
   const [confirmText, setConfirmText] = useState('');
   const isConfirmed = confirmText.trim() === itemName.trim();
 
@@ -38,14 +42,14 @@ export default function ConfirmModal({
 
         <div className="mb-5">
           <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">
-            Type <strong className="text-gray-700 dark:text-gray-300">"{itemName}"</strong> to confirm
+            {t('confirm.type')} <strong className="text-gray-700 dark:text-gray-300">"{itemName}"</strong> {t('confirm.toConfirm')}
           </label>
           <input
             autoFocus
             type="text"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
-            placeholder={`Type "${itemName}"`}
+            placeholder={t('confirm.placeholder', { item: itemName })}
             className="input w-full"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && isConfirmed) {
@@ -63,14 +67,14 @@ export default function ConfirmModal({
             onClick={onClose}
             className="flex-1 btn-secondary py-2.5 text-sm font-medium"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             onClick={onConfirm}
             disabled={!isConfirmed}
             className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all bg-red-500 hover:bg-red-600 text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-500"
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </button>
         </div>
     </Modal>

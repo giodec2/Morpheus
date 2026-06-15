@@ -10,13 +10,13 @@ export const STANDARD_MODELS: ModelDef[] = [
     value: 'google/gemma-4-26b-a4b-it',
     label: 'Gemma 4',
     tier: 'standard',
-    badge: 'Suggested',
+    badge: 'Consigliato',
   },
   {
     value: 'deepseek/deepseek-v4-flash',
     label: 'DeepSeek V4 Flash',
     tier: 'standard',
-    badge: 'Suggested',
+    badge: 'Consigliato',
   },
   {
     value: 'openai/gpt-5-nano',
@@ -40,13 +40,13 @@ export const PREMIUM_MODELS: ModelDef[] = [
     value: 'deepseek/deepseek-v4-pro',
     label: 'DeepSeek V4 Pro',
     tier: 'premium',
-    badge: 'Suggested',
+    badge: 'Consigliato',
   },
   {
     value: 'z-ai/glm-5.1',
     label: 'GLM',
     tier: 'premium',
-    badge: 'Suggested',
+    badge: 'Consigliato',
   },
   {
     value: 'openai/gpt-5.4-mini',
@@ -73,25 +73,25 @@ export const DEFAULT_PREMIUM_MODEL = 'deepseek/deepseek-v4-pro';
 export const MODEL_DESCRIPTIONS: Record<string, string> = {
   // Standard
   'openai/gpt-5-nano':
-    "OpenAI's smallest model. Fast and nimble for quick dialogue passes, brainstorming sparks, and iterative drafting. Best when you want instant feedback without overthinking.",
+    "Il modello più piccolo di OpenAI. Veloce e agile per passaggi rapidi di dialogo, scintille di brainstorming e stesura iterativa. Ideale quando vuoi feedback immediati senza sovrappensiero.",
   'google/gemma-4-26b-a4b-it':
-    "Incredibly fast and creative model. Strong narrative coherence and natural character voices. A solid everyday co-writer for any genre.",
+    "Modello incredibilmente veloce e creativo. Forte coerenza narrativa e voci di personaggi naturali. Un solido co-writer quotidiano per qualsiasi genere.",
   'deepseek/deepseek-v4-flash':
-    'Fast model with a massive context window. Perfect for high-volume drafting sessions, honest feedbacks, and processing large manuscripts in one go.',
+    'Modello veloce con una finestra di contesto enorme. Perfetto per sessioni di stesura ad alto volume, feedback onesti e l\'elaborazione di manoscritti lunghi in un colpo solo.',
   'google/gemini-2.5-flash-lite':
-    "Google's speed-focused model. Lightning-fast responses ideal for rapid brainstorming, can also reason quickly, to use when momentum matters.",
+    "Il modello di Google incentrato sulla velocità. Risposte fulminee ideali per brainstorming rapido; sa anche ragionare velocemente, da usare quando conta il momentum.",
   'qwen/qwen3.5-flash-02-23':
-    "Efficient generalist with strong reasoning. Balanced across creative and analytical tasks — a reliable daily driver.",
+    "Generalista efficiente con un forte ragionamento. Equilibrato tra compiti creativi e analitici — un driver quotidiano affidabile.",
 
   // Premium
   'openai/gpt-5.4-mini':
-    "OpenAI's frontier-grade all-rounder. Excellent for structured feedback, continuity checking, and precise prose refinement. When you need reliability above all else.",
+    "Tuttofare di frontiera di OpenAI. Eccellente per feedback strutturati, controllo della continuità e rifinitura precisa della prosa. Quando la priorità è l'affidabilità.",
   'x-ai/grok-4.3':
-    'Fast and opinionated with a bold, distinctive voice. Better for punchy dialogue and irreverent characters than delicate prose. Massive context window.',
+    'Veloce e deciso, con una voce audace e distintiva. Meglio per dialoghi incisivi e personaggi irriverenti che per prosa delicata. Finestra di contesto enorme.',
   'moonshotai/kimi-k2.5':
-    "Sophisticated generalist with a spark of deep creativity. Great for balancing complex, analytical plotting with elegant character dialogue.",
+    "Generalista sofisticato con una scintilla di profonda creatività. Ottimo per bilanciare trame complesse e analitiche con dialoghi di personaggi eleganti.",
   'z-ai/glm-5.1':
-    "A versatile literary powerhouse. Outstanding at rich prose, intricate plot development, and long-horizon story planning. Crafted for ambitious novel writing.",
+    "Una potenza letteraria versatile. Eccelle in prosa ricca, sviluppo intricato della trama e pianificazione narrativa a lungo raggio. Pensato per la scrittura di romanzi ambiziosi.",
   'deepseek/deepseek-v4-pro':
-    "Flagship-level reasoning model. Excels at complex plot analysis, deep character psychology, and multi-layered continuity checking. For when the story demands nuance.",
+    "Modello di ragionamento di livello flagship. Eccelle in analisi complesse della trama, psicologia profonda dei personaggi e controllo della continuità su più livelli. Per quando la storia richiede sfumature.",
 };

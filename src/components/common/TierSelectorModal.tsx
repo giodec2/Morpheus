@@ -1,6 +1,7 @@
 import { X, Crown, Check, Sparkles, Star, Zap, Loader2, ExternalLink } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
 import { useState } from 'react';
+import { useI18n } from '@/i18n/useI18n';
 import Modal from './Modal';
 import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
 import { createCheckout, getVariantIdForTier, getCustomerPortalUrl } from '@/services/billing';
@@ -12,76 +13,8 @@ interface TierSelectorModalProps {
   onClose: () => void;
 }
 
-const tiers = [
-  {
-    key: 'free',
-    name: 'Free',
-    price: 0,
-    icon: Zap,
-    color: 'text-gray-600 dark:text-gray-400',
-    accentBg: 'bg-gray-100 dark:bg-slate-800',
-    accentBorder: 'border-gray-200 dark:border-slate-700',
-    accentText: 'text-gray-500 dark:text-gray-400',
-    checkBg: 'bg-gray-100 dark:bg-slate-800',
-    checkColor: 'text-gray-500 dark:text-gray-400',
-    btnBg: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
-    badgeBg: 'bg-gray-500',
-    gradient: 'from-gray-400 to-gray-300',
-    features: ['1 book', '50k tokens/week', 'BYOK', 'Cloud sync'],
-  },
-  {
-    key: 'scribe',
-    name: 'Scribe',
-    price: 9,
-    icon: Sparkles,
-    color: 'text-primary-600 dark:text-primary-400',
-    accentBg: 'bg-primary-50 dark:bg-primary-900/20',
-    accentBorder: 'border-primary-200 dark:border-primary-800',
-    accentText: 'text-primary-600 dark:text-primary-400',
-    checkBg: 'bg-primary-100 dark:bg-primary-900/30',
-    checkColor: 'text-primary-600 dark:text-primary-400',
-    btnBg: 'bg-primary-600 hover:bg-primary-700 text-white',
-    badgeBg: 'bg-primary-500',
-    gradient: 'from-primary-500 to-teal-400',
-    features: ['3 books', '500k tokens/week', 'BYOK', 'Cloud sync'],
-    badge: 'Popular',
-  },
-  {
-    key: 'novelist',
-    name: 'Novelist',
-    price: 19,
-    icon: Star,
-    color: 'text-amber-600 dark:text-amber-400',
-    accentBg: 'bg-amber-50 dark:bg-amber-900/20',
-    accentBorder: 'border-amber-200 dark:border-amber-800',
-    accentText: 'text-amber-600 dark:text-amber-400',
-    checkBg: 'bg-amber-100 dark:bg-amber-900/30',
-    checkColor: 'text-amber-600 dark:text-amber-400',
-    btnBg: 'bg-amber-500 hover:bg-amber-600 text-white',
-    badgeBg: 'bg-amber-500',
-    gradient: 'from-amber-500 to-orange-400',
-    features: ['10 books', '1M + 50k premium/week', 'New features first', 'Signature finetunes'],
-  },
-  {
-    key: 'architect',
-    name: 'Architect',
-    price: 49,
-    icon: Crown,
-    color: 'text-purple-600 dark:text-purple-400',
-    accentBg: 'bg-purple-50 dark:bg-purple-900/20',
-    accentBorder: 'border-purple-200 dark:border-purple-800',
-    accentText: 'text-purple-600 dark:text-purple-400',
-    checkBg: 'bg-purple-100 dark:bg-purple-900/30',
-    checkColor: 'text-purple-600 dark:text-purple-400',
-    btnBg: 'bg-purple-600 hover:bg-purple-700 text-white',
-    badgeBg: 'bg-purple-500',
-    gradient: 'from-purple-500 to-pink-400',
-    features: ['Unlimited books', '5M + 500k premium/week', 'Self-learning models', 'Priority support'],
-    badge: 'Best Value',
-  },
-];
-
 function ManageSubscriptionLink() {
+  const { t } = useI18n();
   const { profile } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -91,10 +24,10 @@ function ManageSubscriptionLink() {
     e.stopPropagation();
     setIsLoading(true);
     try {
-      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId);
+      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId, t as (key: string) => string);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not open subscription portal', 'error');
+      toast(err instanceof Error ? err.message : t('errors.openPortalFailed'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -112,22 +45,113 @@ function ManageSubscriptionLink() {
       ) : (
         <ExternalLink className="w-3 h-3" />
       )}
-      {isLoading ? 'Opening portal...' : 'Manage Subscription'}
+      {isLoading ? t('settings.openingPortal') : t('settings.manageSubscription')}
     </button>
   );
 }
 
 export default function TierSelectorModal({ currentTier, onClose }: TierSelectorModalProps) {
+  const { t } = useI18n();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const { openCheckout } = useLemonSqueezy();
+
+  const tiers = [
+    {
+      key: 'free',
+      name: 'Free',
+      price: 0,
+      icon: Zap,
+      color: 'text-gray-600 dark:text-gray-400',
+      accentBg: 'bg-gray-100 dark:bg-slate-800',
+      accentBorder: 'border-gray-200 dark:border-slate-700',
+      accentText: 'text-gray-500 dark:text-gray-400',
+      checkBg: 'bg-gray-100 dark:bg-slate-800',
+      checkColor: 'text-gray-500 dark:text-gray-400',
+      btnBg: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
+      badgeBg: 'bg-gray-500',
+      gradient: 'from-gray-400 to-gray-300',
+      features: [
+        t('upgrade.features.oneBook'),
+        t('upgrade.features.tokens50k'),
+        t('upgrade.features.byok'),
+        t('upgrade.features.cloudSync'),
+      ],
+    },
+    {
+      key: 'scribe',
+      name: 'Scribe',
+      price: 9,
+      icon: Sparkles,
+      color: 'text-primary-600 dark:text-primary-400',
+      accentBg: 'bg-primary-50 dark:bg-primary-900/20',
+      accentBorder: 'border-primary-200 dark:border-primary-800',
+      accentText: 'text-primary-600 dark:text-primary-400',
+      checkBg: 'bg-primary-100 dark:bg-primary-900/30',
+      checkColor: 'text-primary-600 dark:text-primary-400',
+      btnBg: 'bg-primary-600 hover:bg-primary-700 text-white',
+      badgeBg: 'bg-primary-500',
+      gradient: 'from-primary-500 to-teal-400',
+      features: [
+        t('upgrade.features.threeBooks'),
+        t('upgrade.features.tokens500k'),
+        t('upgrade.features.byok'),
+        t('upgrade.features.cloudSync'),
+      ],
+      badge: t('states.popular'),
+    },
+    {
+      key: 'novelist',
+      name: 'Novelist',
+      price: 19,
+      icon: Star,
+      color: 'text-amber-600 dark:text-amber-400',
+      accentBg: 'bg-amber-50 dark:bg-amber-900/20',
+      accentBorder: 'border-amber-200 dark:border-amber-800',
+      accentText: 'text-amber-600 dark:text-amber-400',
+      checkBg: 'bg-amber-100 dark:bg-amber-900/30',
+      checkColor: 'text-amber-600 dark:text-amber-400',
+      btnBg: 'bg-amber-500 hover:bg-amber-600 text-white',
+      badgeBg: 'bg-amber-500',
+      gradient: 'from-amber-500 to-orange-400',
+      features: [
+        t('upgrade.features.tenBooks'),
+        t('upgrade.features.premium50k'),
+        t('upgrade.features.newFeaturesFirst'),
+        t('upgrade.features.signatureFinetunes'),
+      ],
+    },
+    {
+      key: 'architect',
+      name: 'Architect',
+      price: 49,
+      icon: Crown,
+      color: 'text-purple-600 dark:text-purple-400',
+      accentBg: 'bg-purple-50 dark:bg-purple-900/20',
+      accentBorder: 'border-purple-200 dark:border-purple-800',
+      accentText: 'text-purple-600 dark:text-purple-400',
+      checkBg: 'bg-purple-100 dark:bg-purple-900/30',
+      checkColor: 'text-purple-600 dark:text-purple-400',
+      btnBg: 'bg-purple-600 hover:bg-purple-700 text-white',
+      badgeBg: 'bg-purple-500',
+      gradient: 'from-purple-500 to-pink-400',
+      features: [
+        t('upgrade.features.unlimitedBooks'),
+        t('upgrade.features.premium500k'),
+        t('upgrade.features.selfLearningModels'),
+        t('upgrade.features.prioritySupport'),
+      ],
+      badge: t('states.bestValue'),
+    },
+  ];
+
   return (
-    <Modal onClose={onClose} className="max-w-2xl rounded-2xl overflow-y-auto" ariaLabel="Upgrade your plan">
+    <Modal onClose={onClose} className="max-w-2xl rounded-2xl overflow-y-auto" ariaLabel={t('upgrade.title')}>
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Upgrade Your Plan</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('upgrade.title')}</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Current plan: <span className="capitalize font-medium text-primary-600 dark:text-primary-400">{currentTier}</span>
+              {t('upgrade.currentPlan', { tier: currentTier })}
             </p>
           </div>
           <button
@@ -159,7 +183,7 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                 {/* Current badge */}
                 {isCurrent && (
                   <span className={`absolute -top-2.5 right-4 px-3 py-1 ${tier.badgeBg} text-white text-[10px] font-bold rounded-full uppercase tracking-wider`}>
-                    Current
+                    {t('states.current')}
                   </span>
                 )}
                 {/* Tier badge */}
@@ -182,10 +206,10 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                             <span className="text-lg font-black text-gray-900 dark:text-white">
                               €{tier.price}
                             </span>
-                            <span className="text-xs text-gray-400">+ applicable tax</span>
+                            <span className="text-xs text-gray-400">{t('limit.tax')}</span>
                           </>
                         ) : (
-                          <span className="text-lg font-black text-gray-900 dark:text-white">Free</span>
+                          <span className="text-lg font-black text-gray-900 dark:text-white">{tier.name}</span>
                         )}
                       </div>
                     </div>
@@ -197,27 +221,27 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                       onClick={async () => {
                         const variantId = getVariantIdForTier(tier.key);
                         if (!variantId) {
-                          toast('Payment system is not fully configured yet', 'error');
+                          toast(t('upgrade.paymentNotConfigured'), 'error');
                           return;
                         }
                         setLoadingTier(tier.key);
                         try {
-                          const url = await createCheckout(variantId);
+                          const url = await createCheckout(variantId, t as (key: string) => string);
                           openCheckout(url);
                           onClose();
                         } catch (err) {
-                          toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+                          toast(err instanceof Error ? err.message : t('upgrade.checkoutFailed'), 'error');
                         } finally {
                           setLoadingTier(null);
                         }
                       }}
                       className={`text-xs px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 ${tier.btnBg} disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5`}
                     >
-                      {loadingTier === tier.key ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Upgrade'}
+                      {loadingTier === tier.key ? <Loader2 className="w-3 h-3 animate-spin" /> : t('upgrade.upgrade')}
                     </button>
                   ) : isCurrent ? (
                     <span className={`text-xs font-bold px-4 py-2 ${tier.checkColor}`}>
-                      Active
+                      {t('states.active')}
                     </span>
                   ) : null}
                 </div>
@@ -247,7 +271,7 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
         {/* Footer */}
         <div className="border-t border-gray-200 dark:border-slate-700 px-6 py-4">
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            Prices exclude tax. Taxes are calculated at checkout based on your location. Cancel anytime.
+            {t('upgrade.footer')}
           </p>
         </div>
     </Modal>

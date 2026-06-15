@@ -1,11 +1,13 @@
 import { functions } from '@/lib/appwrite';
 import { ExecutionMethod } from 'appwrite';
 
+type TFunction = (key: string, interpolations?: Record<string, string | number>) => string;
+
 const CREATE_CHECKOUT_FUNCTION_ID = import.meta.env.VITE_APPWRITE_FUNCTION_CREATE_CHECKOUT_ID || '';
 
-export async function createCheckout(variantId: string): Promise<string> {
+export async function createCheckout(variantId: string, t?: TFunction): Promise<string> {
   if (!CREATE_CHECKOUT_FUNCTION_ID) {
-    throw new Error('Payment system is not configured yet. Please try again later.');
+    throw new Error(t ? t('settings.billing.paymentNotConfigured') : 'Payment system is not configured yet. Please try again later.');
   }
 
   const execution = await functions.createExecution(
@@ -20,7 +22,7 @@ export async function createCheckout(variantId: string): Promise<string> {
   try {
     result = JSON.parse(execution.responseBody);
   } catch {
-    throw new Error('Invalid response from payment server');
+    throw new Error(t ? t('settings.billing.invalidResponse') : 'Invalid response from payment server');
   }
 
   if (result.error) {
@@ -28,7 +30,7 @@ export async function createCheckout(variantId: string): Promise<string> {
   }
 
   if (!result.checkoutUrl) {
-    throw new Error('No checkout URL returned');
+    throw new Error(t ? t('settings.billing.noCheckoutUrl') : 'No checkout URL returned');
   }
 
   return result.checkoutUrl;
@@ -45,9 +47,9 @@ export function getVariantIdForTier(tier: string): string | null {
   return TIER_VARIANT_MAP[tier] || null;
 }
 
-export async function getCustomerPortalUrl(customerId?: string | null): Promise<string> {
+export async function getCustomerPortalUrl(customerId?: string | null, t?: TFunction): Promise<string> {
   if (!CREATE_CHECKOUT_FUNCTION_ID) {
-    throw new Error('Payment system is not configured yet. Please try again later.');
+    throw new Error(t ? t('settings.billing.paymentNotConfigured') : 'Payment system is not configured yet. Please try again later.');
   }
 
   const execution = await functions.createExecution(
@@ -62,7 +64,7 @@ export async function getCustomerPortalUrl(customerId?: string | null): Promise<
   try {
     result = JSON.parse(execution.responseBody);
   } catch {
-    throw new Error('Invalid response from payment server');
+    throw new Error(t ? t('settings.billing.invalidResponse') : 'Invalid response from payment server');
   }
 
   if (result.error) {
@@ -70,7 +72,7 @@ export async function getCustomerPortalUrl(customerId?: string | null): Promise<
   }
 
   if (!result.portalUrl) {
-    throw new Error('No portal URL returned');
+    throw new Error(t ? t('settings.billing.noPortalUrl') : 'No portal URL returned');
   }
 
   return result.portalUrl;

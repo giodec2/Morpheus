@@ -11,6 +11,7 @@ import Highlight from '@tiptap/extension-highlight';
 import Underline from '@tiptap/extension-underline';
 import Typography from '@tiptap/extension-typography';
 import { Loader2 } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
 import { useSearchStore } from '@/stores/searchStore';
@@ -60,6 +61,7 @@ function applySearchHighlights(editorElement: HTMLElement | null, terms: string[
 }
 
 export default function TiptapEditor() {
+  const { t } = useI18n();
   const { activeChapter, saveStatus } = useEditorStore();
   const { characters } = useBookStore();
   const { activeHighlightTerms } = useSearchStore();
@@ -72,7 +74,7 @@ export default function TiptapEditor() {
       FontFamily,
       Color,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Placeholder.configure({ placeholder: 'Begin your chapter...' }),
+      Placeholder.configure({ placeholder: t('editor.beginChapter') }),
       CharacterCount,
       Highlight,
       Underline,
@@ -124,8 +126,8 @@ export default function TiptapEditor() {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-600">
         <div className="text-center">
-          <p className="text-lg font-medium mb-2">No chapter selected</p>
-          <p className="text-sm">Create a new chapter from the sidebar to start writing</p>
+          <p className="text-lg font-medium mb-2">{t('editor.noChapterSelected')}</p>
+          <p className="text-sm">{t('editor.createChapterToStart')}</p>
         </div>
       </div>
     );
@@ -169,8 +171,8 @@ export default function TiptapEditor() {
           </div>
 
           <div className="flex items-center justify-between px-4 md:px-10 py-4 text-xs text-gray-400">
-            <span>{wordCount.toLocaleString()} words</span>
-            <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Synced ✓' : saveStatus === 'error' ? 'Save failed' : ''}</span>
+            <span>{t('editor.wordCount', { count: wordCount.toLocaleString() })}</span>
+            <span>{saveStatus === 'saving' ? t('editor.saving') : saveStatus === 'saved' ? `${t('editor.synced')} ✓` : saveStatus === 'error' ? t('editor.saveFailed') : ''}</span>
           </div>
         </div>
       </div>

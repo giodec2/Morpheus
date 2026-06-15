@@ -1,14 +1,16 @@
 import { Mail, MessageSquare, Clock, MapPin } from 'lucide-react';
 import LegalPageLayout from '@/components/Legal/LegalPageLayout';
+import { useI18n } from '@/i18n/useI18n';
 
 export default function Contact() {
+  const { t } = useI18n();
+
   return (
-    <LegalPageLayout title="Contact Us" lastUpdated="June 2026">
+    <LegalPageLayout title={t('legal.contact.title')} lastUpdated={t('legal.contact.lastUpdated')}>
       <div className="space-y-8 text-gray-700 dark:text-gray-300">
         <section>
           <p className="text-lg leading-relaxed">
-            Have a question, feedback, or need help with Morpheus? We are here for you.
-            Reach out and we will get back to you as soon as possible.
+            {t('legal.contact.intro')}
           </p>
         </section>
 
@@ -22,13 +24,13 @@ export default function Contact() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                Email Us
+                {t('legal.contact.emailTitle')}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                hello@morpheusink.com
+                {t('legal.contact.emailAddress')}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Best for general inquiries and feedback
+                {t('legal.contact.emailDesc')}
               </p>
             </div>
           </a>
@@ -39,13 +41,13 @@ export default function Contact() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                Response Time
+                {t('legal.contact.responseTitle')}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Within 24-48 hours
+                {t('legal.contact.responseTime')}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Monday – Friday, CET timezone
+                {t('legal.contact.supportDays')}
               </p>
             </div>
           </div>
@@ -56,13 +58,13 @@ export default function Contact() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                Support
+                {t('legal.contact.supportTitle')}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Billing & technical issues
+                {t('legal.contact.supportDesc')}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Include your account email for faster help
+                {t('legal.contact.includeEmail')}
               </p>
             </div>
           </div>
@@ -73,13 +75,13 @@ export default function Contact() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                Based In
+                {t('legal.contact.basedInTitle')}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Rome, Italy
+                {t('legal.contact.basedInLocation')}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Built with care for storytellers worldwide
+                {t('legal.contact.basedInDesc')}
               </p>
             </div>
           </div>
@@ -87,21 +89,20 @@ export default function Contact() {
 
         <section>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-            Before You Write
+            {t('legal.contact.beforeYouWrite')}
           </h2>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <strong>Billing issues?</strong> Check our{' '}
-              <a href="/refund" className="text-primary-600 dark:text-primary-400 underline">Refund Policy</a>{' '}
-              and include your subscription email.
+              <strong>{t('legal.contact.billingIssue')}</strong>{' '}
+              {t('legal.contact.billingIssueText', { refundPolicy: t('legal.contact.refundLink') })}
             </li>
             <li>
-              <strong>Common questions?</strong> Browse our{' '}
-              <a href="/faq" className="text-primary-600 dark:text-primary-400 underline">FAQ page</a>{' '}
-              first — your answer might already be there.
+              <strong>{t('legal.contact.commonQuestion')}</strong>{' '}
+              {t('legal.contact.commonQuestionText', { faqPage: t('legal.contact.faqLink') })}
             </li>
             <li>
-              <strong>Bug report?</strong> Tell us what you were doing, what you expected, and what happened instead. Screenshots help!
+              <strong>{t('legal.contact.bugReport')}</strong>{' '}
+              {t('legal.contact.bugReportText')}
             </li>
           </ul>
         </section>
@@ -112,7 +113,7 @@ export default function Contact() {
             className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-lg shadow-primary-500/30"
           >
             <Mail className="w-4 h-4" />
-            Send us an email
+            {t('legal.contact.sendEmail')}
           </a>
         </section>
       </div>

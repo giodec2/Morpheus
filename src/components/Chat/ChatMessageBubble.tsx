@@ -1,5 +1,6 @@
 import { Bot, User, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
 import MarkdownContent from './MarkdownContent';
+import { useI18n } from '@/i18n/useI18n';
 import type { ChatMessage } from '@/types';
 
 interface ChatMessageBubbleProps {
@@ -14,6 +15,7 @@ interface ChatMessageBubbleProps {
 export default function ChatMessageBubble({
   msg, isStreaming, isLast, streamContent, lastUserInput, onRetry,
 }: ChatMessageBubbleProps) {
+  const { t } = useI18n();
   const showStream = isLast && msg.role === 'assistant' && isStreaming;
   const isError = msg.role === 'assistant' && msg.content.startsWith('Error:');
 
@@ -47,7 +49,7 @@ export default function ChatMessageBubble({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span className="font-medium">Something went wrong</span>
+              <span className="font-medium">{t('errors.somethingWentWrong')}</span>
             </div>
             <p className="text-xs opacity-90 whitespace-pre-wrap">{msg.content.slice(6).trim()}</p>
             {lastUserInput && (
@@ -55,7 +57,7 @@ export default function ChatMessageBubble({
                 onClick={() => onRetry(msg)}
                 className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded bg-red-200 dark:bg-red-800 hover:bg-red-300 dark:hover:bg-red-700 transition-colors"
               >
-                <RefreshCw className="w-3 h-3" /> Retry
+                <RefreshCw className="w-3 h-3" /> {t('chat.retry')}
               </button>
             )}
           </div>

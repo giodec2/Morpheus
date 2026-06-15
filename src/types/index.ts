@@ -95,6 +95,8 @@ export interface StyleProfile {
   updatedAt: number;
 }
 
+export type UILocale = 'en' | 'it';
+
 export interface AppSettings {
   id: 'global';
   openRouterKey: string;
@@ -104,6 +106,8 @@ export interface AppSettings {
   theme: 'light' | 'dark';
   advancedMode: boolean;
   language: Language;
+  uiLocale: UILocale;
+  languageManuallySet: boolean;
   modelTier: 'standard' | 'premium';
   aiMode: 'byok' | 'hosted';
   writingGenre: WritingGenre;

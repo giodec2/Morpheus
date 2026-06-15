@@ -1,15 +1,17 @@
 import { Lock, EyeOff, Server, Fingerprint, Download } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
+import { useI18n } from '@/i18n/useI18n';
 
-const trustItems = [
-  { icon: EyeOff, text: 'Zero data retention' },
-  { icon: Lock, text: 'Your creations are never used to train AI' },
-  { icon: Fingerprint, text: 'Bring your own API key' },
-  { icon: Download, text: 'Full export, anytime' },
-  { icon: Server, text: 'EU-hosted option' },
+const trustItemDefs = [
+  { icon: EyeOff, key: 'zeroRetention' },
+  { icon: Lock, key: 'noTraining' },
+  { icon: Fingerprint, key: 'byok' },
+  { icon: Download, key: 'fullExport' },
+  { icon: Server, key: 'euHosted' },
 ];
 
 export default function TrustBar() {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
 
   return (
@@ -21,11 +23,11 @@ export default function TrustBar() {
         }`}
       >
         <div className="flex flex-wrap items-center justify-center gap-x-6 md:gap-x-8 gap-y-2.5">
-          {trustItems.map((item) => {
+          {trustItemDefs.map((item) => {
             const Icon = item.icon;
             return (
               <div
-                key={item.text}
+                key={item.key}
                 className="flex items-center gap-1.5 text-xs md:text-sm text-gray-500 dark:text-gray-400"
               >
                 <span className="relative">
@@ -35,7 +37,7 @@ export default function TrustBar() {
                     style={{ animation: 'breathe-glow 3s ease-in-out infinite' }}
                   />
                 </span>
-                <span>{item.text}</span>
+                <span>{t(`landing.trustBar.${item.key}` as never)}</span>
               </div>
             );
           })}

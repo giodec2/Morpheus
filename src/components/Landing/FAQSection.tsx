@@ -2,51 +2,21 @@ import { useState } from 'react';
 import { ChevronDown, HelpCircle, ArrowRight } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { Link } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
-const faqs = [
-  {
-    question: 'Is my manuscript really private?',
-    answer:
-      'Absolutely. We use AI providers with strict zero data retention policies. Your prompts are never logged, never stored, and never used to train models. With our BYOK option, you can even use your own API key for complete control over where your data goes.',
-  },
-  {
-    question: 'How is this different from ChatGPT or Claude?',
-    answer:
-      "General AI chatbots forget everything between sessions. Morpheus maintains a persistent lore bible — characters, locations, world rules, and plot details — so the AI remembers your world across every conversation. It is like having a co-writer who actually read your previous chapters.",
-  },
-  {
-    question: 'Do I need to know how to code or use APIs?',
-    answer:
-      'Not at all. You can start writing immediately with our hosted AI option — no API key needed. The BYOK option is there for power users who want more control, but it is completely optional.',
-  },
-  {
-    question: 'Can I export my work?',
-    answer:
-      'Yes — anytime, in any format. Export individual chapters, full books, character sheets, and lore bibles. Your work is always yours, and you can take it with you whenever you want.',
-  },
-  {
-    question: 'What genres does Morpheus support?',
-    answer:
-      'Morpheus supports nine genre modes: General Fiction, Crime & Mystery, Romance, Thriller & Horror, Science Fiction, Fantasy, Literary Fiction, Historical Fiction, and Young Adult. Each mode adapts suggestions to match the tropes, pacing, and conventions of your chosen genre.',
-  },
-  {
-    question: 'Is there a free trial for paid plans?',
-    answer:
-      'Yes! Every paid plan includes a 7-day free trial with full access to all features. Cancel anytime before the trial ends and you will not be charged.',
-  },
-  {
-    question: 'What happens if I hit my token limit?',
-    answer:
-      'Your token allowance resets weekly. If you hit the limit, you can still use Morpheus with your own API key (BYOK), or upgrade to a higher tier for more hosted tokens. We will notify you when you are approaching your limit.',
-  },
-  {
-    question: 'Can I switch plans or cancel anytime?',
-    answer:
-      'Yes — upgrade, downgrade, or cancel whenever you want. No contracts, no cancellation fees. If you downgrade, your books and data stay safe; you will just need to stay within the new plan limits.',
-  },
+const faqDefs = [
+  { key: 'q1' },
+  { key: 'q2' },
+  { key: 'q3' },
+  { key: 'q4' },
+  { key: 'q5' },
+  { key: 'q6' },
+  { key: 'q7' },
+  { key: 'q8' },
 ];
 
-function FAQItem({ faq }: { faq: typeof faqs[0] }) {
+function FAQItem({ faq }: { faq: typeof faqDefs[0] }) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -61,7 +31,7 @@ function FAQItem({ faq }: { faq: typeof faqs[0] }) {
         aria-expanded={isOpen}
       >
         <span className="text-sm md:text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-          {faq.question}
+          {t(`landing.faq.${faq.key}.question` as never)}
         </span>
         <ChevronDown
           className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-300 ${
@@ -76,7 +46,7 @@ function FAQItem({ faq }: { faq: typeof faqs[0] }) {
         }`}
       >
         <p className="px-4 md:px-6 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-          {faq.answer}
+          {t(`landing.faq.${faq.key}.answer` as never)}
         </p>
       </div>
     </div>
@@ -84,6 +54,7 @@ function FAQItem({ faq }: { faq: typeof faqs[0] }) {
 }
 
 export default function FAQSection() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({
     threshold: 0.3,
   });
@@ -105,20 +76,20 @@ export default function FAQSection() {
             <HelpCircle className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            Questions?{' '}
+            {t('landing.faq.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              Answered.
+              {t('landing.faq.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            The essentials. For the full picture, see our complete FAQ.
+            {t('landing.faq.intro')}
           </p>
         </div>
 
         {/* FAQ list */}
         <div className="rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900">
-          {faqs.map((faq) => (
-            <FAQItem key={faq.question} faq={faq} />
+          {faqDefs.map((faq) => (
+            <FAQItem key={faq.key} faq={faq} />
           ))}
         </div>
 
@@ -128,14 +99,14 @@ export default function FAQSection() {
             href="/faq"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-lg shadow-primary-500/30"
           >
-            All Questions
+            {t('landing.faq.allQuestions')}
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
           >
-            Contact Support
+            {t('actions.contactSupport')}
             <span className="text-lg">→</span>
           </Link>
         </div>

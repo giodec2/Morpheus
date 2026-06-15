@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import { cn } from '@/lib/utils';
 
 interface Option {
@@ -24,10 +25,12 @@ export default function CustomSelect({
   options,
   descriptions,
   onChange,
-  placeholder = 'Select...',
+  placeholder,
   className,
   disabled,
 }: CustomSelectProps) {
+  const { t } = useI18n();
+  const placeholderText = placeholder || t('actions.select');
   const [isOpen, setIsOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const [hoveredValue, setHoveredValue] = useState<string | null>(null);
@@ -121,7 +124,7 @@ export default function CustomSelect({
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <span className="truncate">{selected?.label || placeholder}</span>
+        <span className="truncate">{selected?.label || placeholderText}</span>
         <div className="flex items-center gap-2">
           {selected?.badge && (
             <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500 text-white shadow-sm">

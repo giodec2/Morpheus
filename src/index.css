@@ -3,8 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: 'Merriweather', Georgia, serif;
+  --font-sans: 'Sora', system-ui, sans-serif;
+  --font-serif: 'Literata', Georgia, serif;
   --font-roboto: 'Roboto', system-ui, sans-serif;
 
   --color-primary-50: #f0fdfa;

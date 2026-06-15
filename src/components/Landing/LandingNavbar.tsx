@@ -4,12 +4,15 @@ import { Menu, X, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import AuthModal from '@/components/Auth/AuthModal';
+import LanguageToggle from '@/components/common/LanguageToggle';
+import { useI18n } from '@/i18n/useI18n';
 
 interface LandingNavbarProps {
   onNavigate?: (hash: string) => void;
 }
 
 export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
+  const { t } = useI18n();
   const { user } = useAuthStore();
   const { theme, setTheme } = useSettingsStore();
   const [scrolled, setScrolled] = useState(false);
@@ -51,44 +54,46 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             <button onClick={() => handleNavClick('#features')} className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-              Features
+              {t('navigation.features')}
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
             </button>
             <button onClick={() => handleNavClick('#trust')} className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-              Trust & Security
+              {t('navigation.trustSecurity')}
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
             </button>
             <button onClick={() => handleNavClick('#pricing')} className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-              Pricing
+              {t('navigation.pricing')}
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
             </button>
             <Link href="/faq" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors relative group">
-              FAQ
+              {t('navigation.faq')}
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary-500 group-hover:w-full transition-all duration-300" />
             </Link>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageToggle />
+
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={isDark ? t('landing.navbar.ariaSwitchToLight') : t('landing.navbar.ariaSwitchToDark')}
             >
               {isDark ? <Sun className="w-4 h-4 text-gray-300" /> : <Moon className="w-4 h-4 text-gray-600" />}
             </button>
 
             {user ? (
               <Link href="/app">
-                <button className="btn-primary">Open the App</button>
+                <button className="btn-primary">{t('landing.cta.openApp')}</button>
               </Link>
             ) : (
               <>
                 <button onClick={() => setShowAuth(true)} className="btn-ghost text-sm font-medium">
-                  Sign In
+                  {t('auth.signIn')}
                 </button>
                 <button onClick={() => setShowAuth(true)} className="btn-primary text-sm">
-                  Get Started
+                  {t('landing.navbar.getStarted')}
                 </button>
               </>
             )}
@@ -98,7 +103,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Toggle menu"
+            aria-label={t('landing.navbar.toggleMenu')}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -107,21 +112,24 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-6 py-4 space-y-3">
-            <button onClick={() => handleNavClick('#features')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">Features</button>
-            <button onClick={() => handleNavClick('#trust')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">Trust & Security</button>
-            <button onClick={() => handleNavClick('#pricing')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">Pricing</button>
-            <Link href="/faq" onClick={() => setMobileOpen(false)} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">FAQ</Link>
+            <button onClick={() => handleNavClick('#features')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">{t('navigation.features')}</button>
+            <button onClick={() => handleNavClick('#trust')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">{t('navigation.trustSecurity')}</button>
+            <button onClick={() => handleNavClick('#pricing')} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">{t('navigation.pricing')}</button>
+            <Link href="/faq" onClick={() => setMobileOpen(false)} className="block w-full text-left py-2 text-gray-700 dark:text-gray-300">{t('navigation.faq')}</Link>
             <div className="pt-3 border-t border-gray-200 dark:border-slate-800 flex flex-col gap-2">
               {user ? (
                 <Link href="/app">
-                  <button className="btn-primary w-full">Open the App</button>
+                  <button className="btn-primary w-full">{t('landing.cta.openApp')}</button>
                 </Link>
               ) : (
                 <>
-                  <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-secondary w-full">Sign In</button>
-                  <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-primary w-full">Get Started</button>
+                  <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-secondary w-full">{t('auth.signIn')}</button>
+                  <button onClick={() => { setShowAuth(true); setMobileOpen(false); }} className="btn-primary w-full">{t('landing.navbar.getStarted')}</button>
                 </>
               )}
+              <div className="flex items-center justify-center py-2.5">
+                <LanguageToggle />
+              </div>
               <button
                 onClick={() => {
                   setTheme(isDark ? 'light' : 'dark');
@@ -130,7 +138,7 @@ export default function LandingNavbar({ onNavigate }: LandingNavbarProps) {
                 className="flex items-center justify-center gap-2 py-2.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               >
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                {isDark ? 'Light Mode' : 'Dark Mode'}
+                {isDark ? t('landing.navbar.lightMode') : t('landing.navbar.darkMode')}
               </button>
             </div>
           </div>

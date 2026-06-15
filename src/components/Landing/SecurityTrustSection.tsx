@@ -12,65 +12,49 @@ import { useInView } from '@/hooks/useInView';
 import { useState, useEffect } from 'react';
 import AuthModal from '@/components/Auth/AuthModal';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
-const pillars = [
+const pillarDefs = [
   {
     icon: Code2,
-    title: 'AGPL-3.0 Open Source',
-    description:
-      'Our entire codebase is open source and auditable. You can self-host Morpheus, inspect every line of code, and verify for yourself that we have no backdoors. Closed-source tools ask for trust — we give you proof.',
+    key: 'openSource',
     gradient: 'from-primary-500 via-teal-400 to-emerald-400',
     shadow: 'shadow-primary-500/20',
-    badge: 'Verifiable Privacy',
   },
   {
     icon: ShieldCheck,
-    title: 'Zero AI Training on Your Work',
-    description:
-      'Your books, characters, and prompts are never used to train, fine-tune, or improve AI models. Our providers process requests and discard them immediately. Your creative work stays exclusively yours, forever.',
+    key: 'noTraining',
     gradient: 'from-emerald-500 via-teal-400 to-cyan-400',
     shadow: 'shadow-emerald-500/20',
-    badge: 'Never Logged',
   },
   {
     icon: KeyRound,
-    title: 'Bring Your Own Key',
-    description:
-      'Connect your own OpenRouter API key and bypass our servers entirely. Your data goes directly to the AI provider you choose — we never see your prompts, your manuscript, or your ideas. Complete control, zero trust required.',
+    key: 'byok',
     gradient: 'from-amber-500 via-orange-400 to-rose-400',
     shadow: 'shadow-amber-500/20',
-    badge: 'Zero Trust',
   },
   {
     icon: HardDrive,
-    title: 'Local-First Architecture',
-    description:
-      'Your manuscript lives in your browser by default. Cloud sync is optional. Even if our servers go offline, your work is still on your device — because your novel should outlast any SaaS.',
+    key: 'localFirst',
     gradient: 'from-purple-500 via-violet-400 to-pink-400',
     shadow: 'shadow-purple-500/20',
-    badge: 'You Own Your Data',
   },
   {
     icon: Scale,
-    title: 'GDPR Compliant, EU-Based',
-    description:
-      'Data controller based in Rome, Italy. Full GDPR rights including access, erasure, and portability. No offshore data havens — your data is protected by some of the strongest privacy laws in the world.',
+    key: 'gdpr',
     gradient: 'from-blue-500 via-indigo-400 to-violet-400',
     shadow: 'shadow-blue-500/20',
-    badge: 'EU Regulated',
   },
   {
     icon: Receipt,
-    title: 'Flat-Fee, No Surprises',
-    description:
-      'No credit anxiety. No metered word counts ticking down as you write. One predictable weekly allowance at a fixed price — focus on your story, not your balance.',
+    key: 'flatFee',
     gradient: 'from-rose-500 via-pink-400 to-fuchsia-400',
     shadow: 'shadow-rose-500/20',
-    badge: 'Predictable Pricing',
   },
 ];
 
-function TrustCard({ pillar, index }: { pillar: typeof pillars[0]; index: number }) {
+function TrustCard({ pillar, index }: { pillar: typeof pillarDefs[0]; index: number }) {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.15 });
   const [entered, setEntered] = useState(false);
   const Icon = pillar.icon;
@@ -104,7 +88,7 @@ function TrustCard({ pillar, index }: { pillar: typeof pillars[0]; index: number
         <span
           className={`px-2.5 py-0.5 rounded-full bg-gradient-to-r ${pillar.gradient} text-white`}
         >
-          {pillar.badge}
+          {t(`landing.trust.pillars.${pillar.key}.badge` as never)}
         </span>
       </div>
 
@@ -116,10 +100,10 @@ function TrustCard({ pillar, index }: { pillar: typeof pillars[0]; index: number
       </div>
 
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-        {pillar.title}
+        {t(`landing.trust.pillars.${pillar.key}.title` as never)}
       </h3>
       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-        {pillar.description}
+        {t(`landing.trust.pillars.${pillar.key}.description` as never)}
       </p>
 
       {/* Corner number */}
@@ -133,6 +117,7 @@ function TrustCard({ pillar, index }: { pillar: typeof pillars[0]; index: number
 }
 
 export default function SecurityTrustSection() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({
     threshold: 0.3,
   });
@@ -163,25 +148,23 @@ export default function SecurityTrustSection() {
           }`}
         >
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-4">
-            Trust & Security
+            {t('landing.trust.label')}
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            Your manuscript is{' '}
+            {t('landing.trust.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              sacred
+              {t('landing.trust.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            For fiction writers, privacy is not a feature — it is the foundation.
-            We built Morpheus so you never have to choose between powerful AI and
-            protecting your creative work.
+            {t('landing.trust.intro')}
           </p>
         </div>
 
         {/* Trust pillars grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {pillars.map((pillar, index) => (
-            <TrustCard key={pillar.title} pillar={pillar} index={index} />
+          {pillarDefs.map((pillar, index) => (
+            <TrustCard key={pillar.key} pillar={pillar} index={index} />
           ))}
         </div>
 
@@ -197,7 +180,7 @@ export default function SecurityTrustSection() {
               className="group btn-primary text-base px-8 py-4 inline-flex items-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
             >
               <Feather className="w-4 h-4" />
-              Start Writing Free
+              {t('landing.cta.startFree')}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
             <a
@@ -207,11 +190,11 @@ export default function SecurityTrustSection() {
               className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors inline-flex items-center gap-1.5"
             >
               <Code2 className="w-4 h-4" />
-              Audit the code on GitHub
+              {t('landing.trust.auditCode')}
             </a>
           </div>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">
-            No credit card required · AGPL-3.0 Licensed · Your work stays yours
+            {t('landing.trust.footer')}
           </p>
         </div>
       </div>

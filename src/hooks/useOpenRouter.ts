@@ -3,13 +3,19 @@ import OpenAI from 'openai';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { functions } from '@/lib/appwrite';
+import { translate } from '@/i18n/translate';
 
 import type { AIMode } from '@/types';
 
 const HOSTED_AI_FUNCTION_ID = import.meta.env.VITE_APPWRITE_FUNCTION_ID || '';
 
 export function useOpenRouter() {
-  const { openRouterKey, defaultModel, temperature, maxTokens, aiMode } = useSettingsStore();
+  const { openRouterKey, defaultModel, temperature, maxTokens, aiMode, uiLocale } = useSettingsStore();
+  const t = useCallback(
+    (key: Parameters<typeof translate>[1], interpolations?: Record<string, string | number>) =>
+      translate(uiLocale, key, interpolations),
+    [uiLocale]
+  );
   const { user } = useAuthStore();
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -44,11 +50,11 @@ export function useOpenRouter() {
     onError: (error: string) => void,
   ): Promise<void> => {
     if (!user) {
-      onError('Please sign in to use Hosted AI.');
+      onError(t('errors.signInForHostedAI'));
       return;
     }
     if (!HOSTED_AI_FUNCTION_ID) {
-      onError('Hosted AI is not configured. Please add your own API key (BYOK) in Settings.');
+      onError(t('errors.hostedAINotConfigured'));
       return;
     }
 
@@ -69,8 +75,8 @@ export function useOpenRouter() {
       console.log('[Hosted AI] Execution result:', result);
 
       if (result.responseStatusCode >= 400) {
-        let errorMsg = `Hosted AI request failed (HTTP ${result.responseStatusCode}).`;
-        let rawBody = result.responseBody || '';
+        let errorMsg = t('errors.hostedAIRequestFailed', { code: result.responseStatusCode });
+        const rawBody = result.responseBody || '';
         try {
           const errorBody = JSON.parse(rawBody);
           errorMsg = errorBody.error || errorBody.message || errorMsg;
@@ -92,7 +98,7 @@ export function useOpenRouter() {
         body = JSON.parse(result.responseBody);
       } catch {
         console.error('[Hosted AI] Invalid JSON response:', result.responseBody);
-        onError('Invalid response from AI server.');
+        onError(t('errors.invalidAIResponse'));
         return;
       }
 
@@ -135,7 +141,7 @@ export function useOpenRouter() {
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [user, defaultModel, temperature, maxTokens]);
+  }, [user, defaultModel, temperature, maxTokens, t]);
 
   const sendMessageByok = useCallback(async (
     systemPrompt: string,
@@ -144,7 +150,7 @@ export function useOpenRouter() {
     onError: (error: string) => void,
   ): Promise<void> => {
     if (!openRouterKey || !client) {
-      onError('Please set your OpenRouter API key in Settings.');
+      onError(t('errors.setApiKey'));
       return;
     }
 
@@ -179,17 +185,17 @@ export function useOpenRouter() {
     } catch (err) {
       clearTimeout(timeoutId);
       if ((err as Error).name === 'AbortError') {
-        onError('Request timed out. The AI provider took too long to respond.');
+        onError(t('errors.requestTimedOut'));
         return;
       }
-      const msg = (err as Error).message || 'An error occurred while streaming.';
+      const msg = (err as Error).message || t('errors.streamingError');
       onError(msg);
     } finally {
       clearTimeout(timeoutId);
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [openRouterKey, client, defaultModel, temperature, maxTokens]);
+  }, [openRouterKey, client, defaultModel, temperature, maxTokens, t]);
 
   const sendMessage = useCallback(async (
     systemPrompt: string,
@@ -197,6 +203,7 @@ export function useOpenRouter() {
     onChunk: (chunk: string) => void,
     onError: (error: string) => void,
     _mode: AIMode
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ): Promise<void> => {
     if (isByok) {
       await sendMessageByok(systemPrompt, messages, onChunk, onError);

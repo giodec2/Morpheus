@@ -6,7 +6,9 @@ import {
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useI18n } from '@/i18n/useI18n';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
+import LanguageToggle from '@/components/common/LanguageToggle';
 import ResearchPanel from '@/components/Layout/ResearchPanel';
 
 const ExportModal = lazy(() => import('@/components/Settings/ExportModal'));
@@ -22,6 +24,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: TopBarProps) {
+  const { t } = useI18n();
   const { activeBook } = useBookStore();
   const { activeChapter } = useEditorStore();
   const { isConnected } = useSettingsStore();
@@ -39,7 +42,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
           <button
             onClick={onToggleLeft}
             className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            title="Toggle sidebar"
+            title={t('app.toggleSidebar')}
           >
             <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -53,7 +56,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
         <div className="hidden sm:flex items-center gap-1 ml-4 lg:ml-6">
           <Link href="/" className="btn-ghost flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
             <Home className="w-4 h-4" />
-            <span className="text-sm">Home</span>
+            <span className="text-sm">{t('navigation.home')}</span>
           </Link>
         </div>
 
@@ -62,7 +65,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
           {activeBook && (
             <>
               <div className="flex items-center gap-1.5 lg:gap-2 min-w-0">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">Project:</span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 hidden lg:inline">{t('app.project')}</span>
                 <span className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[80px] sm:max-w-[120px] lg:max-w-[200px]">
                   {activeBook.title}
                 </span>
@@ -77,7 +80,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
                 {isConnected && (
                   <span className="ml-1 flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 hidden md:flex">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Connected
+                    {t('states.connected')}
                   </span>
                 )}
               </div>
@@ -91,7 +94,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
         {/* Right: Actions */}
         <div className="flex items-center gap-0.5 lg:gap-1">
           {isSyncing && (
-            <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mr-1" title="Syncing...">
+            <span className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mr-1" title={t('states.syncing')}>
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             </span>
           )}
@@ -112,33 +115,35 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
             <button
               onClick={() => setShowAuth(true)}
               className="flex items-center gap-1.5 px-1.5 lg:px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors mr-0.5"
-              title="Sign in to sync"
+              title={t('app.signInToSync')}
             >
               <CloudOff className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">Sync</span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 hidden sm:inline">{t('app.sync')}</span>
             </button>
           )}
+
+          <LanguageToggle />
 
           <DarkModeToggle />
 
           <button
             onClick={() => setShowImport(true)}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            title="Import book"
+            title={t('app.importBook')}
           >
             <Upload className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
           <button
             onClick={() => setShowExport(true)}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            title="Export book"
+            title={t('app.exportBook')}
           >
             <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
           <button
             onClick={() => onOpenSettings?.()}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors hidden lg:flex"
-            title="Settings"
+            title={t('actions.settings')}
           >
             <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -147,7 +152,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
           <button
             onClick={onToggleRight}
             className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            title="Toggle chat"
+            title={t('app.toggleChat')}
           >
             <MessageSquare className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>

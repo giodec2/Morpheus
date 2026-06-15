@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, X, User } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
 import { updateChapter } from '@/db/chapters';
@@ -11,6 +12,7 @@ interface CharacterTagsProps {
 }
 
 export default function CharacterTags({ chapter, allCharacters }: CharacterTagsProps) {
+  const { t } = useI18n();
   const [showDropdown, setShowDropdown] = useState(false);
   const { updateActiveChapter } = useEditorStore();
   const { updateChapter: updateChapterInStore } = useBookStore();
@@ -36,7 +38,7 @@ export default function CharacterTags({ chapter, allCharacters }: CharacterTagsP
   return (
     <div className="px-8 pb-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-gray-500 dark:text-gray-500">Characters:</span>
+        <span className="text-xs text-gray-500 dark:text-gray-500">{t('app.charactersLabel')}</span>
 
         {taggedCharacters.map(char => (
           <span
@@ -60,7 +62,7 @@ export default function CharacterTags({ chapter, allCharacters }: CharacterTagsP
             className="inline-flex items-center gap-1 text-xs px-2 py-1 border border-dashed border-gray-300 dark:border-slate-700 text-gray-500 dark:text-gray-500 rounded-full hover:border-primary-400 hover:text-primary-600 transition-colors"
           >
             <Plus className="w-3 h-3" />
-            Tag
+            {t('app.tag')}
           </button>
 
           {showDropdown && availableCharacters.length > 0 && (

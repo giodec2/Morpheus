@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, lazy, Suspense, type ReactNod
 import { useBookStore } from '@/stores/bookStore';
 import { useEditorStore } from '@/stores/editorStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useI18n } from '@/i18n/useI18n';
 import { getBook } from '@/db/books';
 import { getChaptersByBook } from '@/db/chapters';
 import { getCharactersByBook } from '@/db/characters';
@@ -24,6 +25,7 @@ interface AppShellProps {
 }
 
 export default function AppShell({ bookId, chapterId, children }: AppShellProps) {
+  const { t } = useI18n();
   useEffect(() => {
     document.body.classList.add('app');
     document.body.classList.remove('landing');
@@ -162,9 +164,9 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
                   setActiveChapter(freshChapters[0]);
                 }
               }
-              toast(`Synced ${pulled} update${pulled === 1 ? '' : 's'} from cloud`, 'info');
+              toast(t('app.syncedFromCloud', { count: pulled }), 'info');
             } else if (pushed > 0 || summary.book === 'local') {
-              toast(`Synced ${pushed} update${pushed === 1 ? '' : 's'} to cloud`, 'success');
+              toast(t('app.syncedToCloud', { count: pushed }), 'success');
             }
           } catch (err) {
             console.error('[AppShell] Conflict resolution failed:', err);
@@ -177,7 +179,7 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
 
     load();
     return () => { cancelled = true; };
-  }, [bookId, chapterId, setActiveBook, setChapters, setCharacters, setLoreBible, setActiveChapter, user]);
+  }, [bookId, chapterId, setActiveBook, setChapters, setCharacters, setLoreBible, setActiveChapter, user, t]);
 
   // Close sidebars when switching books
   useEffect(() => {
@@ -228,7 +230,7 @@ export default function AppShell({ bookId, chapterId, children }: AppShellProps)
         <div
           className="hidden lg:block w-1 cursor-col-resize hover:bg-primary-500/30 active:bg-primary-500/50 z-40 self-stretch shrink-0 transition-colors"
           onMouseDown={startResize}
-          title="Drag to resize"
+          title={t('app.dragToResize')}
         />
 
         {/* Right sidebar */}

@@ -4,8 +4,10 @@ import { ArrowRight, Feather } from 'lucide-react';
 import AuthModal from '@/components/Auth/AuthModal';
 import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
 export default function CTABanner() {
+  const { t } = useI18n();
   const { user } = useAuthStore();
   const [showAuth, setShowAuth] = useState(false);
   const [, navigate] = useLocation();
@@ -35,24 +37,24 @@ export default function CTABanner() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
-          Launch pricing — lock in early-adopter rates forever
+          {t('landing.badge.launchPricing')}
         </div>
 
         <Feather className="w-14 h-14 text-white/80 mx-auto mb-8" />
 
         <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
-          Ready to write your<br />
-          <span className="text-primary-200">next chapter?</span>
+          {t('landing.cta.headlinePrefix')}<br />
+          <span className="text-primary-200">{t('landing.cta.headlineHighlight')}</span>
         </h2>
 
         <p className="text-lg md:text-xl text-white/80 mb-10 max-w-xl mx-auto leading-relaxed">
-          Join writers who are building worlds with Morpheus. Start free—no credit card, no commitment.
+          {t('landing.cta.subheadline')}
         </p>
 
         {user ? (
           <Link href="/app">
             <button className="group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary-700 rounded-2xl font-bold text-lg hover:bg-primary-50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-2xl shadow-black/20">
-              Open the App
+              {t('landing.cta.openApp')}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
@@ -61,13 +63,13 @@ export default function CTABanner() {
             onClick={() => setShowAuth(true)}
             className="group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary-700 rounded-2xl font-bold text-lg hover:bg-primary-50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shadow-2xl shadow-black/20"
           >
-            Start Writing Free
+            {t('landing.cta.startFree')}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         )}
 
         <p className="mt-6 text-sm text-white/60">
-          Free forever tier available. Upgrade anytime. 7-day free trial on paid plans.
+          {t('landing.cta.note')}
         </p>
       </div>
 

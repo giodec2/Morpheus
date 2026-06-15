@@ -1,6 +1,7 @@
 import { X, ArrowUpRight, BookOpen, Crown, Star, Sparkles, Zap, Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
 import { useState } from 'react';
+import { useI18n } from '@/i18n/useI18n';
 import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
 import { createCheckout, getVariantIdForTier } from '@/services/billing';
 import { toast } from '@/components/common/Toast';
@@ -71,12 +72,7 @@ const tierMeta: Record<string, {
   },
 };
 
-const nextTierBenefits: Record<string, string[]> = {
-  free: ['Up to 3 books', '500k tokens/week', 'All standard models'],
-  scribe: ['Up to 10 books', '1M tokens/week', 'Premium models included', 'Signature finetunes'],
-  novelist: ['Unlimited books', '5M tokens/week', '500k premium tokens/week', 'Self-learning models', 'Priority support'],
-  architect: [],
-};
+
 
 const prices: Record<string, string> = {
   scribe: '€9',
@@ -85,12 +81,35 @@ const prices: Record<string, string> = {
 };
 
 export default function UpgradeModal({ currentTier, currentCount, maxCount, onClose }: UpgradeModalProps) {
+  const { t } = useI18n();
   const [isLoading, setIsLoading] = useState(false);
   const { openCheckout } = useLemonSqueezy();
   const currentIndex = tierOrder.indexOf(currentTier);
   const nextTierKey = currentIndex < tierOrder.length - 1 ? tierOrder[currentIndex + 1] : null;
-  const benefits = nextTierKey ? nextTierBenefits[nextTierKey] : [];
   const nextMeta = nextTierKey ? tierMeta[nextTierKey] : null;
+
+  const nextTierBenefits: Record<string, string[]> = {
+    free: [
+      t('upgrade.benefits.upTo3Books'),
+      t('upgrade.features.tokens500k'),
+      t('upgrade.benefits.allStandardModels'),
+    ],
+    scribe: [
+      t('upgrade.benefits.upTo10Books'),
+      t('upgrade.features.tokens1M'),
+      t('upgrade.benefits.premiumModelsIncluded'),
+      t('upgrade.features.signatureFinetunes'),
+    ],
+    novelist: [
+      t('upgrade.features.unlimitedBooks'),
+      t('upgrade.features.tokens5M'),
+      t('upgrade.features.premium500k'),
+      t('upgrade.features.selfLearningModels'),
+      t('upgrade.features.prioritySupport'),
+    ],
+    architect: [],
+  };
+  const benefits = nextTierKey ? nextTierBenefits[nextTierKey] : [];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -101,9 +120,11 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
               <BookOpen className={`w-5 h-5 ${tierMeta[currentTier].accentText}`} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Book Limit Reached</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('limit.title')}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {currentCount} of {Number.isFinite(maxCount) ? `${maxCount} books` : 'Unlimited books'} used
+                {Number.isFinite(maxCount)
+                  ? t('limit.usage', { used: currentCount, max: maxCount })
+                  : t('limit.unlimited')}
               </p>
             </div>
           </div>
@@ -117,15 +138,12 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
 
         <div className={`p-4 rounded-xl mb-6 ${tierMeta[currentTier].accentBg} ${tierMeta[currentTier].accentBorder} border`}>
           <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-            You're writing up a storm! 🌪️
+            {t('limit.message')}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Your <strong className="text-gray-700 dark:text-gray-300">{tierMeta[currentTier].name}</strong> plan includes{' '}
-            {Number.isFinite(maxCount) ? (
-              <><strong className="text-gray-700 dark:text-gray-300">{maxCount}</strong> book{maxCount > 1 ? 's' : ''}</>
-            ) : (
-              <><strong className="text-gray-700 dark:text-gray-300">Unlimited</strong> books</>
-            )}.
+            {Number.isFinite(maxCount)
+              ? t('limit.planInfo', { plan: tierMeta[currentTier].name, count: maxCount })
+              : t('limit.unlimitedPlan')}
           </p>
         </div>
 
@@ -136,7 +154,7 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
                 <nextMeta.icon className="w-4 h-4 text-white" />
               </div>
               <p className="text-sm font-bold text-gray-900 dark:text-white">
-                Upgrade to <span className={nextMeta.color}>{nextMeta.name}</span>:
+                {t('limit.upgradeTo', { tier: nextMeta.name })}:
               </p>
             </div>
             <ul className="space-y-2 mb-4">
@@ -149,10 +167,10 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
             </ul>
             <div className="flex items-center gap-2">
               <span className="text-xl font-black text-gray-900 dark:text-white">
-                {prices[nextTierKey]}/mo
+                {t('limit.price', { price: prices[nextTierKey] })}
               </span>
               <span className="text-xs text-gray-400">
-                + applicable tax
+                {t('limit.tax')}
               </span>
             </div>
           </div>
@@ -165,16 +183,16 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
               onClick={async () => {
                 const variantId = getVariantIdForTier(nextTierKey);
                 if (!variantId) {
-                  toast('Payment system is not fully configured yet', 'error');
+                  toast(t('upgrade.paymentNotConfigured'), 'error');
                   return;
                 }
                 setIsLoading(true);
                 try {
-                  const url = await createCheckout(variantId);
+                  const url = await createCheckout(variantId, t as (key: string) => string);
                   openCheckout(url);
                   onClose();
                 } catch (err) {
-                  toast(err instanceof Error ? err.message : 'Failed to open checkout', 'error');
+                  toast(err instanceof Error ? err.message : t('upgrade.checkoutFailed'), 'error');
                 } finally {
                   setIsLoading(false);
                 }
@@ -182,20 +200,20 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
               className={`w-full py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 ${nextMeta.btnBg} disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
-                Upgrade to {nextMeta.name}
+                {t('limit.upgradeTo', { tier: nextMeta.name })}
                 <ArrowUpRight className="w-4 h-4" />
               </>}
             </button>
           ) : (
             <p className="text-sm text-center text-gray-500 dark:text-gray-400 py-2">
-              You're on our highest tier. Contact us for custom limits.
+              {t('limit.highestTier')}
             </p>
           )}
           <button
             onClick={onClose}
             className="w-full btn-secondary py-3 text-sm font-bold"
           >
-            Maybe Later
+            {t('limit.later')}
           </button>
         </div>
       </div>

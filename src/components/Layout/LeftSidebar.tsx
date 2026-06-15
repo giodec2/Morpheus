@@ -13,6 +13,7 @@ import { createCharacter, deleteCharacter, updateCharacter } from '@/db/characte
 import { updateLoreBible } from '@/db/loreBibles';
 import { toast } from '@/components/common/Toast';
 import { extractTextFromContent, buildTiptapFromText } from '@/lib/tiptap';
+import { useI18n, type I18n } from '@/i18n/useI18n';
 import type { Chapter, Character } from '@/types';
 
 interface LeftSidebarProps {
@@ -21,6 +22,7 @@ interface LeftSidebarProps {
 }
 
 export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSidebarProps) {
+  const { t } = useI18n();
   const {
     activeBook, chapters, characters, loreBible,
     sidebarView, setSidebarView, activeCharacterId, setActiveCharacterId,
@@ -41,18 +43,18 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
     return (
       <div className="w-64 h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600">
         <BookOpen className="w-12 h-12 mb-3" />
-        <p className="text-sm">Open a book to start</p>
+        <p className="text-sm">{t('app.openBookToStart')}</p>
       </div>
     );
   }
 
   const handleCreateChapter = async () => {
     const newOrder = chapters.length;
-    const chapter = await createChapter(activeBook.id, `Chapter ${newOrder + 1}`, newOrder);
+    const chapter = await createChapter(activeBook.id, t('app.chapterNumber', { number: newOrder + 1 }), newOrder);
     addChapter(chapter);
     setActiveChapter(chapter);
     setSidebarView('chapters');
-    toast('Chapter created', 'success');
+    toast(t('app.chapterCreated'), 'success');
   };
 
   const handleDeleteChapter = (chapter: Chapter) => {
@@ -63,7 +65,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
     setConfirmDeleteChapter(null);
     await deleteChapter(id);
     removeChapter(id);
-    toast('Chapter deleted', 'info');
+    toast(t('app.chapterDeleted'), 'info');
     if (activeChapter?.id === id) {
       const remaining = chapters.filter(c => c.id !== id);
       setActiveChapter(remaining[0] || null);
@@ -101,7 +103,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
     <aside className="w-64 panel flex flex-col overflow-hidden h-full">
       <div className="p-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-          My Books
+          {t('app.myBooks')}
         </h2>
         {onCloseMobile && (
           <button
@@ -122,7 +124,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
           >
             <span className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              <span>Chapters</span>
+              <span>{t('app.chapters')}</span>
             </span>
             {expandedChapters ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
@@ -140,7 +142,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
                       onClick={(e) => { e.stopPropagation(); handleMoveChapter(idx, 'up'); }}
                       disabled={idx === 0}
                       className="p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700 rounded disabled:opacity-0"
-                      title="Move up"
+                      title={t('app.moveUp')}
                     >
                       <ArrowUp className="w-2.5 h-2.5 text-gray-500" />
                     </button>
@@ -148,7 +150,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
                       onClick={(e) => { e.stopPropagation(); handleMoveChapter(idx, 'down'); }}
                       disabled={idx === chapters.length - 1}
                       className="p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700 rounded disabled:opacity-0"
-                      title="Move down"
+                      title={t('app.moveDown')}
                     >
                       <ArrowDown className="w-2.5 h-2.5 text-gray-500" />
                     </button>
@@ -191,7 +193,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
                 className="sidebar-item text-primary-600 dark:text-primary-400"
               >
                 <Plus className="w-4 h-4" />
-                <span>New Chapter</span>
+                <span>{t('app.newChapter')}</span>
               </button>
             </div>
           )}
@@ -203,7 +205,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
           className={`sidebar-item w-full ${sidebarView === 'characters' ? 'active' : ''}`}
         >
           <Users className="w-4 h-4" />
-          <span>Characters</span>
+          <span>{t('app.characters')}</span>
           <span className="ml-auto text-xs text-gray-400">{characters.length}</span>
         </button>
 
@@ -213,7 +215,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
           className={`sidebar-item w-full ${sidebarView === 'loreBible' ? 'active' : ''}`}
         >
           <ScrollText className="w-4 h-4" />
-          <span>Lore Bible</span>
+          <span>{t('app.loreBible')}</span>
         </button>
 
         {/* Settings */}
@@ -228,13 +230,14 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
           className={`sidebar-item w-full ${sidebarView === 'settings' ? 'active' : ''}`}
         >
           <Settings className="w-4 h-4" />
-          <span>Settings</span>
+          <span>{t('actions.settings')}</span>
         </button>
       </div>
 
       {/* Character Panel — anchored at bottom of sidebar */}
       {sidebarView === 'characters' && (
         <CharacterPanel
+          t={t}
           characters={characters}
           activeCharacterId={activeCharacterId}
           setActiveCharacterId={setActiveCharacterId}
@@ -242,7 +245,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
             const char = await createCharacter(activeBook.id, name);
             addCharacter(char);
             setActiveCharacterId(char.id);
-            toast('Character created', 'success');
+            toast(t('app.characterCreated'), 'success');
           }}
           onUpdate={async (id, updates) => {
             await updateCharacter(id, updates);
@@ -258,7 +261,7 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
 
       {/* Lore Panel — anchored at bottom of sidebar */}
       {sidebarView === 'loreBible' && loreBible && (
-        <LorePanel loreBible={loreBible} onUpdate={async (content) => {
+        <LorePanel t={t} loreBible={loreBible} onUpdate={async (content) => {
           await updateLoreBible(loreBible.id, { content });
           updateLoreInStore({ ...loreBible, content });
         }} />
@@ -267,8 +270,8 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
       {/* Confirm Delete Chapter */}
       {confirmDeleteChapter && (
         <ConfirmModal
-          title="Delete Chapter"
-          description="This will permanently delete the chapter and all its content. This cannot be undone."
+          title={t('app.deleteChapter')}
+          description={t('app.deleteChapterConfirm')}
           itemName={confirmDeleteChapter.title}
           onConfirm={() => executeDeleteChapter(confirmDeleteChapter.id)}
           onClose={() => setConfirmDeleteChapter(null)}
@@ -278,13 +281,13 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
       {/* Confirm Delete Character */}
       {confirmDeleteCharacter && (
         <ConfirmModal
-          title="Delete Character"
-          description="This will permanently delete the character and remove all references to them. This cannot be undone."
+          title={t('app.deleteCharacter')}
+          description={t('app.deleteCharacterConfirm')}
           itemName={confirmDeleteCharacter.name}
           onConfirm={() => {
             deleteCharacter(confirmDeleteCharacter.id).then(() => {
               removeCharacter(confirmDeleteCharacter.id);
-              toast('Character deleted', 'info');
+              toast(t('app.characterDeleted'), 'info');
               if (activeCharacterId === confirmDeleteCharacter.id) setActiveCharacterId(null);
             });
             setConfirmDeleteCharacter(null);
@@ -298,9 +301,10 @@ export default function LeftSidebar({ onOpenSettings, onCloseMobile }: LeftSideb
 
 /* ---------- Character Panel ---------- */
 function CharacterPanel({
-  characters, activeCharacterId, setActiveCharacterId,
+  t, characters, activeCharacterId, setActiveCharacterId,
   onCreate, onUpdate, onDelete,
 }: {
+  t: I18n['t'];
   characters: Character[];
   activeCharacterId: string | null;
   setActiveCharacterId: (id: string | null) => void;
@@ -319,9 +323,10 @@ function CharacterPanel({
           onClick={() => setActiveCharacterId(null)}
           className="text-xs text-primary-600 dark:text-primary-400 flex items-center gap-1"
         >
-          <ChevronRight className="w-3 h-3 rotate-180" /> Back to list
+          <ChevronRight className="w-3 h-3 rotate-180" /> {t('app.backToList')}
         </button>
         <CharacterDetail
+          t={t}
           character={activeChar}
           onUpdate={onUpdate}
           onDelete={onDelete}
@@ -338,13 +343,13 @@ function CharacterPanel({
           onClick={() => setShowForm(true)}
           className="w-full btn-secondary flex items-center justify-center gap-2"
         >
-          <Plus className="w-4 h-4" /> New Character
+          <Plus className="w-4 h-4" /> {t('app.newCharacter')}
         </button>
       ) : (
         <div className="flex gap-2">
           <input
             className="input flex-1"
-            placeholder="Character name"
+            placeholder={t('app.characterName')}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
@@ -360,7 +365,7 @@ function CharacterPanel({
             onClick={() => { if (newName.trim()) { onCreate(newName.trim()); setNewName(''); setShowForm(false); }}}
             className="btn-primary"
           >
-            Add
+            {t('app.add')}
           </button>
         </div>
       )}
@@ -378,7 +383,7 @@ function CharacterPanel({
           </div>
         ))}
         {characters.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-4">No characters yet</p>
+          <p className="text-xs text-gray-400 text-center py-4">{t('app.noCharacters')}</p>
         )}
       </div>
     </div>
@@ -387,8 +392,9 @@ function CharacterPanel({
 
 /* ---------- Character Detail ---------- */
 function CharacterDetail({
-  character, onUpdate, onDelete, allCharacters,
+  t, character, onUpdate, onDelete, allCharacters,
 }: {
+  t: I18n['t'];
   character: Character;
   onUpdate: (id: string, updates: Partial<Character>) => void;
   onDelete: (id: string) => void;
@@ -423,50 +429,50 @@ function CharacterDetail({
         <button
           onClick={() => onUpdate(character.id, { isPinned: !character.isPinned })}
           className="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-800"
-          title={character.isPinned ? 'Unpin' : 'Pin to context'}
+          title={character.isPinned ? t('app.unpin') : t('app.pin')}
         >
           {character.isPinned ? <Pin className="w-4 h-4 text-primary-500" /> : <PinOff className="w-4 h-4 text-gray-400" />}
         </button>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium text-gray-500 dark:text-gray-500">Appearance</label>
+        <label className="text-xs font-medium text-gray-500 dark:text-gray-500">{t('app.appearance')}</label>
         <textarea
           className="textarea h-16"
           value={character.appearance}
           onChange={(e) => onUpdate(character.id, { appearance: e.target.value })}
-          placeholder="Physical description..."
+          placeholder={t('app.placeholders.physicalDescription')}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium text-gray-500 dark:text-gray-500">Personality</label>
+        <label className="text-xs font-medium text-gray-500 dark:text-gray-500">{t('app.personality')}</label>
         <textarea
           className="textarea h-16"
           value={character.personality}
           onChange={(e) => onUpdate(character.id, { personality: e.target.value })}
-          placeholder="Traits, quirks, demeanor..."
+          placeholder={t('app.placeholders.traits')}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium text-gray-500 dark:text-gray-500">Notes</label>
+        <label className="text-xs font-medium text-gray-500 dark:text-gray-500">{t('app.notes')}</label>
         <textarea
           className="textarea h-16"
           value={character.notes}
           onChange={(e) => onUpdate(character.id, { notes: e.target.value })}
-          placeholder="Backstory, secrets, arcs..."
+          placeholder={t('app.placeholders.backstory')}
         />
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-500">Relations</label>
+          <label className="text-xs font-medium text-gray-500 dark:text-gray-500">{t('app.relations')}</label>
           <button
             onClick={() => setShowRelForm(!showRelForm)}
             className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
           >
-            {showRelForm ? 'Cancel' : '+ Add'}
+            {showRelForm ? t('actions.cancel') : `+ ${t('app.add')}`}
           </button>
         </div>
 
@@ -475,19 +481,19 @@ function CharacterDetail({
             <CustomSelect
               value={relTargetId}
               options={[
-                { value: '', label: 'Select character...' },
+                { value: '', label: t('app.selectCharacter') },
                 ...availableTargets.map(c => ({ value: c.id, label: c.name })),
               ]}
               onChange={(val) => setRelTargetId(val)}
-              placeholder="Select character..."
+              placeholder={t('app.selectCharacter')}
             />
             <textarea
               className="textarea h-12"
-              placeholder="Describe the relationship..."
+              placeholder={t('app.describeRelation')}
               value={relDesc}
               onChange={(e) => setRelDesc(e.target.value)}
             />
-            <button onClick={addRelation} className="btn-primary w-full text-xs">Add Relation</button>
+            <button onClick={addRelation} className="btn-primary w-full text-xs">{t('app.addRelation')}</button>
           </div>
         )}
 
@@ -509,7 +515,7 @@ function CharacterDetail({
             </div>
           ))}
           {character.relations.length === 0 && (
-            <p className="text-xs text-gray-400 italic">No relations defined</p>
+            <p className="text-xs text-gray-400 italic">{t('app.noRelations')}</p>
           )}
         </div>
       </div>
@@ -518,14 +524,14 @@ function CharacterDetail({
         onClick={() => onDelete(character.id)}
         className="w-full btn-secondary text-red-600 dark:text-red-400 text-xs flex items-center justify-center gap-2"
       >
-        <Trash2 className="w-3 h-3" /> Delete Character
+        <Trash2 className="w-3 h-3" /> {t('app.deleteCharacter')}
       </button>
     </div>
   );
 }
 
 /* ---------- Lore Panel ---------- */
-function LorePanel({ loreBible, onUpdate }: { loreBible: { content: Record<string, unknown> }; onUpdate: (content: Record<string, unknown>) => void }) {
+function LorePanel({ t, loreBible, onUpdate }: { t: I18n['t']; loreBible: { content: Record<string, unknown> }; onUpdate: (content: Record<string, unknown>) => void }) {
   const [text, setText] = useState(extractTextFromContent(loreBible.content));
 
   useEffect(() => {
@@ -540,14 +546,14 @@ function LorePanel({ loreBible, onUpdate }: { loreBible: { content: Record<strin
   return (
     <div className="border-t border-gray-200 dark:border-slate-800 p-3 flex-1 overflow-y-auto">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">
-        Lore Bible
+        {t('app.loreBible')}
       </h3>
-      <p className="text-xs text-gray-400 mb-3">Style guide, worldbuilding, themes, and notes.</p>
+      <p className="text-xs text-gray-400 mb-3">{t('app.lorePlaceholder')}</p>
       <textarea
         className="textarea h-full min-h-[200px] text-sm"
         value={text}
         onChange={(e) => handleChange(e.target.value)}
-        placeholder="Write your lore, style guide, world rules, themes..."
+        placeholder={t('app.loreTextPlaceholder')}
       />
     </div>
   );

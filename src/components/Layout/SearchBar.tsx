@@ -3,8 +3,10 @@ import { Search, X, FileText } from 'lucide-react';
 import { useBookStore } from '@/stores/bookStore';
 import { useLocation } from 'wouter';
 import { extractTextFromContent } from '@/lib/tiptap';
+import { useI18n } from '@/i18n/useI18n';
 
 export default function SearchBar() {
+  const { t } = useI18n();
   const { chapters, activeBook } = useBookStore();
   const [, setLocation] = useLocation();
   const [query, setQuery] = useState('');
@@ -60,7 +62,7 @@ export default function SearchBar() {
         className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
       >
         <Search className="w-4 h-4" />
-        <span className="hidden sm:inline">Search...</span>
+        <span className="hidden sm:inline">{t('app.search')}</span>
       </button>
     );
   }
@@ -74,7 +76,7 @@ export default function SearchBar() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search chapters..."
+          placeholder={t('app.searchChapters')}
           className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
         />
         <button onClick={() => { setIsOpen(false); setQuery(''); }}>
@@ -97,7 +99,7 @@ export default function SearchBar() {
                 </span>
                 {titleMatch && (
                   <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-                    Title match
+                    {t('app.titleMatch')}
                   </span>
                 )}
               </div>
@@ -111,7 +113,7 @@ export default function SearchBar() {
 
       {query.length >= 2 && results.length === 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 p-4 text-center text-sm text-gray-400">
-          No results found
+          {t('app.noResultsFound')}
         </div>
       )}
     </div>

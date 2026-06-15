@@ -1,4 +1,5 @@
 import { Send, Loader2 } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 
 interface ChatInputProps {
   value: string;
@@ -9,13 +10,15 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ value, onChange, onSend, disabled, maxLength = 4000 }: ChatInputProps) {
+  const { t } = useI18n();
+
   return (
     <div className="p-3 border-t border-gray-200 dark:border-slate-800">
       <div className="flex gap-2">
         <div className="flex-1 relative">
           <textarea
             className="textarea w-full h-10 min-h-[40px] max-h-32 resize-y pr-16"
-            placeholder="Ask Morpheus..."
+            placeholder={t('chat.askMorpheus')}
             value={value}
             maxLength={maxLength}
             onChange={(e) => onChange(e.target.value)}

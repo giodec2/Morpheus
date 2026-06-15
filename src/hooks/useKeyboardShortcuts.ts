@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
 import { useBookStore } from '@/stores/bookStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useI18n } from '@/i18n/useI18n';
 import { createChapter } from '@/db/chapters';
 import { toast } from '@/components/common/Toast';
 
 export function useKeyboardShortcuts() {
+  const { t } = useI18n();
   const { saveStatus, setActiveChapter } = useEditorStore();
   const { activeBook, chapters, addChapter } = useBookStore();
   const { theme, setTheme } = useSettingsStore();
@@ -16,7 +18,7 @@ export function useKeyboardShortcuts() {
       if (e.ctrlKey && e.key === 's') {
         e.preventDefault();
         if (saveStatus === 'idle' || saveStatus === 'error') {
-          toast('Saving...', 'info');
+          toast(t('states.saving'), 'info');
         }
       }
 
@@ -25,10 +27,10 @@ export function useKeyboardShortcuts() {
         e.preventDefault();
         if (activeBook) {
           const newOrder = chapters.length;
-          createChapter(activeBook.id, `Chapter ${newOrder + 1}`, newOrder).then((chapter) => {
+          createChapter(activeBook.id, `${t('app.newChapter')} ${newOrder + 1}`, newOrder).then((chapter) => {
             addChapter(chapter);
             setActiveChapter(chapter);
-            toast('New chapter created', 'success');
+            toast(t('app.chapterCreated'), 'success');
           });
         }
       }
@@ -42,5 +44,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeBook, chapters, addChapter, setActiveChapter, theme, setTheme, saveStatus]);
+  }, [activeBook, chapters, addChapter, setActiveChapter, theme, setTheme, saveStatus, t]);
 }

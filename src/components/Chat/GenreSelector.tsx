@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Lock } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import { GENRES, GENRE_DESCRIPTIONS } from '@/lib/prompts/genres';
 import type { WritingGenre } from '@/types';
 
@@ -18,6 +19,7 @@ interface GenreSelectorProps {
 export default function GenreSelector({
   activeGenre, show, hoveredGenre, genreDescPos, canUseGenres, onToggle, onSelect, onHover,
 }: GenreSelectorProps) {
+  const { t } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
   const activeConfig = GENRES.find(g => g.id === activeGenre);
   const GenreIcon = activeConfig?.icon || GENRES[0].icon;
@@ -79,7 +81,7 @@ export default function GenreSelector({
         <div className="flex items-center gap-1.5 mt-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <Lock className="w-3 h-3 text-amber-500" />
           <span className="text-[10px] text-amber-700 dark:text-amber-400">
-            Genre tuning locked. Upgrade to Novelist to unlock.
+            {t('chat.genreTuningLocked')}
           </span>
         </div>
       )}

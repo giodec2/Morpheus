@@ -5,6 +5,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   Highlighter
 } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import CustomSelect from '@/components/common/CustomSelect';
 
 const FONTS = [
@@ -30,14 +31,6 @@ const SIZES = [
   { label: '32px', value: '32px' },
 ];
 
-const SPACINGS = [
-  { label: 'Single', value: '1' },
-  { label: '1.15', value: '1.15' },
-  { label: '1.5', value: '1.5' },
-  { label: '1.75', value: '1.75' },
-  { label: 'Double', value: '2' },
-];
-
 const COLORS = [
   '#000000', '#333333', '#666666', '#999999', '#cccccc',
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6',
@@ -49,6 +42,14 @@ interface ToolbarProps {
 }
 
 export default function EditorToolbar({ editor }: ToolbarProps) {
+  const { t } = useI18n();
+  const SPACINGS = [
+    { label: t('editor.spacingSingle'), value: '1' },
+    { label: '1.15', value: '1.15' },
+    { label: '1.5', value: '1.5' },
+    { label: '1.75', value: '1.75' },
+    { label: t('editor.spacingDouble'), value: '2' },
+  ];
   const [activeFont, setActiveFont] = useState(
     editor?.getAttributes('textStyle').fontFamily || 'Inter'
   );
@@ -85,28 +86,28 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
         <ToolbarButton
           active={editor.isActive('bold')}
           onClick={() => editor.chain().focus().toggleBold().run()}
-          title="Bold"
+          title={t('editor.bold')}
         >
           <Bold className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive('italic')}
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          title="Italic"
+          title={t('editor.italic')}
         >
           <Italic className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive('underline')}
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          title="Underline"
+          title={t('editor.underline')}
         >
           <Underline className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive('highlight')}
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          title="Highlight"
+          title={t('editor.highlight')}
         >
           <Highlighter className="w-4 h-4" />
         </ToolbarButton>
@@ -119,14 +120,14 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
         <ToolbarButton
           active={editor.isActive('heading', { level: 1 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          title="Heading 1"
+          title={t('editor.heading1')}
         >
           <Heading1 className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive('heading', { level: 2 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          title="Heading 2"
+          title={t('editor.heading2')}
         >
           <Type className="w-4 h-4" />
         </ToolbarButton>
@@ -193,28 +194,28 @@ export default function EditorToolbar({ editor }: ToolbarProps) {
         <ToolbarButton
           active={editor.isActive({ textAlign: 'left' })}
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          title="Align left"
+          title={t('editor.alignLeft')}
         >
           <AlignLeft className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive({ textAlign: 'center' })}
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          title="Align center"
+          title={t('editor.alignCenter')}
         >
           <AlignCenter className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive({ textAlign: 'right' })}
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          title="Align right"
+          title={t('editor.alignRight')}
         >
           <AlignRight className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton
           active={editor.isActive({ textAlign: 'justify' })}
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          title="Justify"
+          title={t('editor.justify')}
         >
           <AlignJustify className="w-4 h-4" />
         </ToolbarButton>

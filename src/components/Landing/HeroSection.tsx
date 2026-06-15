@@ -6,12 +6,14 @@ import { useLocation } from 'wouter';
 
 import AuthModal from '@/components/Auth/AuthModal';
 import { useState, useEffect } from 'react';
+import { useI18n } from '@/i18n/useI18n';
 
 interface HeroSectionProps {
   onScrollTo?: (id: string) => void;
 }
 
 export default function HeroSection({ onScrollTo }: HeroSectionProps) {
+  const { t } = useI18n();
   const { user } = useAuthStore();
   const { theme } = useSettingsStore();
   const [, navigate] = useLocation();
@@ -96,34 +98,32 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
         <div className={`text-center max-w-3xl mx-auto transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold mb-8 border border-primary-200 dark:border-primary-800 backdrop-blur-sm">
             <Sparkles className="w-3.5 h-3.5" />
-            Be among the first to write with Morpheus
+            {t('landing.badge.earlyAccess')}
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white leading-[1.08] tracking-tight mb-6">
-            The AI Co-Writer That{' '}
+            {t('landing.hero.headlinePrefix')}{' '}
             <span className="relative inline-block">
-              <span className="relative z-10 text-primary-600 dark:text-primary-400">Remembers</span>
+              <span className="relative z-10 text-primary-600 dark:text-primary-400">{t('landing.hero.headlineHighlight')}</span>
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 240 12" fill="none" preserveAspectRatio="none">
                 <path d="M2 8C60 2 180 2 238 8" stroke="currentColor" strokeWidth="4" className="text-primary-400/40 dark:text-primary-500/30" strokeLinecap="round" />
               </svg>
             </span>
             <br />
             <span className="bg-gradient-to-r from-primary-600 via-teal-500 to-primary-400 bg-clip-text text-transparent">
-              Every Character, Every Plot
+              {t('landing.hero.headlineSuffix')}
             </span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto">
-            Plan worlds, develop characters, and write chapters in half the time.
-            Morpheus reads your lore bible so every suggestion stays true to your vision —
-            <span className="font-semibold text-gray-700 dark:text-gray-300"> no generic AI fluff.</span>
+            {t('landing.hero.subheadline')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             {user ? (
               <Link href="/app">
                 <button className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40">
-                  Open the App
+                  {t('landing.cta.openApp')}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>
@@ -132,7 +132,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
                 onClick={() => setShowAuth(true)}
                 className="group btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
               >
-                Start Writing Free
+                {t('landing.cta.startFree')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             )}
@@ -141,7 +141,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
               onClick={() => onScrollTo?.('how-it-works')}
               className="btn-secondary text-base px-8 py-4 flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all duration-300"
             >
-              See How It Works
+              {t('landing.cta.seeHowItWorks')}
             </button>
           </div>
 
@@ -149,17 +149,17 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <Feather className="w-4 h-4 text-primary-500" />
-              <span>Built for <span className="font-semibold text-gray-700 dark:text-gray-300">novelists</span> who world-build</span>
+              <span>{t('landing.hero.credibility1Prefix')} <span className="font-semibold text-gray-700 dark:text-gray-300">{t('landing.hero.credibility1Highlight')}</span> {t('landing.hero.credibility1Suffix')}</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-slate-700" />
             <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <Clock className="w-4 h-4 text-primary-500" />
-              <span>Cut drafting time <span className="font-semibold text-gray-700 dark:text-gray-300">in half</span></span>
+              <span>{t('landing.hero.credibility2Prefix')} <span className="font-semibold text-gray-700 dark:text-gray-300">{t('landing.hero.credibility2Highlight')}</span> {t('landing.hero.credibility2Suffix')}</span>
             </div>
             <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-slate-700" />
             <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <Shield className="w-4 h-4 text-primary-500" />
-              <span><span className="font-semibold text-gray-700 dark:text-gray-300">Your creations stay yours</span></span>
+              <span><span className="font-semibold text-gray-700 dark:text-gray-300">{t('landing.hero.credibility3')}</span></span>
             </div>
           </div>
         </div>
@@ -173,14 +173,14 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             {/* Light mode screenshot */}
             <img
               src="/assets/hero-editor.png"
-              alt="Morpheus editor with AI co-writer — writing The Cartographer of Lost Things"
+              alt={t('landing.hero.editorAltLight')}
               className={`w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30 transition-opacity duration-700 ${isDark ? 'opacity-0 absolute inset-0' : 'opacity-100 relative'}`}
               loading="eager"
             />
             {/* Dark mode screenshot */}
             <img
               src="/assets/hero-editor-dark.png"
-              alt="Morpheus editor in dark mode with AI co-writer"
+              alt={t('landing.hero.editorAltDark')}
               className={`w-full rounded-2xl border border-gray-200/60 dark:border-slate-700/60 shadow-2xl shadow-black/10 dark:shadow-black/30 transition-opacity duration-700 ${isDark ? 'opacity-100 relative' : 'opacity-0 absolute inset-0'}`}
               loading="eager"
             />

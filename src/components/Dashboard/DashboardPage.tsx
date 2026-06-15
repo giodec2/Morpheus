@@ -19,8 +19,10 @@ import { putCharacter } from '@/db/characters';
 import { putLoreBible } from '@/db/loreBibles';
 import { getCloudBookIds, pushBookAndChildren, syncBookFromCloud } from '@/services/sync';
 import { formatRelativeTime } from '@/lib/utils';
+import { useI18n } from '@/i18n/useI18n';
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   useEffect(() => {
     document.body.classList.add('app');
     document.body.classList.remove('landing');
@@ -53,10 +55,10 @@ export default function DashboardPage() {
   const handleManageSubscription = async () => {
     setIsPortalLoading(true);
     try {
-      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId);
+      const url = await getCustomerPortalUrl(profile?.lemonSqueezyCustomerId, t as (key: string) => string);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not open subscription portal', 'error');
+      toast(err instanceof Error ? err.message : t('errors.openPortalFailed'), 'error');
     } finally {
       setIsPortalLoading(false);
     }
@@ -67,13 +69,13 @@ export default function DashboardPage() {
     const params = new URLSearchParams(window.location.search);
     const checkout = params.get('checkout');
     if (checkout === 'success') {
-      toast('Your subscription is being activated! This may take a moment.', 'success');
+      toast(t('dashboard.activatingSubscription'), 'success');
       window.history.replaceState({}, '', window.location.pathname);
     } else if (checkout === 'cancelled') {
-      toast('Checkout cancelled. You can subscribe anytime from your account.', 'info');
+      toast(t('dashboard.checkoutCancelled'), 'info');
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadBooks();
@@ -110,12 +112,12 @@ export default function DashboardPage() {
       // Find cloud-only books and download them
       const cloudOnly = cloudIds.filter((id) => !localIds.has(id));
       if (cloudOnly.length > 0) {
-        toast(`Found ${cloudOnly.length} book(s) in the cloud. Downloading...`, 'info');
+        toast(t('dashboard.booksDownloaded', { count: cloudOnly.length }), 'info');
         for (const bookId of cloudOnly) {
           await syncBookFromCloud(bookId, putBook, putChapter, putCharacter, putLoreBible);
         }
         await loadBooks();
-        toast('Downloaded missing books from cloud', 'success');
+        toast(t('dashboard.downloadedBooks'), 'success');
       }
     } catch (err) {
       console.error('[Dashboard] Cloud sync check failed:', err);
@@ -131,9 +133,9 @@ export default function DashboardPage() {
         next.delete(bookId);
         return next;
       });
-      toast('Book synced to cloud successfully', 'success');
+      toast(t('dashboard.bookSynced'), 'success');
     } catch {
-      toast('Failed to sync book to cloud', 'error');
+      toast(t('dashboard.bookSyncFailed'), 'error');
     } finally {
       setSyncingOrphanId(null);
     }
@@ -148,16 +150,16 @@ export default function DashboardPage() {
     if (!canCreateBook) {
       setShowCreateModal(false);
       setShowUpgrade(true);
-      toast(`You've reached your book limit (${Number.isFinite(maxBooks) ? maxBooks : 'Unlimited'}). Upgrade to create more.`, 'error');
+      toast(t('dashboard.bookLimitReached', { max: Number.isFinite(maxBooks) ? maxBooks : t('dashboard.unlimited') }), 'error');
       return;
     }
     const book = await createBook(newTitle.trim());
     await createLoreBible(book.id);
-    await createChapter(book.id, 'Chapter 1', 0);
+    await createChapter(book.id, t('dashboard.chapterOne'), 0);
     setNewTitle('');
     setShowCreateModal(false);
     loadBooks();
-    toast('Book created successfully', 'success');
+    toast(t('dashboard.bookCreated'), 'success');
   };
 
   const handleDeleteBook = async (id: string) => {
@@ -175,7 +177,7 @@ export default function DashboardPage() {
     setBookToEdit(null);
     setEditTitle('');
     loadBooks();
-    toast('Book renamed', 'success');
+    toast(t('dashboard.bookRenamed'), 'success');
   };
 
   const confirmDeleteBook = async () => {
@@ -183,12 +185,12 @@ export default function DashboardPage() {
     await deleteBook(bookToDelete);
     setBookToDelete(null);
     loadBooks();
-    toast('Book deleted', 'info');
+    toast(t('dashboard.bookDeleted'), 'info');
   };
 
   const handleSaveApiKey = async () => {
     if (!apiInput.trim().startsWith('sk-or-')) {
-      toast('Please enter a valid OpenRouter API key (starts with sk-or-)', 'error');
+      toast(t('dashboard.invalidApiKey'), 'error');
       return;
     }
     setIsValidating(true);
@@ -200,14 +202,14 @@ export default function DashboardPage() {
         setOpenRouterKey(apiInput.trim());
         setIsConnected(true);
         setAiMode('byok');
-        toast('API key saved! Switched to BYOK mode.', 'success');
+        toast(t('dashboard.apiKeySaved'), 'success');
         setApiInput('');
         setIsEditingKey(false);
       } else {
-        toast('Invalid API key. Please check and try again.', 'error');
+        toast(t('dashboard.invalidApiKeyVerify'), 'error');
       }
     } catch {
-      toast('Could not connect to OpenRouter. Check your internet.', 'error');
+      toast(t('dashboard.couldNotConnect'), 'error');
     }
     setIsValidating(false);
   };
@@ -219,7 +221,7 @@ export default function DashboardPage() {
     setShowKey(false);
     setIsEditingKey(false);
     setApiInput('');
-    toast('API key removed. Switched to hosted mode.', 'info');
+    toast(t('dashboard.apiKeyRemoved'), 'info');
   };
 
   const maskedKey = (key: string) => {
@@ -241,7 +243,7 @@ export default function DashboardPage() {
           </Link>
           <div className="flex items-center gap-2">
             {isSyncing && (
-              <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400" title="Syncing...">
+              <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400" title={t('states.syncing')}>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               </span>
             )}
@@ -260,10 +262,10 @@ export default function DashboardPage() {
               <button
                 onClick={() => setShowAuth(true)}
                 className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                title="Sign in to sync"
+                title={t('app.signInToSync')}
               >
                 <CloudOff className="w-4 h-4 text-gray-400" />
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Sync</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('app.sync')}</span>
               </button>
             )}
             {profile && (
@@ -271,7 +273,7 @@ export default function DashboardPage() {
                 <button
                   onClick={() => setShowTierSelector(true)}
                   className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors text-xs font-medium"
-                  title={`${books.length}${Number.isFinite(maxBooks) ? ` / ${maxBooks}` : ''} books used — Click to see upgrade options`}
+                  title={`${books.length}${Number.isFinite(maxBooks) ? ` / ${maxBooks}` : ''} ${t('dashboard.booksUsed')} — ${t('upgrade.upgrade')}`}
                 >
                   <Crown className="w-3.5 h-3.5" />
                   <span className="capitalize">{profile.subscriptionTier}</span>
@@ -279,7 +281,7 @@ export default function DashboardPage() {
                     <span className="text-[10px] opacity-70 uppercase">({profile.subscriptionStatus})</span>
                   )}
                   <span className="text-primary-400 dark:text-primary-500">·</span>
-                  <span>{Number.isFinite(maxBooks) ? `${books.length}/${maxBooks}` : 'Unlimited'}</span>
+                  <span>{Number.isFinite(maxBooks) ? `${books.length}/${maxBooks}` : t('dashboard.unlimited')}</span>
                 </button>
                 {profile.subscriptionTier !== 'free' && (
                   <button
@@ -287,7 +289,7 @@ export default function DashboardPage() {
                     onClick={handleManageSubscription}
                     disabled={isPortalLoading}
                     className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
-                    title="Manage subscription"
+                    title={t('settings.manageSubscription')}
                   >
                     {isPortalLoading ? (
                       <Loader2 className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 animate-spin" />
@@ -301,7 +303,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? t('theme.lightMode') : t('theme.darkMode')}
             >
               {isDark ? (
                 <Sun className="w-5 h-5 text-gray-300" />
@@ -324,10 +326,10 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-                  OpenRouter API Key
+                  {t('dashboard.apiKeyTitle')}
                 </h3>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                  BYOK mode active — your key is stored locally
+                  {t('dashboard.byokActive')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -337,21 +339,21 @@ export default function DashboardPage() {
                 <button
                   onClick={() => setShowKey(!showKey)}
                   className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors text-emerald-600 dark:text-emerald-400"
-                  title={showKey ? 'Hide key' : 'Show key'}
+                  title={showKey ? t('dashboard.hideKey') : t('dashboard.showKey')}
                 >
                   {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={() => { setIsEditingKey(true); setApiInput(openRouterKey); }}
                   className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors text-emerald-600 dark:text-emerald-400"
-                  title="Update key"
+                  title={t('dashboard.updateKey')}
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleRemoveApiKey}
                   className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-red-500 dark:text-red-400"
-                  title="Remove key"
+                  title={t('dashboard.removeKey')}
                 >
                   <Trash className="w-4 h-4" />
                 </button>
@@ -366,13 +368,13 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
-                  Update API Key
+                  {t('dashboard.updateApiKey')}
                 </h3>
                 <div className="flex gap-2 max-w-lg">
                   <input
                     type={showKey ? 'text' : 'password'}
                     className="input flex-1"
-                    placeholder="Paste your new OpenRouter API key (sk-or-...)"
+                    placeholder={t('dashboard.newApiKeyPlaceholder')}
                     value={apiInput}
                     onChange={(e) => setApiInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -384,7 +386,7 @@ export default function DashboardPage() {
                   <button
                     onClick={() => setShowKey(!showKey)}
                     className="p-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-800/40 transition-colors text-amber-600 dark:text-amber-400"
-                    title={showKey ? 'Hide key' : 'Show key'}
+                    title={showKey ? t('dashboard.hideKey') : t('dashboard.showKey')}
                   >
                     {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -393,13 +395,13 @@ export default function DashboardPage() {
                     disabled={isValidating || !apiInput.trim()}
                     className="btn-primary flex items-center gap-2 bg-amber-500 hover:bg-amber-600"
                   >
-                    {isValidating ? 'Checking...' : 'Update'}
+                    {isValidating ? t('settings.verifying') : t('actions.update')}
                   </button>
                   <button
                     onClick={() => { setIsEditingKey(false); setApiInput(''); }}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t('actions.cancel')}
                   </button>
                 </div>
               </div>
@@ -413,24 +415,24 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-1">
-                  Welcome to Morpheus!
+                  {t('dashboard.welcome')}
                 </h3>
                 <p className="text-sm text-primary-700 dark:text-primary-400 mb-4">
-                  To use the AI co-writer, you need an OpenRouter API key.
+                  {t('dashboard.apiKeyRequired')}
                   <a
                     href="https://openrouter.ai/settings/keys"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline hover:text-primary-900 dark:hover:text-primary-200 ml-1"
                   >
-                    Get one free here
+                    {t('dashboard.getKeyHere')}
                   </a>.
                 </p>
                 <div className="flex gap-2 max-w-lg">
                   <input
                     type="password"
                     className="input flex-1"
-                    placeholder="Paste your OpenRouter API key (sk-or-...)"
+                    placeholder={t('dashboard.apiKeyPlaceholder')}
                     value={apiInput}
                     onChange={(e) => setApiInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -442,8 +444,8 @@ export default function DashboardPage() {
                     disabled={isValidating || !apiInput.trim()}
                     className="btn-primary flex items-center gap-2"
                   >
-                    {isValidating ? 'Checking...' : <>
-                      Save <ArrowRight className="w-4 h-4" />
+                    {isValidating ? t('settings.verifying') : <>
+                      {t('actions.save')} <ArrowRight className="w-4 h-4" />
                     </>}
                   </button>
                 </div>
@@ -453,7 +455,7 @@ export default function DashboardPage() {
         )}
 
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Your Books</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.yourBooks')}</h2>
           <div className="flex items-center gap-2">
             {user && profile && profile.subscriptionTier !== 'architect' && (
               (() => {
@@ -468,10 +470,10 @@ export default function DashboardPage() {
                   <button
                     onClick={() => setShowTierSelector(true)}
                     className={`flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-lg font-bold transition-all hover:scale-[1.03] hover:shadow-xl ${styles[nextTier]}`}
-                    title={`Upgrade to ${nextTier}`}
+                    title={t('limit.upgradeTo', { tier: nextTier.charAt(0).toUpperCase() + nextTier.slice(1) })}
                   >
                     <Crown className="w-3.5 h-3.5" />
-                    Upgrade to {nextTier.charAt(0).toUpperCase() + nextTier.slice(1)}
+                    {t('limit.upgradeTo', { tier: nextTier.charAt(0).toUpperCase() + nextTier.slice(1) })}
                     <ArrowUpRight className="w-3 h-3 opacity-80" />
                   </button>
                 );
@@ -483,7 +485,7 @@ export default function DashboardPage() {
                 className="btn-primary flex items-center gap-2 bg-amber-500 hover:bg-amber-600"
               >
                 <Crown className="w-4 h-4" />
-                Upgrade to Create More
+                {t('dashboard.upgradeToCreateMore')}
               </button>
             ) : (
               <button
@@ -491,7 +493,7 @@ export default function DashboardPage() {
                 className="btn-primary flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                New Book
+                {t('dashboard.newBook')}
               </button>
             )}
           </div>
@@ -500,14 +502,14 @@ export default function DashboardPage() {
         {books.length === 0 ? (
           <div className="text-center py-20">
             <BookOpen className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No books yet</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-500 mb-6">Start your first dream. Create a new book to begin writing.</p>
+            <h3 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">{t('dashboard.noBooksYet')}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mb-6">{t('dashboard.startFirstBook')}</p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="btn-primary flex items-center gap-2 mx-auto"
             >
               <Plus className="w-4 h-4" />
-              Create New Book
+              {t('dashboard.createNewBook')}
             </button>
           </div>
         ) : (
@@ -553,10 +555,10 @@ export default function DashboardPage() {
             if (!book) return null;
             return (
               <ConfirmModal
-                title="Delete Book"
-                description={`This will permanently delete "${book.title}" and all its chapters. This action cannot be undone.`}
+                title={t('dashboard.deleteBook')}
+                description={t('dashboard.deleteBookConfirm', { title: book.title })}
                 itemName={book.title}
-                confirmLabel="Delete Book"
+                confirmLabel={t('dashboard.deleteBook')}
                 onConfirm={confirmDeleteBook}
                 onClose={() => setBookToDelete(null)}
               />
@@ -568,11 +570,11 @@ export default function DashboardPage() {
         {bookToEdit && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-md shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rename Book</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('dashboard.renameBook')}</h3>
               <input
                 autoFocus
                 className="input mb-4"
-                placeholder="Book title..."
+                placeholder={t('dashboard.bookTitlePlaceholder')}
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 onKeyDown={(e) => {
@@ -585,14 +587,14 @@ export default function DashboardPage() {
                   onClick={() => { setBookToEdit(null); setEditTitle(''); }}
                   className="btn-secondary"
                 >
-                  Cancel
+                  {t('actions.cancel')}
                 </button>
                 <button
                   onClick={confirmEditBook}
                   disabled={!editTitle.trim()}
                   className="btn-primary"
                 >
-                  Save
+                  {t('actions.save')}
                 </button>
               </div>
             </div>
@@ -604,11 +606,11 @@ export default function DashboardPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Create New Book</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('dashboard.createNewBook')}</h3>
             <input
               autoFocus
               className="input mb-4"
-              placeholder="Book title..."
+              placeholder={t('dashboard.bookTitlePlaceholder')}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               onKeyDown={(e) => {
@@ -617,8 +619,8 @@ export default function DashboardPage() {
               }}
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setShowCreateModal(false)} className="btn-secondary">Cancel</button>
-              <button onClick={handleCreateBook} disabled={!newTitle.trim()} className="btn-primary">Create</button>
+              <button onClick={() => setShowCreateModal(false)} className="btn-secondary">{t('actions.cancel')}</button>
+              <button onClick={handleCreateBook} disabled={!newTitle.trim()} className="btn-primary">{t('actions.create')}</button>
             </div>
           </div>
         </div>
@@ -633,6 +635,7 @@ function BookCard({
   book: Book; chapterCount: number; onDelete: () => void; onEdit: () => void;
   isOrphaned?: boolean; isSyncing?: boolean; onSyncToCloud?: () => void;
 }) {
+  const { t, locale } = useI18n();
   return (
     <div className={`card p-5 hover:shadow-md transition-shadow group ${isOrphaned ? 'border-amber-300 dark:border-amber-700' : ''}`}>
       <div className="flex items-start justify-between mb-3">
@@ -645,14 +648,14 @@ function BookCard({
           <button
             onClick={onEdit}
             className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all"
-            title="Rename book"
+            title={t('dashboard.renameBook')}
           >
             <Pencil className="w-4 h-4 text-primary-400" />
           </button>
           <button
             onClick={onDelete}
             className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-            title="Delete book"
+            title={t('dashboard.deleteBook')}
           >
             <Trash2 className="w-4 h-4 text-red-400" />
           </button>
@@ -662,16 +665,16 @@ function BookCard({
       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
         <span className="flex items-center gap-1">
           <FileText className="w-3 h-3" />
-          {chapterCount} {chapterCount === 1 ? 'chapter' : 'chapters'}
+          {chapterCount} {chapterCount === 1 ? t('dashboard.chapter') : t('dashboard.chapters')}
         </span>
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          {formatRelativeTime(book.updatedAt)}
+          {formatRelativeTime(book.updatedAt, locale)}
         </span>
         {isOrphaned && (
           <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
             <AlertTriangle className="w-3 h-3" />
-            Not synced
+            {t('dashboard.notSynced')}
           </span>
         )}
       </div>
@@ -679,7 +682,7 @@ function BookCard({
       {isOrphaned ? (
         <div className="space-y-2">
           <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg">
-            This book only exists on this device. Sync it to the cloud or delete it.
+            {t('dashboard.orphanedBook')}
           </p>
           <div className="flex gap-2">
             <button
@@ -688,19 +691,19 @@ function BookCard({
               className="flex-1 btn-primary text-xs flex items-center justify-center gap-1.5"
             >
               {isSyncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-              {isSyncing ? 'Syncing...' : 'Sync to Cloud'}
+              {isSyncing ? t('states.syncing') : t('dashboard.syncToCloud')}
             </button>
             <button
               onClick={onDelete}
               className="px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
             >
-              Delete
+              {t('actions.delete')}
             </button>
           </div>
         </div>
       ) : (
         <Link href={`/book/${book.id}`}>
-          <button className="w-full btn-secondary text-xs">Open Book</button>
+          <button className="w-full btn-secondary text-xs">{t('dashboard.openBook')}</button>
         </Link>
       )}
     </div>

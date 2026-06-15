@@ -11,13 +11,12 @@ import {
   Landmark,
   Sunrise,
 } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 
-const genres = [
+const genreDefs = [
   {
-    name: 'General Fiction',
+    key: 'generalFiction',
     icon: BookOpen,
-    description:
-      'A versatile creative partner for any story. From literary experiments to cross-genre blends, Morpheus adapts to your voice.',
     color: 'from-gray-500 to-slate-400',
     bgColor: 'bg-gray-50 dark:bg-gray-900/10',
     borderColor: 'border-gray-200 dark:border-gray-800/50',
@@ -25,10 +24,8 @@ const genres = [
     iconBg: 'bg-gray-100 dark:bg-gray-800/40',
   },
   {
-    name: 'Crime & Mystery',
+    key: 'crimeMystery',
     icon: Search,
-    description:
-      'Plant clues precisely, manage red herrings, and keep your investigation internally consistent from page one to the final reveal.',
     color: 'from-slate-500 to-zinc-400',
     bgColor: 'bg-slate-50 dark:bg-slate-900/10',
     borderColor: 'border-slate-200 dark:border-slate-800/50',
@@ -36,10 +33,8 @@ const genres = [
     iconBg: 'bg-slate-100 dark:bg-slate-800/40',
   },
   {
-    name: 'Romance',
+    key: 'romance',
     icon: Heart,
-    description:
-      'Develop slow-burn arcs, sustain emotional tension, and ensure every interaction deepens the central relationship.',
     color: 'from-rose-500 to-pink-400',
     bgColor: 'bg-rose-50 dark:bg-rose-900/10',
     borderColor: 'border-rose-200 dark:border-rose-800/50',
@@ -47,10 +42,8 @@ const genres = [
     iconBg: 'bg-rose-100 dark:bg-rose-800/40',
   },
   {
-    name: 'Thriller & Horror',
+    key: 'thrillerHorror',
     icon: Flame,
-    description:
-      'Escalate dread with surgical precision. Manage pacing, stakes, and atmosphere so every chapter tightens the screws.',
     color: 'from-orange-500 to-red-400',
     bgColor: 'bg-orange-50 dark:bg-orange-900/10',
     borderColor: 'border-orange-200 dark:border-orange-800/50',
@@ -58,10 +51,8 @@ const genres = [
     iconBg: 'bg-orange-100 dark:bg-orange-800/40',
   },
   {
-    name: 'Science Fiction',
+    key: 'scienceFiction',
     icon: Rocket,
-    description:
-      'Maintain consistent speculative rules across complex worlds. Balance exposition with action while preserving scientific plausibility.',
     color: 'from-cyan-500 to-blue-400',
     bgColor: 'bg-cyan-50 dark:bg-cyan-900/10',
     borderColor: 'border-cyan-200 dark:border-cyan-800/50',
@@ -69,10 +60,8 @@ const genres = [
     iconBg: 'bg-cyan-100 dark:bg-cyan-800/40',
   },
   {
-    name: 'Fantasy',
+    key: 'fantasy',
     icon: Wand2,
-    description:
-      'Build intricate magic systems with clear costs and limits. Track lore, lineages, and prophecy across a multi-book series.',
     color: 'from-violet-500 to-purple-400',
     bgColor: 'bg-violet-50 dark:bg-violet-900/10',
     borderColor: 'border-violet-200 dark:border-violet-800/50',
@@ -80,10 +69,8 @@ const genres = [
     iconBg: 'bg-violet-100 dark:bg-violet-800/40',
   },
   {
-    name: 'Literary Fiction',
+    key: 'literaryFiction',
     icon: Glasses,
-    description:
-      'Deepen subtext, refine symbolism, and explore interiority. Morpheus helps you find the emotional truth beneath the surface narrative.',
     color: 'from-emerald-500 to-teal-400',
     bgColor: 'bg-emerald-50 dark:bg-emerald-900/10',
     borderColor: 'border-emerald-200 dark:border-emerald-800/50',
@@ -91,10 +78,8 @@ const genres = [
     iconBg: 'bg-emerald-100 dark:bg-emerald-800/40',
   },
   {
-    name: 'Historical Fiction',
+    key: 'historicalFiction',
     icon: Landmark,
-    description:
-      'Maintain period-accurate voice and flag anachronisms. Ground your characters in researched detail without info-dumping.',
     color: 'from-amber-500 to-yellow-400',
     bgColor: 'bg-amber-50 dark:bg-amber-900/10',
     borderColor: 'border-amber-200 dark:border-amber-800/50',
@@ -102,10 +87,8 @@ const genres = [
     iconBg: 'bg-amber-100 dark:bg-amber-800/40',
   },
   {
-    name: 'Young Adult',
+    key: 'youngAdult',
     icon: Sunrise,
-    description:
-      'Capture authentic teenage voice and agency. Balance emotional intensity with propulsive pacing that respects YA readers.',
     color: 'from-sky-500 to-blue-400',
     bgColor: 'bg-sky-50 dark:bg-sky-900/10',
     borderColor: 'border-sky-200 dark:border-sky-800/50',
@@ -118,9 +101,10 @@ function GenreCard({
   genre,
   index,
 }: {
-  genre: typeof genres[0];
+  genre: typeof genreDefs[0];
   index: number;
 }) {
+  const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.15 });
   const [entered, setEntered] = useState(false);
   const Icon = genre.icon;
@@ -150,20 +134,21 @@ function GenreCard({
 
       {/* Genre name with gradient underline on hover */}
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-        {genre.name}
+        {t(`landing.genres.${genre.key}.name` as never)}
         <span
           className={`h-0.5 w-0 group-hover:w-6 bg-gradient-to-r ${genre.color} transition-all duration-500 rounded-full`}
         />
       </h3>
 
       <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-        {genre.description}
+        {t(`landing.genres.${genre.key}.description` as never)}
       </p>
     </div>
   );
 }
 
 export default function GenreShowcase() {
+  const { t } = useI18n();
   const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({
     threshold: 0.3,
   });
@@ -188,23 +173,23 @@ export default function GenreShowcase() {
           }`}
         >
           <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-            Genre-Tuned Assistance
+            {t('landing.genres.label')}
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            Whatever you write,{' '}
+            {t('landing.genres.titlePrefix')}{' '}
             <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              Morpheus gets it
+              {t('landing.genres.titleHighlight')}
             </span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Nine distinct genre modes that understand the conventions, tropes, and techniques of your chosen form.
+            {t('landing.genres.intro')}
           </p>
         </div>
 
         {/* Genre grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {genres.map((genre, index) => (
-            <GenreCard key={genre.name} genre={genre} index={index} />
+          {genreDefs.map((genre, index) => (
+            <GenreCard key={genre.key} genre={genre} index={index} />
           ))}
         </div>
       </div>

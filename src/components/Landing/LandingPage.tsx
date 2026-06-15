@@ -12,8 +12,10 @@ import CTABanner from './CTABanner';
 import Footer from './Footer';
 import AuthModal from '@/components/Auth/AuthModal';
 import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 
 export default function LandingPage() {
+  const { t } = useI18n();
   const [showAuth, setShowAuth] = useState(false);
   const [, navigate] = useLocation();
 
@@ -54,9 +56,9 @@ export default function LandingPage() {
           onClick={() => setShowAuth(true)}
           className="w-full btn-primary py-3 text-base font-semibold"
         >
-          Start Writing Free
+          {t('landing.cta.startFree')}
         </button>
-        <p className="text-center text-[10px] text-gray-400 mt-1.5">No credit card required</p>
+        <p className="text-center text-[10px] text-gray-400 mt-1.5">{t('landing.cta.noCreditCard')}</p>
       </div>
 
       {showAuth && (

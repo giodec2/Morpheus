@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, FileText, BookOpen } from 'lucide-react';
 import Modal from '@/components/common/Modal';
 import { toast } from '@/components/common/Toast';
+import { useI18n } from '@/i18n/useI18n';
 import { useBookStore } from '@/stores/bookStore';
 import { getChaptersByBook } from '@/db/chapters';
 import { getCharactersByBook } from '@/db/characters';
@@ -15,6 +16,7 @@ interface ExportModalProps {
 }
 
 export default function ExportModal({ onClose }: ExportModalProps) {
+  const { t } = useI18n();
   const { activeBook } = useBookStore();
   const [exporting, setExporting] = useState(false);
 
@@ -22,8 +24,8 @@ export default function ExportModal({ onClose }: ExportModalProps) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-md">
-          <p className="text-gray-600 dark:text-gray-400">No book selected.</p>
-          <button onClick={onClose} className="btn-primary mt-4">Close</button>
+          <p className="text-gray-600 dark:text-gray-400">{t('export.noBookSelected')}</p>
+          <button onClick={onClose} className="btn-primary mt-4">{t('actions.close')}</button>
         </div>
       </div>
     );
@@ -60,10 +62,10 @@ p { margin: 1em 0; }
       html += `</body></html>`;
 
       downloadFile(html, `${sanitizeFilename(activeBook.title)}.html`, 'text/html');
-      toast('HTML exported successfully', 'success');
+      toast(t('export.success', { format: 'HTML' }), 'success');
     } catch (err) {
       console.error(err);
-      toast('Failed to export HTML', 'error');
+      toast(t('export.failed', { format: 'HTML' }), 'error');
     } finally {
       setExporting(false);
     }
@@ -94,10 +96,10 @@ p { margin: 1em 0; }
       };
 
       downloadFile(JSON.stringify(data, null, 2), `${sanitizeFilename(activeBook.title)}.json`, 'application/json');
-      toast('JSON backup exported', 'success');
+      toast(t('export.success', { format: t('export.json') }), 'success');
     } catch (err) {
       console.error(err);
-      toast('Failed to export JSON', 'error');
+      toast(t('export.failed', { format: t('export.json') }), 'error');
     } finally {
       setExporting(false);
     }
@@ -197,10 +199,10 @@ p { margin: 1em 0; }
 
       const blob = await Packer.toBlob(doc);
       downloadBlob(blob, `${sanitizeFilename(activeBook.title)}.docx`);
-      toast('DOCX exported successfully', 'success');
+      toast(t('export.success', { format: 'DOCX' }), 'success');
     } catch (err) {
       console.error(err);
-      toast('Failed to export DOCX', 'error');
+      toast(t('export.failed', { format: 'DOCX' }), 'error');
     } finally {
       setExporting(false);
     }
@@ -297,10 +299,10 @@ mark { background: #ff0; }
       }
 
       pdf.save(`${sanitizeFilename(activeBook.title)}.pdf`);
-      toast('PDF exported successfully', 'success');
+      toast(t('export.success', { format: 'PDF' }), 'success');
     } catch (err) {
       console.error(err);
-      toast('Failed to export PDF', 'error');
+      toast(t('export.failed', { format: 'PDF' }), 'error');
     } finally {
       setExporting(false);
       if (container && container.parentNode) {
@@ -310,10 +312,10 @@ mark { background: #ff0; }
   };
 
   return (
-    <Modal onClose={onClose} className="max-w-md p-6" ariaLabel="Export book">
+    <Modal onClose={onClose} className="max-w-md p-6" ariaLabel={t('export.ariaLabel')}>
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Export Book</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('export.title')}</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -327,8 +329,8 @@ mark { background: #ff0; }
           >
             <FileText className="w-6 h-6 text-primary-500" />
             <div>
-              <div className="font-medium text-gray-900 dark:text-white">HTML</div>
-              <div className="text-xs text-gray-500">Single file with all chapters</div>
+              <div className="font-medium text-gray-900 dark:text-white">{t('export.html')}</div>
+              <div className="text-xs text-gray-500">{t('export.htmlDesc')}</div>
             </div>
           </button>
 
@@ -339,8 +341,8 @@ mark { background: #ff0; }
           >
             <FileText className="w-6 h-6 text-blue-500" />
             <div>
-              <div className="font-medium text-gray-900 dark:text-white">DOCX</div>
-              <div className="text-xs text-gray-500">Microsoft Word document</div>
+              <div className="font-medium text-gray-900 dark:text-white">{t('export.docx')}</div>
+              <div className="text-xs text-gray-500">{t('export.docxDesc')}</div>
             </div>
           </button>
 
@@ -351,8 +353,8 @@ mark { background: #ff0; }
           >
             <FileText className="w-6 h-6 text-red-500" />
             <div>
-              <div className="font-medium text-gray-900 dark:text-white">PDF</div>
-              <div className="text-xs text-gray-500">Print-ready document</div>
+              <div className="font-medium text-gray-900 dark:text-white">{t('export.pdf')}</div>
+              <div className="text-xs text-gray-500">{t('export.pdfDesc')}</div>
             </div>
           </button>
 
@@ -363,14 +365,14 @@ mark { background: #ff0; }
           >
             <BookOpen className="w-6 h-6 text-emerald-500" />
             <div>
-              <div className="font-medium text-gray-900 dark:text-white">JSON Backup</div>
-              <div className="text-xs text-gray-500">Full book data for backup/restore</div>
+              <div className="font-medium text-gray-900 dark:text-white">{t('export.json')}</div>
+              <div className="text-xs text-gray-500">{t('export.jsonDesc')}</div>
             </div>
           </button>
         </div>
 
         {exporting && (
-          <p className="text-sm text-gray-500 text-center mt-4">Preparing export...</p>
+          <p className="text-sm text-gray-500 text-center mt-4">{t('export.preparing')}</p>
         )}
       </div>
     </Modal>

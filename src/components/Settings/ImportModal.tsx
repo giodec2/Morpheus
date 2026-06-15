@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import Modal from '@/components/common/Modal';
 import { X, Upload, FileText, BookOpen, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import { generateJSON } from '@tiptap/html';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -39,6 +40,7 @@ const tiptapExtensions = [
 ];
 
 export default function ImportModal({ onClose, onImport }: ImportModalProps) {
+  const { t } = useI18n();
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -68,7 +70,7 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
   const processFile = async (file: File) => {
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
     if (!IMPORT_EXTENSIONS.includes(ext)) {
-      setResult({ success: false, message: `Unsupported file type: ${ext}. Supported: ${IMPORT_EXTENSIONS.join(', ')}` });
+      setResult({ success: false, message: t('import.unsupportedFileType', { ext, extensions: IMPORT_EXTENSIONS.join(', ') }) });
       return;
     }
 
@@ -93,7 +95,7 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
 
       onImport();
     } catch (err) {
-      setResult({ success: false, message: `Import failed: ${(err as Error).message}` });
+      setResult({ success: false, message: t('import.importFailed', { message: (err as Error).message }) });
     } finally {
       setIsProcessing(false);
     }
@@ -104,7 +106,7 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
 
     // Validate minimal structure
     if (!data.book || !Array.isArray(data.chapters)) {
-      throw new Error('Invalid JSON backup: missing book or chapters');
+      throw new Error(t('import.invalidJsonBackup'));
     }
 
     // Generate new book ID to avoid collisions
@@ -204,9 +206,9 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
 
     setResult({
       success: true,
-      message: `Imported "${book.title}" with ${chapters.length} chapters, ${characters.length} characters`,
+      message: t('import.importedBook', { title: book.title, chapters: chapters.length, characters: characters.length }),
     });
-    toast('Book imported successfully', 'success');
+    toast(t('import.bookImported'), 'success');
   };
 
   const htmlToTiptap = (html: string): Record<string, unknown> => {
@@ -228,9 +230,9 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
     const book = await putBookImport(title);
     await createLoreBible(book.id);
     const content = htmlToTiptap(html);
-    await putChapterImport(book.id, title || 'Imported Chapter', content);
-    setResult({ success: true, message: `Imported "${title}" from HTML with 1 chapter` });
-    toast('HTML imported successfully', 'success');
+    await putChapterImport(book.id, title || t('import.importedChapter'), content);
+    setResult({ success: true, message: t('import.importedFromHtml', { title }) });
+    toast(t('import.htmlImported'), 'success');
   };
 
   const importMarkdown = async (title: string, md: string) => {
@@ -256,9 +258,9 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
     const content = { type: 'doc', content: paragraphs };
     const book = await putBookImport(title);
     await createLoreBible(book.id);
-    await putChapterImport(book.id, title || 'Imported Chapter', content);
-    setResult({ success: true, message: `Imported "${title}" from text with 1 chapter` });
-    toast('Text imported successfully', 'success');
+    await putChapterImport(book.id, title || t('import.importedChapter'), content);
+    setResult({ success: true, message: t('import.importedFromText', { title }) });
+    toast(t('import.textImported'), 'success');
   };
 
   // Helper: create a book via put (no cloud sync during import)
@@ -266,7 +268,7 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
     const now = Date.now();
     const book = {
       id: generateId(),
-      title: title || 'Imported Book',
+      title: title || t('import.importedBookFallback'),
       createdAt: now,
       updatedAt: now,
     };
@@ -294,9 +296,9 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
   }
 
   return (
-    <Modal onClose={onClose} className="max-w-lg p-6" ariaLabel="Import book">
+    <Modal onClose={onClose} className="max-w-lg p-6" ariaLabel={t('import.ariaLabel')}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Import Book</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('import.title')}</h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -322,17 +324,17 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
           />
           <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Drop a file here or click to browse
+            {t('import.dropZone')}
           </p>
           <p className="text-xs text-gray-400">
-            Supports JSON, HTML, Markdown, DOCX, TXT
+            {t('import.supports')}
           </p>
         </div>
 
         {isProcessing && (
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
             <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-            Processing file...
+            {t('import.processing')}
           </div>
         )}
 
@@ -355,16 +357,16 @@ export default function ImportModal({ onClose, onImport }: ImportModalProps) {
 
         <div className="mt-6 space-y-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-            What gets imported
+            {t('import.whatGetsImported')}
           </h3>
           <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 text-primary-500" />
-              <span><strong>JSON</strong> — Full backup: book, chapters, characters, lore bible, chat history, style profile</span>
+              <span><strong>JSON</strong> — {t('import.jsonDescOnly')}</span>
             </div>
             <div className="flex items-center gap-2">
               <FileText className="w-3.5 h-3.5 text-primary-500" />
-              <span><strong>HTML / MD / DOCX / TXT</strong> — Single chapter with content</span>
+              <span><strong>HTML / MD / DOCX / TXT</strong> — {t('import.docDescOnly')}</span>
             </div>
           </div>
         </div>

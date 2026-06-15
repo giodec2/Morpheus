@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MessageSquare, Trash2, AlertTriangle } from 'lucide-react';
+import { useI18n } from '@/i18n/useI18n';
 import type { ChatSession } from '@/types';
 
 interface ChatSessionListProps {
@@ -10,6 +11,7 @@ interface ChatSessionListProps {
 }
 
 export default function ChatSessionList({ sessions, activeSessionId, onSwitch, onDelete }: ChatSessionListProps) {
+  const { t } = useI18n();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   if (sessions.length === 0) return null;
@@ -33,19 +35,19 @@ export default function ChatSessionList({ sessions, activeSessionId, onSwitch, o
               <>
                 <AlertTriangle className="w-3 h-3 shrink-0 text-red-500" />
                 <span className="flex-1 truncate text-red-700 dark:text-red-300 font-medium">
-                  Delete &quot;{session.title}&quot;?
+                  {t('chat.deleteSessionTitle', { title: session.title })}
                 </span>
                 <button
                   onClick={(e) => { e.stopPropagation(); setConfirmingId(null); }}
                   className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
                 >
-                  Cancel
+                  {t('actions.cancel')}
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); onDelete(session.id); setConfirmingId(null); }}
                   className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
                 >
-                  Delete
+                  {t('actions.delete')}
                 </button>
               </>
             ) : (
@@ -61,7 +63,7 @@ export default function ChatSessionList({ sessions, activeSessionId, onSwitch, o
                   <button
                     onClick={(e) => { e.stopPropagation(); setConfirmingId(session.id); }}
                     className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-opacity"
-                    title="Delete session"
+                    title={t('chat.deleteSession')}
                   >
                     <Trash2 className="w-3 h-3 text-red-400" />
                   </button>

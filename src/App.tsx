@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { Route, Switch } from 'wouter';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { getSettings } from '@/db/settings';
+import { detectBrowserLocale, mapLocaleToAILanguage } from '@/i18n/helpers';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { ToastContainer } from '@/components/common/Toast';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -36,7 +37,7 @@ function PageLoader() {
 }
 
 function App() {
-  const { setTheme, loadSettings, openRouterKey, setIsConnected } = useSettingsStore();
+  const { setTheme, loadSettings, openRouterKey, setIsConnected, uiLocale, setUiLocale, setLanguage, setLanguageManuallySet } = useSettingsStore();
   useKeyboardShortcuts();
   useOnlineStatus();
 
@@ -63,17 +64,53 @@ function App() {
         theme: current.theme,
         advancedMode: current.advancedMode,
         language: current.language,
+        uiLocale: current.uiLocale,
+        languageManuallySet: current.languageManuallySet,
         modelTier: current.modelTier,
         writingGenre: current.writingGenre,
         adaptiveMemory: current.adaptiveMemory,
       };
+
+      // Auto-detect Italian browser language on first visit
+      const shouldAutoDetect = !merged.languageManuallySet && merged.uiLocale === 'en';
+      if (shouldAutoDetect) {
+        const detected = detectBrowserLocale();
+        if (detected === 'it') {
+          merged.uiLocale = 'it';
+          if (merged.language === 'english') {
+            merged.language = mapLocaleToAILanguage('it');
+          }
+        }
+        merged.languageManuallySet = true;
+        setUiLocale(merged.uiLocale);
+        setLanguage(merged.language);
+        setLanguageManuallySet(true);
+      }
+
       loadSettings(merged);
       setTheme(merged.theme);
       if (merged.openRouterKey) {
         setIsConnected(true);
       }
     });
-  }, [loadSettings, setTheme, setIsConnected, openRouterKey]);
+  }, [loadSettings, setTheme, setIsConnected, openRouterKey, setUiLocale, setLanguage, setLanguageManuallySet]);
+
+  // Update html lang and meta tags when locale changes
+  useEffect(() => {
+    document.documentElement.lang = uiLocale;
+    document.title = uiLocale === 'it'
+      ? 'Morpheus — Co-Writer AI per chi racconta storie'
+      : 'Morpheus — AI Co-Writer for Storytellers';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        'content',
+        uiLocale === 'it'
+          ? 'Morpheus è un co-writer AI local-first per romanziere e storyteller. Costruisci mondi, sviluppa personaggi e scrivi con un\'AI che impara la tua voce.'
+          : 'Morpheus is a local-first AI co-writer for novelists and storytellers. Plan worlds, develop characters, and write with AI that learns your voice.'
+      );
+    }
+  }, [uiLocale]);
 
   // Refresh profile when user returns to the tab (webhooks may have updated it)
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { Globe, MessageCircle, Cookie } from 'lucide-react';
 import { Link } from 'wouter';
 import { openCookieSettings } from '@/components/Legal/CookieBanner';
+import { useI18n } from '@/i18n/useI18n';
 
 const scrollToSection = (href: string) => {
   const el = document.querySelector(href);
@@ -10,6 +11,7 @@ const scrollToSection = (href: string) => {
 };
 
 export default function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -22,32 +24,32 @@ export default function Footer() {
               <span className="font-bold text-gray-900 dark:text-white">Morpheus</span>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-              The AI co-writer that learns your voice. Plan worlds, develop characters, and banish blank-page syndrome for good.
+              {t('landing.footer.tagline')}
             </p>
           </div>
 
           {/* Product */}
           <div>
-            <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Product</h4>
+            <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">{t('landing.footer.product')}</h4>
             <ul className="space-y-2">
               <li>
                 <button onClick={() => scrollToSection('#features')} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Features
+                  {t('navigation.features')}
                 </button>
               </li>
               <li>
                 <button onClick={() => scrollToSection('#how-it-works')} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  How It Works
+                  {t('landing.howItWorks.label')}
                 </button>
               </li>
               <li>
                 <button onClick={() => scrollToSection('#pricing')} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Pricing
+                  {t('navigation.pricing')}
                 </button>
               </li>
               <li>
                 <Link href="/contact" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Contact Us
+                  {t('navigation.contact')}
                 </Link>
               </li>
             </ul>
@@ -55,32 +57,32 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Legal</h4>
+            <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">{t('landing.footer.legal')}</h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/privacy" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Privacy Policy
+                  {t('landing.footer.privacyPolicy')}
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Terms of Service
+                  {t('landing.footer.termsOfService')}
                 </Link>
               </li>
               <li>
                 <Link href="/cookies" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Cookie Policy
+                  {t('landing.footer.cookiePolicy')}
                 </Link>
               </li>
               <li>
                 <Link href="/refund" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  Refund Policy
+                  {t('landing.footer.refundPolicy')}
                 </Link>
               </li>
               <li>
                 <button onClick={openCookieSettings} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors inline-flex items-center gap-1">
                   <Cookie className="w-3.5 h-3.5" />
-                  Cookie Settings
+                  {t('landing.footer.cookieSettings')}
                 </button>
               </li>
             </ul>
@@ -88,7 +90,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">Contact</h4>
+            <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-3">{t('landing.footer.contact')}</h4>
             <ul className="space-y-2">
               <li>
                 <a href="mailto:hello@morpheusink.com" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -138,10 +140,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-100 dark:border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-400 dark:text-gray-600">
-            © {new Date().getFullYear()} Morpheus. Built for storytellers. All rights reserved.
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-600">
-            Made with care in Rome, Italy 🇮🇹
+            {t('footer.madeIn')}
           </p>
         </div>
       </div>

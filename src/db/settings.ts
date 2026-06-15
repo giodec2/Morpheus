@@ -11,6 +11,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: 'light',
   advancedMode: false,
   language: 'english',
+  uiLocale: 'en',
+  languageManuallySet: false,
   modelTier: 'standard',
   aiMode: 'hosted',
   writingGenre: 'general',

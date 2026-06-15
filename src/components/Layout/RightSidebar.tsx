@@ -7,6 +7,7 @@ import { useEditorStore } from '@/stores/editorStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useI18n } from '@/i18n/useI18n';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
 import { buildContextPacket } from '@/lib/contextEngine';
 import {
@@ -36,6 +37,7 @@ interface RightSidebarProps {
 }
 
 export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
+  const { t } = useI18n();
   const { activeBook, chapters, characters, loreBible } = useBookStore();
   const { activeChapter } = useEditorStore();
   const {
@@ -83,7 +85,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
         const msgs = await getChatHistoryBySession(mostRecent.id);
         if (!cancelled) setMessages(msgs);
       } else {
-        const newSess = await createChatSession(activeBook!.id, 'Chat');
+        const newSess = await createChatSession(activeBook!.id, t('app.chatDefault'));
         if (cancelled) return;
         setSessions([newSess]);
         setActiveSessionId(newSess.id);
@@ -92,7 +94,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
     }
     load();
     return () => { cancelled = true; };
-  }, [activeBook?.id, setSessions, setActiveSessionId, setMessages]);
+  }, [activeBook, setSessions, setActiveSessionId, setMessages, t]);
 
   // Auto-scroll
   useEffect(() => {
@@ -112,7 +114,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
 
   const handleGenreChange = (genre: WritingGenre) => {
     if (genre !== 'general' && !canUseGenres) {
-      toast('Genre tuning is reserved for Novelist tier and above.', 'error');
+      toast(t('app.genreLocked'), 'error');
       return;
     }
     setActiveGenre(genre);
@@ -122,7 +124,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
 
   const handleNewSession = async () => {
     if (!activeBook) return;
-    const title = `Chat ${sessions.length + 1}`;
+    const title = t('app.chatNumber', { number: sessions.length + 1 });
     const newSess = await createChatSession(activeBook.id, title);
     addSession(newSess);
     setActiveSessionId(newSess.id);
@@ -153,7 +155,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
         const msgs = await getChatHistoryBySession(next.id);
         setMessages(msgs);
       } else if (activeBook) {
-        const newSess = await createChatSession(activeBook.id, 'Chat');
+        const newSess = await createChatSession(activeBook.id, t('app.chatDefault'));
         addSession(newSess);
         setActiveSessionId(newSess.id);
         setMessages([]);
@@ -171,11 +173,11 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
   const handleSend = async () => {
     if (!input.trim() || !activeBook || !activeChapter || isStreaming) return;
     if (aiMode === 'byok' && !openRouterKey) {
-      toast('Please set your OpenRouter API key in Settings.', 'error');
+      toast(t('app.setApiKey'), 'error');
       return;
     }
     if (!activeSessionId) {
-      toast('No active chat session.', 'error');
+      toast(t('app.noActiveChat'), 'error');
       return;
     }
 
@@ -204,7 +206,8 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
     });
 
     const activeSession = sessions.find(s => s.id === activeSessionId);
-    if (activeSession && (activeSession.title === 'Chat' || activeSession.title.startsWith('Chat ')) && messages.length === 0) {
+    const defaultChatTitle = t('app.chatDefault');
+    if (activeSession && (activeSession.title === defaultChatTitle || activeSession.title.startsWith(`${defaultChatTitle} `)) && messages.length === 0) {
       const newTitle = input.trim().slice(0, 30) + (input.trim().length > 30 ? '...' : '');
       await updateChatSession(activeSessionId, { title: newTitle });
       setSessions(sessions.map(s => s.id === activeSessionId ? { ...s, title: newTitle } : s));
@@ -273,9 +276,9 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
             error.includes('insufficient_quota');
           if (isTokenLimit) {
             if (subscriptionTier === 'architect') {
-              toast('Your weekly token allowance has been exhausted. Tokens reset every 7 days.', 'error');
+              toast(t('app.tokenExhausted'), 'error');
             } else {
-              toast('Token limit reached. Upgrade your plan to continue.', 'error');
+              toast(t('app.tokenLimitReached'), 'error');
               setShowTierModal(true);
             }
           }
@@ -286,7 +289,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
       hasError = true;
       errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[Chat] sendMessage threw:', err);
-      toast('An unexpected error occurred. Please try again.', 'error');
+      toast(t('errors.unexpectedError'), 'error');
     } finally {
       setIsStreaming(false);
       setStreamContent('');
@@ -294,7 +297,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
 
     const finalContent = hasError
       ? (fullContent || streamContent || '') + '\n\n[Error: ' + errorMsg + ']'
-      : (fullContent || streamContent || 'No response received.');
+      : (fullContent || streamContent || t('app.noResponse'));
 
     await addChatMessage({
       bookId: activeBook.id,
@@ -312,7 +315,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 p-6 text-center">
         <Bot className="w-12 h-12 mb-3" />
-        <p className="text-sm">Open a book to chat with Morpheus</p>
+        <p className="text-sm">{t('app.openBookToChat')}</p>
       </div>
     );
   }
@@ -332,7 +335,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
               className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium px-2 py-1 rounded hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
             >
               <Plus className="w-3 h-3" />
-              New Chat
+              {t('app.newChat')}
             </button>
             {onCloseMobile && (
               <button
@@ -380,7 +383,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
           <div className="text-center py-8">
             <Bot className="w-10 h-10 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
             <p className="text-sm text-gray-500 dark:text-gray-500">
-              Ask Morpheus anything about your story...
+              {t('app.askAnything')}
             </p>
           </div>
         )}
@@ -407,7 +410,7 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
             contextInfo.tokens < 8000 ? 'bg-amber-500' : 'bg-red-500'
           }`} />
           <span className="text-xs text-gray-500 dark:text-gray-500">
-            {contextInfo.characters} chars, {contextInfo.summaries} summaries, ~{contextInfo.tokens.toLocaleString()} tokens
+            {t('app.contextInfo', { chars: contextInfo.characters, summaries: contextInfo.summaries, tokens: contextInfo.tokens.toLocaleString() })}
           </span>
         </div>
       )}
