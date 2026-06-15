@@ -36,7 +36,7 @@ export default function TopBar({ onOpenSettings, onToggleLeft, onToggleRight }: 
 
   return (
     <>
-      <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center px-3 lg:px-4 shrink-0 z-20">
+      <header className="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center px-3 lg:px-4 shrink-0 z-50">
         {/* Left: Logo + hamburger */}
         <div className="flex items-center gap-2">
           <button
