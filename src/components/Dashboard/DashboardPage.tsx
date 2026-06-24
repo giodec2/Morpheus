@@ -665,7 +665,7 @@ function BookCard({
       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
         <span className="flex items-center gap-1">
           <FileText className="w-3 h-3" />
-          {chapterCount} {chapterCount === 1 ? t('dashboard.chapter') : t('dashboard.chapters')}
+          {t('dashboard.chapterCount', { count: chapterCount })}
         </span>
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />

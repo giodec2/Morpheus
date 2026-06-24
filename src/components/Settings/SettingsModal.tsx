@@ -8,7 +8,13 @@ import { useI18n } from '@/i18n/useI18n';
 import { toast } from '@/components/common/Toast';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
 import LanguageToggle from '@/components/common/LanguageToggle';
-import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
+import {
+  DEFAULT_STANDARD_MODEL,
+  DEFAULT_PREMIUM_MODEL,
+  getLocalizedStandardModels,
+  getLocalizedPremiumModels,
+  getLocalizedModelDescriptions,
+} from '@/lib/models';
 import { getCustomerPortalUrl } from '@/services/billing';
 import type { Language } from '@/types';
 
@@ -104,7 +110,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     }
     const next = modelTier === 'standard' ? 'premium' : 'standard';
     setModelTier(next);
-    const models = next === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS;
+    const models = next === 'standard' ? getLocalizedStandardModels(t) : getLocalizedPremiumModels(t);
     if (!models.some(m => m.value === defaultModel)) {
       setDefaultModel(next === 'standard' ? DEFAULT_STANDARD_MODEL : DEFAULT_PREMIUM_MODEL);
     }
@@ -303,8 +309,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 )}
                 <CustomSelect
                   value={defaultModel}
-                  options={modelTier === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS}
-                  descriptions={MODEL_DESCRIPTIONS}
+                  options={modelTier === 'standard' ? getLocalizedStandardModels(t) : getLocalizedPremiumModels(t)}
+                  descriptions={getLocalizedModelDescriptions(t)}
                   onChange={(val) => setDefaultModel(val)}
                 />
               </div>

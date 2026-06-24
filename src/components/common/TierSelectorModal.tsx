@@ -53,6 +53,7 @@ function ManageSubscriptionLink() {
 export default function TierSelectorModal({ currentTier, onClose }: TierSelectorModalProps) {
   const { t } = useI18n();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [isAnnual, setIsAnnual] = useState(true);
   const { openCheckout } = useLemonSqueezy();
 
   const tiers = [
@@ -81,6 +82,8 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
       key: 'scribe',
       name: 'Scribe',
       price: 9,
+      annualPrice: 96,
+      annualDiscount: 11,
       icon: Sparkles,
       color: 'text-primary-600 dark:text-primary-400',
       accentBg: 'bg-primary-50 dark:bg-primary-900/20',
@@ -103,6 +106,8 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
       key: 'novelist',
       name: 'Novelist',
       price: 19,
+      annualPrice: 192,
+      annualDiscount: 16,
       icon: Star,
       color: 'text-amber-600 dark:text-amber-400',
       accentBg: 'bg-amber-50 dark:bg-amber-900/20',
@@ -124,6 +129,8 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
       key: 'architect',
       name: 'Architect',
       price: 49,
+      annualPrice: 468,
+      annualDiscount: 20,
       icon: Crown,
       color: 'text-purple-600 dark:text-purple-400',
       accentBg: 'bg-purple-50 dark:bg-purple-900/20',
@@ -154,12 +161,37 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
               {t('upgrade.currentPlan', { tier: currentTier })}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Monthly / Annual toggle */}
+            <div className="flex p-1 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+              <button
+                onClick={() => setIsAnnual(false)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  !isAnnual
+                    ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {t('upgrade.monthly')}
+              </button>
+              <button
+                onClick={() => setIsAnnual(true)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  isAnnual
+                    ? 'bg-primary-600 text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {t('upgrade.annual')}
+              </button>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
         </div>
 
         {/* Tiers */}
@@ -204,9 +236,14 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                         {tier.price > 0 ? (
                           <>
                             <span className="text-lg font-black text-gray-900 dark:text-white">
-                              €{tier.price}
+                              €{isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price}
+                              <span className="text-xs font-medium text-gray-400 ml-1">{t('limit.price', { price: '' })}</span>
                             </span>
-                            <span className="text-xs text-gray-400">{t('limit.tax')}</span>
+                            {isAnnual && (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
+                                {t('upgrade.save', { percent: tier.annualDiscount ?? 0 })}
+                              </span>
+                            )}
                           </>
                         ) : (
                           <span className="text-lg font-black text-gray-900 dark:text-white">{tier.name}</span>
@@ -219,7 +256,7 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
                     <button
                       disabled={loadingTier === tier.key}
                       onClick={async () => {
-                        const variantId = getVariantIdForTier(tier.key);
+                        const variantId = getVariantIdForTier(tier.key, isAnnual ? 'annual' : 'monthly');
                         if (!variantId) {
                           toast(t('upgrade.paymentNotConfigured'), 'error');
                           return;

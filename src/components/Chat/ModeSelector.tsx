@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { MODES, MODE_DESCRIPTIONS } from '@/lib/modes';
+import { useI18n } from '@/i18n/useI18n';
+import { MODES, getLocalizedModes, getLocalizedModeDescriptions } from '@/lib/modes';
 import type { AIMode } from '@/types';
 
 interface ModeSelectorProps {
@@ -16,8 +17,11 @@ interface ModeSelectorProps {
 export default function ModeSelector({
   activeMode, show, hoveredMode, modeDescPos, onToggle, onSelect, onHover,
 }: ModeSelectorProps) {
+  const { t } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
-  const activeConfig = MODES.find(m => m.id === activeMode);
+  const localizedModes = getLocalizedModes(t);
+  const modeDescriptions = getLocalizedModeDescriptions(t);
+  const activeConfig = localizedModes.find(m => m.id === activeMode);
   const ActiveIcon = activeConfig?.icon || MODES[0].icon;
 
   return (
@@ -33,7 +37,7 @@ export default function ModeSelector({
 
       {show && (
         <div ref={menuRef} className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-10 overflow-hidden">
-          {MODES.map(mode => {
+          {localizedModes.map(mode => {
             const Icon = mode.icon;
             return (
               <button
@@ -58,13 +62,13 @@ export default function ModeSelector({
         </div>
       )}
 
-      {show && hoveredMode && MODE_DESCRIPTIONS[hoveredMode] && modeDescPos && createPortal(
+      {show && hoveredMode && modeDescriptions[hoveredMode] && modeDescPos && createPortal(
         <div
           className="fixed z-[100] w-56 p-3 rounded-lg border shadow-lg bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700"
           style={{ top: modeDescPos.top, right: modeDescPos.right }}
         >
           <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-            {MODE_DESCRIPTIONS[hoveredMode]}
+            {modeDescriptions[hoveredMode]}
           </p>
         </div>,
         document.body

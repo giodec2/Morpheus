@@ -114,7 +114,19 @@ export default async ({ req, res, log, error }) => {
     if (!checkoutResponse.ok) {
       const errText = await checkoutResponse.text();
       error(`LemonSqueezy API error: ${checkoutResponse.status} - ${errText}`);
-      return res.json({ error: 'Failed to create checkout session' }, 502);
+      let detail = '';
+      try {
+        const parsed = JSON.parse(errText);
+        detail = parsed.errors?.[0]?.detail || parsed.message || '';
+      } catch {
+        detail = errText;
+      }
+      return res.json(
+        {
+          error: `Failed to create checkout session (LemonSqueezy ${checkoutResponse.status}${detail ? `: ${detail}` : ''})`,
+        },
+        502
+      );
     }
 
     const checkoutData = await checkoutResponse.json();

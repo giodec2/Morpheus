@@ -297,7 +297,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
                 setLocation('/app');
                 return;
               }
-              const variantId = getVariantIdForTier(tier.name.toLowerCase());
+              const variantId = getVariantIdForTier(tier.name.toLowerCase(), isAnnual ? 'annual' : 'monthly');
               if (!variantId) {
                 toast(t('landing.pricing.paymentNotConfigured'), 'error');
                 return;

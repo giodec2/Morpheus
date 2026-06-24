@@ -363,21 +363,21 @@ export const landing = {
         ariaSwitchToDark: 'Passa alla modalità scura',
       },
       hero: {
-        headlinePrefix: 'Il co-writer AI che',
+        headlinePrefix: 'Il coautore AI che',
         headlineHighlight: 'ricorda',
         headlineSuffix: 'ogni personaggio, ogni trama',
         subheadline:
-          'Costruisci mondi, sviluppa personaggi e scrivi capitoli in metà tempo. Morpheus legge la tua lore bible, così ogni suggerimento resta fedele alla tua visione: niente risposte generiche.',
+          'Costruisci mondi, sviluppa personaggi e scrivi capitoli in metà tempo. Morpheus legge il tuo Diario, così ogni suggerimento resta fedele alla tua visione: niente risposte generiche.',
         credibility1Prefix: 'Pensato per',
         credibility1Highlight: 'chi scrive',
-        credibility1Suffix: 'romanzi dove il world-building conta',
-        credibility2Prefix: 'Riduci il tempo di scrittura',
+        credibility1Suffix: 'romanzi con mondi da costruire',
+        credibility2Prefix: 'Riduci il tempo di stesura',
         credibility2Highlight: 'della metà',
         credibility2Suffix: '',
         credibility3: 'Le tue creazioni restano tue',
         editorAltLight:
-          "Editor Morpheus con co-writer AI — scrittura de L'Cartografo delle Cose Perdute",
-        editorAltDark: 'Editor Morpheus in modalità scura con co-writer AI',
+          'Editor Morpheus con coautore AI — pagina de Il cartografo delle cose perdute',
+        editorAltDark: 'Editor Morpheus in modalità scura con coautore AI',
       },
       cta: {
         startFree: 'Inizia a scrivere gratis',
@@ -392,11 +392,11 @@ export const landing = {
           'Unisciti agli scrittori che stanno costruendo mondi con Morpheus. Inizia gratis: nessuna carta di credito, nessun impegno.',
         note: 'Piano gratuito disponibile per sempre. Aggiorna quando vuoi. 7 giorni di prova gratuita sui piani a pagamento.',
         noCreditCardCancel:
-          'Nessuna carta di credito richiesta · Cancellabile in qualsiasi momento',
+          'Nessuna carta di credito richiesta · Puoi cancellare in qualsiasi momento',
       },
       badge: {
-        earlyAccess: 'Sia tra i primi a scrivere con Morpheus',
-        launchPricing: 'Prezzo di lancio — blocca per sempre la tariffa early adopter',
+        earlyAccess: 'Sii tra i primi a scrivere con Morpheus',
+        launchPricing: 'Prezzo di lancio — blocca per sempre la tariffa riservata agli early adopter',
       },
       features: {
         label: 'Funzionalità',
@@ -404,8 +404,8 @@ export const landing = {
         titlePrefix: 'Tutto ciò che ti serve per',
         titleHighlight: 'scrivere il tuo libro',
         intro:
-          "Dalla world-building alla bozza finale, Morpheus ti dà gli strumenti per restare organizzato, ispirato e al comando.",
-        loreBibleTitle: 'Una lore bible che non dimentica',
+          "Dalla costruzione del mondo alla bozza finale, Morpheus ti dà gli strumenti per restare organizzato, ispirato e padrone della situazione.",
+        loreBibleTitle: 'Un Diario che non dimentica',
         loreBibleDesc:
           "Tieni ogni regola del mondo, tratto dei personaggi e dettaglio dei luoghi in un unico documento vivente. L'AI lo consulta automaticamente, così la storia resta coerente dal primo all'ultimo capitolo.",
         structuredTitle: 'Personaggi, lore e luoghi — strutturati',
@@ -413,7 +413,7 @@ export const landing = {
           "Niente più appunti sparsi. Costruisci profili strutturati che l'AI capisce e usa per mantenere voci, luoghi e regole sempre coerenti.",
         ownershipTitle: 'Il tuo manoscritto, la tua proprietà',
         ownershipDesc:
-          'I tuoi lavori vengono salvati prima di tutto in locale. Esporta quando vuoi in DOCX, PDF, Markdown o JSON. Non addestriamo mai l’AI sui tuoi testi.',
+          'I tuoi lavori vengono salvati dapprima in locale. Esporta quando vuoi in DOCX, PDF, Markdown o JSON. Non addestriamo mai l’AI sui tuoi testi.',
         engineTitle: 'Scegli il tuo motore creativo',
         engineDesc:
           "Usa la nostra AI ospitata o inserisci la tua chiave OpenRouter. Cambia modello in base al budget, alla velocità e alle tue esigenze creative.",
@@ -429,13 +429,13 @@ export const landing = {
           'Crea un libro, aggiungi i capitoli e scegli il genere. Morpheus prepara il tuo spazio di lavoro in pochi secondi.',
         step2Title: '02 — Popola il tuo universo',
         step2Desc:
-          "Costruisci personaggi, lore e luoghi. Tutto ciò che aggiungi diventa contesto su cui l'AI può attingere.",
-        step3Title: '03 — Scrivi con il tuo co-writer',
+          "Costruisci personaggi, lore e luoghi. Tutto ciò che aggiungi diventa contesto da cui attingere.",
+        step3Title: '03 — Scrivi con il tuo coautore',
         step3Desc:
-          "Chatta con Morpheus mentre scrivi. Fai brainstorming, espandi le scene, sistema la continuity e sconfiggi il blocco dello scrittore.",
+          "Chatta con Morpheus mentre scrivi. Fai brainstorming, espandi le scene, sistema la continuità e sconfiggi il blocco dello scrittore.",
       },
       genres: {
-        label: 'Assistente calibrato per genere',
+        label: 'Assistenza adattata al genere',
         title: 'Qualunque cosa scrivi, Morpheus la capisce',
         titlePrefix: 'Qualunque cosa scrivi,',
         titleHighlight: 'Morpheus la capisce',
@@ -447,24 +447,24 @@ export const landing = {
             'Un compagno creativo versatile per qualsiasi storia. Dagli esperimenti letterari ai mix di generi, Morpheus si adatta alla tua voce.',
         },
         crimeMystery: {
-          name: 'Giallo e mistery',
+          name: 'Giallo e mistero',
           description:
             'Piazza gli indizi con precisione, gestisci i falsi piste e mantieni coerente l\'inchiesta dalla prima pagina al finale.',
         },
         romance: {
           name: 'Romance',
           description:
-            'Sviluppa archi lenti, mantieni la tensione emotiva e assicurati che ogni interazione approfondisca la relazione centrale.',
+            'Sviluppa relazioni slow-burn, mantieni la tensione emotiva e assicurati che ogni interazione approfondisca la relazione centrale.',
         },
         thrillerHorror: {
           name: 'Thriller e horror',
           description:
-            'Incrementa la paura con precisione chirurgica. Gestisci ritmo, posta in gioco e atmosfera per stringere la morsa a ogni capitolo.',
+            'Alimenta l\'inquietudine con precisione chirurgica. Gestisci ritmo, posta in gioco e atmosfera per stringere la morsa a ogni capitolo.',
         },
         scienceFiction: {
           name: 'Fantascienza',
           description:
-            'Mantieni regole speculativo coerenti in mondi complessi. Bilancia esposizione e azione senza perdere plausibilità scientifica.',
+            'Mantieni regole speculative coerenti in mondi complessi. Bilancia esposizione e azione mantenendo la plausibilità scientifica.',
         },
         fantasy: {
           name: 'Fantasy',
@@ -479,12 +479,12 @@ export const landing = {
         historicalFiction: {
           name: 'Narrativa storica',
           description:
-            'Mantieni una voce fedele all\'epoca e segnala anacronismi. Fonda i personaggi su ricerche accurate senza info-dumping.',
+            'Mantieni una voce fedele all\'epoca e segnala anacronismi. Radica i personaggi in ricerche accurate senza info-dumping.',
         },
         youngAdult: {
           name: 'Young Adult',
           description:
-            'Cattura una voce adolescente autentica e piena di agency. Bilancia intensità emotiva e ritmo serrato, nel rispetto del lettore YA.',
+            'Cattura una voce adolescente autentica e piena di autonomia. Bilancia intensità emotiva e ritmo serrato, nel rispetto del lettore YA.',
         },
       },
       pricing: {
@@ -498,9 +498,9 @@ export const landing = {
         annual: 'Annuale',
         save: 'Risparmia ~{{percent}}%',
         billedAnnually:
-          'Fatturazione annuale (€{{price}}/anno). Cancellabile in qualsiasi momento. + IVA applicabile',
+          'Fatturazione annuale (€{{price}}/anno). Puoi cancellare in qualsiasi momento. + IVA applicabile',
         billedMonthly:
-          'Fatturazione mensile. Cancellabile in qualsiasi momento. + IVA applicabile',
+          'Fatturazione mensile. Puoi cancellare in qualsiasi momento. + IVA applicabile',
         foreverFree: 'Per sempre, senza carta di credito',
         freeLabel: 'Gratis',
         perMonth: '/mese',
@@ -510,8 +510,8 @@ export const landing = {
         included: 'Incluso',
         tierFreeDesc: 'Perfetto per iniziare',
         tierScribeDesc: 'Per chi scrive con impegno',
-        tierNovelistDesc: 'Per romanziere seri',
-        tierArchitectDesc: 'Per scrivere in grande',
+        tierNovelistDesc: 'Per chi scrive romanzi sul serio',
+        tierArchitectDesc: 'Per chi scrive su larga scala',
         paymentNotConfigured: 'Il sistema di pagamento non è ancora completamente configurato',
         checkoutError: 'Impossibile aprire il checkout',
         features: {
@@ -524,23 +524,23 @@ export const landing = {
           cloudSync: 'Sincronizzazione cloud',
           premiumTokens: 'Token premium',
           newFeaturesFirst: 'Nuove funzionalità in anteprima',
-          genreAssistance: 'Assistenza calibrata per genere',
+          genreAssistance: 'Assistenza adattata al genere',
           echoBeta: 'Echo (Beta)',
           prioritySupport: 'Supporto prioritario',
         },
         roadmap: {
-          label: 'Roadmap',
+          label: 'In arrivo',
           title: 'Cosa arriverà presto',
           titlePrefix: 'Cosa arriverà',
           titleHighlight: 'presto',
           intro:
             "Stiamo solo iniziando. Ecco un'anteprima di cosa c'è all'orizzonte.",
-          referralTitle: 'Programma referral',
+          referralTitle: 'Programma di inviti',
           referralDesc:
             'Invita altri scrittori e guadagna token premium per te e per i tuoi amici.',
-          analyticsTitle: 'Analytics di scrittura',
+          analyticsTitle: 'Analisi della scrittura',
           analyticsDesc:
-            "Tieni traccia di parole giornaliere, serie di scrittura, durata delle sessioni e velocità dei capitoli — gamifica la tua abitudine allo scrittoio.",
+            "Tieni traccia di parole giornaliere, serie di giorni consecutivi, durata delle sessioni e velocità dei capitoli — rendi giocoso il tuo regime di scrittura.",
           betaSharingTitle: 'Condivisione con beta reader',
           betaSharingDesc:
             "Genera link di sola lettura del manoscritto con commenti inline. Lascia che i beta reader lascino feedback senza toccare la bozza.",
@@ -562,37 +562,37 @@ export const landing = {
             title: 'AGPL-3.0 Open Source',
             badge: 'Privacy verificabile',
             description:
-              'Tutto il codice è open source e verificabile. Puoi self-hostare Morpheus, ispezionare ogni riga e constatare di persona che non ci sono backdoor. Gli strumenti closed-source chiedono fiducia: noi ti diamo le prove.',
+              'Tutto il codice è open source e verificabile. Puoi ospitare autonomamente Morpheus, ispezionare ogni riga e constatare di persona che non ci sono backdoor. Gli strumenti closed-source chiedono fiducia: noi ti diamo le prove.',
           },
           noTraining: {
             title: 'Zero addestramento AI sui tuoi testi',
             badge: 'Mai salvato',
             description:
-              'I tuoi libri, personaggi e prompt non vengono mai usati per addestrare, fare fine-tuning o migliorare modelli AI. I nostri provider elaborano le richieste e le scartano immediatamente. Il tuo lavoro creativo resta solo tuo, per sempre.',
+              'I tuoi libri, personaggi e prompt non vengono mai usati per addestrare, ottimizzare o migliorare modelli AI. I nostri provider elaborano le richieste e le scartano immediatamente. Il tuo lavoro creativo resta solo tuo, per sempre.',
           },
           byok: {
             title: 'Usa la tua chiave API',
             badge: 'Zero trust',
             description:
-              "Collega la tua chiave OpenRouter e bypassa completamente i nostri server. I tuoi dati vanno direttamente al provider AI che scegli tu: non vediamo i tuoi prompt, il manoscritto o le tue idee. Controllo totale, zero fiducia richiesta.",
+              "Collega la tua chiave OpenRouter e bypassa completamente i nostri server. I tuoi dati vanno direttamente al provider di AI che scegli tu: non vediamo i tuoi prompt, il manoscritto o le tue idee. Controllo totale, zero fiducia richiesta.",
           },
           localFirst: {
             title: 'Architettura local-first',
             badge: 'I dati sono tuoi',
             description:
-              'Il tuo manoscritto vive nel tuo browser di default. La sincronizzazione cloud è opzionale. Anche se i nostri server fossero offline, il tuo lavoro resta sul tuo dispositivo: perché il tuo romanzo dovrebbe sopravvivere a qualsiasi SaaS.',
+              'Il tuo manoscritto vive nel tuo browser di default. La sincronizzazione cloud è opzionale. Anche se i nostri server fossero offline, il tuo lavoro resta sul tuo dispositivo: perché il tuo romanzo deve sopravvivere a qualsiasi SaaS.',
           },
           gdpr: {
             title: 'Conforme GDPR, basato in UE',
             badge: 'Regolato in UE',
             description:
-              "Titolare del trattamento con sede a Roma, Italia. Pieni diritti GDPR inclusi accesso, cancellazione e portabilità. Nessun paradiso fiscale offshore: i tuoi dati sono protetti da alcune delle leggi sulla privacy più forti al mondo.",
+              "Titolare del trattamento con sede a Roma, Italia. Pieni diritti GDPR inclusi accesso, cancellazione e portabilità. Nessun rifugio offshore per i dati: i tuoi dati sono protetti da alcune delle leggi sulla privacy più forti al mondo.",
           },
           flatFee: {
             title: 'Tariffa fissa, nessuna sorpresa',
             badge: 'Prezzi prevedibili',
             description:
-              "Niente ansia da consumo. Niente contatori di parole che scendono mentre scrivi. Un'unica quota settimanale prevedibile a prezzo fisso: concentrati sulla storia, non sul saldo.",
+              "Niente ansia da credito. Niente contatori di parole che scendono mentre scrivi. Un'unica quota settimanale prevedibile a prezzo fisso: concentrati sulla storia, non sul saldo.",
           },
         },
         footer:
@@ -628,7 +628,7 @@ export const landing = {
         },
         item4: {
           quote:
-            "L'opzione BYOK è un punto di svolta. Uso la mia chiave API, quindi so esattamente dove finiscono i miei dati. E la promessa privacy ha davvero un significato.",
+            "L'opzione BYOK è un punto di svolta. Uso la mia chiave API, quindi so esattamente dove finiscono i miei dati. E la promessa di privacy conta davvero.",
           role: 'Autore thriller',
           genre: 'Thriller',
           highlight: 'Controllo totale della privacy',
@@ -640,7 +640,7 @@ export const landing = {
         titlePrefix: 'Domande?',
         titleHighlight: 'Ecco le risposte.',
         intro:
-          'Le cose essenziali. Per il quadro completo, consulta la nostra FAQ completa.',
+          'Le cose essenziali. Per il quadro completo, consulta tutte le domande frequenti.',
         allQuestions: 'Tutte le domande',
         q1: {
           question: 'Il mio manoscritto è davvero privato?',
@@ -650,7 +650,7 @@ export const landing = {
         q2: {
           question: "In cosa differisce da ChatGPT o Claude?",
           answer:
-            "I chatbot AI generali dimenticano tutto tra una sessione e l'altra. Morpheus mantiene una lore bible persistente — personaggi, luoghi, regole del mondo e dettagli della trama — così l'AI ricorda il tuo mondo in ogni conversazione. È come avere un co-writer che ha davvero letto i capitoli precedenti.",
+            "I chatbot AI generali dimenticano tutto tra una sessione e l'altra. Morpheus mantiene un Diario persistente — personaggi, luoghi, lore e regole — così l'AI ricorda il tuo mondo in ogni conversazione. È come avere un coautore che ha davvero letto i capitoli precedenti.",
         },
         q3: {
           question: 'Devo saper programmare o usare API?',
@@ -660,7 +660,7 @@ export const landing = {
         q4: {
           question: 'Posso esportare il mio lavoro?',
           answer:
-            "Sì — in qualsiasi momento e in qualsiasi formato. Esporta singoli capitoli, libri completi, schede personaggi e lore bible. Il tuo lavoro è sempre tuo e puoi portarlo con te quando vuoi.",
+            "Sì — in qualsiasi momento e in qualsiasi formato. Esporta singoli capitoli, libri completi, schede personaggi e Diari. Il tuo lavoro è sempre tuo e puoi portarlo con te quando vuoi.",
         },
         q5: {
           question: 'Quali generi supporta Morpheus?',
@@ -675,7 +675,7 @@ export const landing = {
         q7: {
           question: "Cosa succede se raggiungo il limite di token?",
           answer:
-            "La tua quota di token si resetta settimanalmente. Se raggiungi il limite, puoi comunque usare Morpheus con la tua chiave API (BYOK) o passare a un piano superiore per più token ospitati. Ti avviseremo quando ti avvicinerai al limite.",
+            "La tua quota di token si ricarica settimanalmente. Se raggiungi il limite, puoi comunque usare Morpheus con la tua chiave API (BYOK) o passare a un piano superiore per più token ospitati. Ti avviseremo quando ti avvicinerai al limite.",
         },
         q8: {
           question: 'Posso cambiare piano o cancellare in qualsiasi momento?',
@@ -685,7 +685,7 @@ export const landing = {
       },
       footer: {
         tagline:
-          'Il co-writer AI che impara la tua voce. Costruisci mondi, sviluppa personaggi e bandisci la pagina bianca per sempre.',
+          'Il coautore AI che impara la tua voce. Costruisci mondi, sviluppa personaggi e bandisci la pagina bianca una volta per tutte.',
         product: 'Prodotto',
         legal: 'Legale',
         contact: 'Contatti',
@@ -703,7 +703,7 @@ export const landing = {
         euHosted: 'Opzione ospitata in UE',
       },
       editorMockup: {
-        aiCoWriter: 'Co-writer AI',
+        aiCoWriter: 'Coautore AI',
       },
     },
   },

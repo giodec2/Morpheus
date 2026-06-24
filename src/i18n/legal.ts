@@ -933,7 +933,7 @@ Signature: (only if this form is notified on paper)`,
           },
           memoryWorldBuilding: {
             question: 'Come funzionano la memoria e il world-building?',
-            answer: 'Morpheus mantiene una "bibbia del mondo" per ognuno dei tuoi libri. Puoi aggiungere personaggi, luoghi, lore e regole. Quando chatti con l\'AI, fa riferimento a questa bibbia del mondo in modo che i suoi suggerimenti restino coerenti con l\'universo della tua storia. Più dettagli aggiungi, meglio l\'AI capirà il tuo mondo.',
+            answer: 'Morpheus mantiene un "Diario" per ognuno dei tuoi libri. Puoi aggiungere personaggi, luoghi, lore e regole. Quando chatti con l\'AI, fa riferimento al tuo Diario in modo che i suoi suggerimenti restino coerenti con l\'universo della tua storia. Più dettagli aggiungi, meglio l\'AI capirà il tuo mondo.',
           },
           commercialUse: {
             question: 'Posso usare Morpheus per scrittura professionale o commerciale?',

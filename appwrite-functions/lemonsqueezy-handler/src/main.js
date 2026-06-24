@@ -18,10 +18,13 @@ import crypto from 'crypto';
  *   LEMONSQUEEZY_API_KEY
  *   LEMONSQUEEZY_STORE_ID
  *   LEMONSQUEEZY_WEBHOOK_SECRET     (required in production)
- *   LEMONSQUEEZY_VARIANT_SCRIBE
- *   LEMONSQUEEZY_VARIANT_NOVELIST
- *   LEMONSQUEEZY_VARIANT_ARCHITECT
- *   CHECKOUT_SUCCESS_URL            (optional, defaults to https://your-domain.com/app?checkout=success)
+ *   LEMONSQUEEZY_VARIANT_SCRIBE          (monthly)
+ *   LEMONSQUEEZY_VARIANT_SCRIBE_ANNUAL
+ *   LEMONSQUEEZY_VARIANT_NOVELIST        (monthly)
+ *   LEMONSQUEEZY_VARIANT_NOVELIST_ANNUAL
+ *   LEMONSQUEEZY_VARIANT_ARCHITECT       (monthly)
+ *   LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL
+ *   CHECKOUT_SUCCESS_URL                 (optional, defaults to https://your-domain.com/app?checkout=success)
  */
 
 // ───────────────────────────────────────────────
@@ -51,11 +54,20 @@ function getVariantTierMap() {
   if (process.env.LEMONSQUEEZY_VARIANT_SCRIBE) {
     map[process.env.LEMONSQUEEZY_VARIANT_SCRIBE] = 'scribe';
   }
+  if (process.env.LEMONSQUEEZY_VARIANT_SCRIBE_ANNUAL) {
+    map[process.env.LEMONSQUEEZY_VARIANT_SCRIBE_ANNUAL] = 'scribe';
+  }
   if (process.env.LEMONSQUEEZY_VARIANT_NOVELIST) {
     map[process.env.LEMONSQUEEZY_VARIANT_NOVELIST] = 'novelist';
   }
+  if (process.env.LEMONSQUEEZY_VARIANT_NOVELIST_ANNUAL) {
+    map[process.env.LEMONSQUEEZY_VARIANT_NOVELIST_ANNUAL] = 'novelist';
+  }
   if (process.env.LEMONSQUEEZY_VARIANT_ARCHITECT) {
     map[process.env.LEMONSQUEEZY_VARIANT_ARCHITECT] = 'architect';
+  }
+  if (process.env.LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL) {
+    map[process.env.LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL] = 'architect';
   }
   return map;
 }
@@ -178,7 +190,19 @@ async function handleCheckout({ req, res, log, error }) {
     if (!checkoutResponse.ok) {
       const errText = await checkoutResponse.text();
       error(`LemonSqueezy API error: ${checkoutResponse.status} - ${errText}`);
-      return res.json({ error: 'Failed to create checkout session' }, 502);
+      let detail = '';
+      try {
+        const parsed = JSON.parse(errText);
+        detail = parsed.errors?.[0]?.detail || parsed.message || '';
+      } catch {
+        detail = errText;
+      }
+      return res.json(
+        {
+          error: `Failed to create checkout session (LemonSqueezy ${checkoutResponse.status}${detail ? `: ${detail}` : ''})`,
+        },
+        502
+      );
     }
 
     const checkoutData = await checkoutResponse.json();

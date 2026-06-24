@@ -74,19 +74,21 @@ const tierMeta: Record<string, {
 
 
 
-const prices: Record<string, string> = {
-  scribe: '€9',
-  novelist: '€19',
-  architect: '€49',
+const prices: Record<string, { monthly: number; annual: number; annualDiscount: number }> = {
+  scribe: { monthly: 9, annual: 96, annualDiscount: 11 },
+  novelist: { monthly: 19, annual: 192, annualDiscount: 16 },
+  architect: { monthly: 49, annual: 468, annualDiscount: 20 },
 };
 
 export default function UpgradeModal({ currentTier, currentCount, maxCount, onClose }: UpgradeModalProps) {
   const { t } = useI18n();
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true);
   const { openCheckout } = useLemonSqueezy();
   const currentIndex = tierOrder.indexOf(currentTier);
   const nextTierKey = currentIndex < tierOrder.length - 1 ? tierOrder[currentIndex + 1] : null;
   const nextMeta = nextTierKey ? tierMeta[nextTierKey] : null;
+  const nextPrice = nextTierKey ? prices[nextTierKey] : null;
 
   const nextTierBenefits: Record<string, string[]> = {
     free: [
@@ -165,13 +167,47 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
                 </li>
               ))}
             </ul>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               <span className="text-xl font-black text-gray-900 dark:text-white">
-                {t('limit.price', { price: prices[nextTierKey] })}
+                {t('limit.price', { price: `€${isAnnual ? Math.round((nextPrice?.annual || 0) / 12) : nextPrice?.monthly}` })}
               </span>
               <span className="text-xs text-gray-400">
                 {t('limit.tax')}
               </span>
+              {isAnnual && (
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                  {t('upgrade.save', { percent: nextPrice?.annualDiscount ?? 0 })}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-400 mb-4">
+              {isAnnual
+                ? t('upgrade.billedAnnually', { price: nextPrice?.annual ?? 0 })
+                : t('upgrade.billedMonthly')}
+            </p>
+
+            {/* Monthly / Annual toggle */}
+            <div className="flex p-1 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 w-fit mb-4">
+              <button
+                onClick={() => setIsAnnual(false)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  !isAnnual
+                    ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {t('upgrade.monthly')}
+              </button>
+              <button
+                onClick={() => setIsAnnual(true)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  isAnnual
+                    ? 'bg-primary-600 text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {t('upgrade.annual')}
+              </button>
             </div>
           </div>
         )}
@@ -181,7 +217,7 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
             <button
               disabled={isLoading}
               onClick={async () => {
-                const variantId = getVariantIdForTier(nextTierKey);
+                const variantId = getVariantIdForTier(nextTierKey, isAnnual ? 'annual' : 'monthly');
                 if (!variantId) {
                   toast(t('upgrade.paymentNotConfigured'), 'error');
                   return;

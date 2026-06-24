@@ -4,7 +4,13 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
 import { useI18n } from '@/i18n/useI18n';
-import { STANDARD_MODELS, PREMIUM_MODELS, MODEL_DESCRIPTIONS, DEFAULT_STANDARD_MODEL, DEFAULT_PREMIUM_MODEL } from '@/lib/models';
+import {
+  DEFAULT_STANDARD_MODEL,
+  DEFAULT_PREMIUM_MODEL,
+  getLocalizedStandardModels,
+  getLocalizedPremiumModels,
+  getLocalizedModelDescriptions,
+} from '@/lib/models';
 
 export default function AISettings() {
   const { t } = useI18n();
@@ -17,7 +23,8 @@ export default function AISettings() {
   const subscriptionTier = profile?.subscriptionTier || 'free';
   const canUsePremium = aiMode === 'byok' || subscriptionTier === 'novelist' || subscriptionTier === 'architect';
 
-  const currentTierModels = modelTier === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS;
+  const currentTierModels = modelTier === 'standard' ? getLocalizedStandardModels(t) : getLocalizedPremiumModels(t);
+  const modelDescriptions = getLocalizedModelDescriptions(t);
 
   const handleTierChange = (tier: 'standard' | 'premium') => {
     if (tier === 'premium' && !canUsePremium) {
@@ -25,7 +32,7 @@ export default function AISettings() {
       return;
     }
     setModelTier(tier);
-    const models = tier === 'standard' ? STANDARD_MODELS : PREMIUM_MODELS;
+    const models = tier === 'standard' ? getLocalizedStandardModels(t) : getLocalizedPremiumModels(t);
     const stillValid = models.some((m) => m.value === defaultModel);
     if (!stillValid) {
       setDefaultModel(tier === 'standard' ? DEFAULT_STANDARD_MODEL : DEFAULT_PREMIUM_MODEL);
@@ -84,7 +91,7 @@ export default function AISettings() {
         <CustomSelect
           value={defaultModel}
           options={currentTierModels}
-          descriptions={MODEL_DESCRIPTIONS}
+          descriptions={modelDescriptions}
           onChange={(val) => setDefaultModel(val)}
         />
 

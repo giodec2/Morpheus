@@ -36,15 +36,26 @@ export async function createCheckout(variantId: string, t?: TFunction): Promise<
   return result.checkoutUrl;
 }
 
-/** Map tier names to LemonSqueezy variant IDs */
-export const TIER_VARIANT_MAP: Record<string, string> = {
-  scribe: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_SCRIBE || '',
-  novelist: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_NOVELIST || '',
-  architect: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_ARCHITECT || '',
+export type BillingInterval = 'monthly' | 'annual';
+
+/** Map tier + billing interval to LemonSqueezy variant IDs */
+export const TIER_VARIANT_MAP: Record<string, Record<BillingInterval, string>> = {
+  scribe: {
+    monthly: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_SCRIBE || '',
+    annual: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_SCRIBE_ANNUAL || '',
+  },
+  novelist: {
+    monthly: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_NOVELIST || '',
+    annual: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_NOVELIST_ANNUAL || '',
+  },
+  architect: {
+    monthly: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_ARCHITECT || '',
+    annual: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL || '',
+  },
 };
 
-export function getVariantIdForTier(tier: string): string | null {
-  return TIER_VARIANT_MAP[tier] || null;
+export function getVariantIdForTier(tier: string, interval: BillingInterval = 'monthly'): string | null {
+  return TIER_VARIANT_MAP[tier]?.[interval] || null;
 }
 
 export async function getCustomerPortalUrl(customerId?: string | null, t?: TFunction): Promise<string> {
@@ -81,8 +92,11 @@ export async function getCustomerPortalUrl(customerId?: string | null, t?: TFunc
 export function isBillingConfigured(): boolean {
   return Boolean(
     import.meta.env.VITE_APPWRITE_FUNCTION_CREATE_CHECKOUT_ID &&
-    TIER_VARIANT_MAP.scribe &&
-    TIER_VARIANT_MAP.novelist &&
-    TIER_VARIANT_MAP.architect
+    TIER_VARIANT_MAP.scribe.monthly &&
+    TIER_VARIANT_MAP.scribe.annual &&
+    TIER_VARIANT_MAP.novelist.monthly &&
+    TIER_VARIANT_MAP.novelist.annual &&
+    TIER_VARIANT_MAP.architect.monthly &&
+    TIER_VARIANT_MAP.architect.annual
   );
 }
