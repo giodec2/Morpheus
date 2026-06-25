@@ -71,7 +71,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
   const canUsePremium = aiMode === 'byok' || subscriptionTier === 'novelist' || subscriptionTier === 'architect';
-  const canUseEcho = subscriptionTier === 'architect';
+  const canUseEcho = subscriptionTier === 'architect' || subscriptionTier === 'maestro';
 
   const handleConnect = async () => {
     if (!apiInput.trim()) return;

@@ -121,10 +121,11 @@ For `profiles`, the document ID is set to match the user's Appwrite ID automatic
 
 | Tier       | subscriptionTier | maxBooks | maxWeeklyTokensStandard | maxWeeklyTokensPremium |
 |------------|------------------|----------|------------------------|------------------------|
-| Free       | `free`           | 1        | 100,000                | 0                      |
-| Scribe     | `scribe`         | 3        | 1,000,000              | 0                      |
-| Novelist   | `novelist`       | 10       | 2,000,000              | 200,000                |
-| Architect  | `architect`      | 50       | 10,000,000             | 1,000,000              |
+| Free       | `free`           | 1        | 50,000                 | 0                      |
+| Scribe     | `scribe`         | 3        | 500,000                | 0                      |
+| Novelist   | `novelist`       | 10       | 1,000,000              | 50,000                 |
+| Architect  | `architect`      | ∞        | 5,000,000              | 500,000                |
+| Maestro    | `maestro`        | ∞        | 250,000                | 0                      |
 
 ---
 

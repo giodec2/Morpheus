@@ -1,4 +1,4 @@
-import { Check, X, Sparkles, Star, Crown, Zap, Loader2, Languages, Gift, BarChart3, Share2 } from 'lucide-react';
+import { Check, X, Sparkles, Star, Crown, Zap, Music, Loader2, Languages, Gift, BarChart3, Share2, ChevronDown, KeyRound } from 'lucide-react';
 import { useInView } from '@/hooks/useInView';
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
@@ -107,16 +107,68 @@ const tiers = [
   },
 ];
 
+const maestroTier = {
+  name: 'Maestro',
+  price: 14,
+  annualPrice: 120,
+  annualDiscount: 29,
+  gradient: 'from-rose-50 to-white dark:from-slate-800 dark:to-slate-900',
+  border: 'border-rose-300 dark:border-rose-700',
+  accent: 'text-rose-600 dark:text-rose-400',
+  iconBg: 'bg-rose-100 dark:bg-rose-900/30',
+  iconColor: 'text-rose-600 dark:text-rose-400',
+  ctaBg: 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40',
+  features: [
+    { key: 'unlimitedBooks', included: true },
+    { key: 'bringYourOwnKey', included: true },
+    { key: 'tokensStandard', count: '250k', included: true },
+    { key: 'allFeatures', included: true },
+    { key: 'newFeaturesFirst', included: true },
+    { key: 'prioritySupport', included: true },
+  ],
+};
+
+function useTierCheckout(tierName: string) {
+  const { t } = useI18n();
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuthStore();
+  const { openCheckout } = useLemonSqueezy();
+  const [, setLocation] = useLocation();
+
+  const handleCheckout = async (isAnnual: boolean) => {
+    if (tierName === 'Free') {
+      setLocation('/app');
+      return;
+    }
+    if (!user) {
+      setLocation('/app');
+      return;
+    }
+    const variantId = getVariantIdForTier(tierName.toLowerCase(), isAnnual ? 'annual' : 'monthly');
+    if (!variantId) {
+      toast(t('landing.pricing.paymentNotConfigured'), 'error');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const url = await createCheckout(variantId, t as (key: string) => string);
+      openCheckout(url);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : t('landing.pricing.checkoutError'), 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { isLoading, handleCheckout };
+}
 
 function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: number; isAnnual: boolean }) {
   const { t } = useI18n();
   const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
   const [hovered, setHovered] = useState(false);
   const [entered, setEntered] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuthStore();
-  const { openCheckout } = useLemonSqueezy();
-  const [, setLocation] = useLocation();
+  const { isLoading, handleCheckout } = useTierCheckout(tier.name);
 
   const tierDescKey: Record<string, string> = {
     Free: 'landing.pricing.tierFreeDesc',
@@ -132,7 +184,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
   const currentIdx = tierOrder.indexOf(currentTier);
   const cardIdx = tierOrder.indexOf(cardTier);
   const isCurrent = cardTier === currentTier;
-  const isIncluded = cardIdx < currentIdx; // higher tier includes lower tier features
+  const isIncluded = cardIdx < currentIdx;
   const isSuggested = cardTier === 'novelist' && (
     !profile || (currentTier !== 'novelist' && currentTier !== 'architect')
   );
@@ -288,30 +340,7 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
         ) : (
           <button
             disabled={isLoading}
-            onClick={async () => {
-              if (tier.price === 0) {
-                setLocation('/app');
-                return;
-              }
-              if (!user) {
-                setLocation('/app');
-                return;
-              }
-              const variantId = getVariantIdForTier(tier.name.toLowerCase(), isAnnual ? 'annual' : 'monthly');
-              if (!variantId) {
-                toast(t('landing.pricing.paymentNotConfigured'), 'error');
-                return;
-              }
-              setIsLoading(true);
-              try {
-                const url = await createCheckout(variantId, t as (key: string) => string);
-                openCheckout(url);
-              } catch (err) {
-                toast(err instanceof Error ? err.message : t('landing.pricing.checkoutError'), 'error');
-              } finally {
-                setIsLoading(false);
-              }
-            }}
+            onClick={() => handleCheckout(isAnnual)}
             className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} ${
               hovered && tier.price > 0 ? 'scale-[1.02]' : ''
             } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
@@ -322,6 +351,145 @@ function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: 
       </div>
     </div>
   </div>
+  );
+}
+
+function MaestroCard({ isAnnual }: { isAnnual: boolean }) {
+  const { t } = useI18n();
+  const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
+  const [entered, setEntered] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const { isLoading, handleCheckout } = useTierCheckout('Maestro');
+  const { profile } = useAuthStore();
+  const currentTier = profile?.subscriptionTier ?? 'free';
+  const isCurrent = currentTier === 'maestro';
+
+  useEffect(() => {
+    if (isInView && !entered) {
+      const timer = setTimeout(() => setEntered(true), tiers.length * 150);
+      return () => clearTimeout(timer);
+    }
+    if (!isInView && entered) {
+      setEntered(false);
+    }
+  }, [isInView, entered]);
+
+  const tier = maestroTier;
+  const price = isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price;
+
+  return (
+    <div
+      ref={ref}
+      className={`relative rounded-2xl border-2 ${tier.border} overflow-hidden transition-all duration-500 ${
+        isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      }`}
+    >
+      {/* Top gradient */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 via-pink-400 to-rose-500" />
+      <div className={`absolute inset-0 bg-gradient-to-br ${tier.gradient} opacity-60`} />
+
+      <div className="relative p-6 md:p-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+          {/* Left: headline + price + CTA */}
+          <div className="lg:w-2/5 flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-12 h-12 rounded-xl ${tier.iconBg} flex items-center justify-center`}>
+                <Music className={`w-6 h-6 ${tier.iconColor}`} />
+              </div>
+              <div>
+                <h3 className={`text-2xl font-bold ${tier.accent}`}>{tier.name}</h3>
+                <p className="text-xs font-semibold uppercase tracking-wider text-rose-500 dark:text-rose-400">
+                  {t('landing.pricing.maestroLabel')}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-5 flex-1">
+              {t('landing.pricing.maestroShortDesc')}
+            </p>
+
+            <div className="mb-5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums">
+                  €{price}
+                </span>
+                <span className="text-sm text-gray-400 font-medium">{t('landing.pricing.perMonth')}</span>
+                <span
+                  className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
+                    isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+                  }`}
+                >
+                  {t('landing.pricing.save', { percent: tier.annualDiscount ?? 0 })}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                {isAnnual
+                  ? t('landing.pricing.billedAnnually', { price: tier.annualPrice ?? 0 })
+                  : t('landing.pricing.billedMonthly')}
+              </p>
+            </div>
+
+            {isCurrent ? (
+              <div className="w-full py-3 rounded-xl text-sm font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
+                <Check className="w-4 h-4" />
+                {t('landing.pricing.currentPlan')}
+              </div>
+            ) : (
+              <button
+                disabled={isLoading}
+                onClick={() => handleCheckout(isAnnual)}
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+              >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('landing.pricing.startTrial')}
+              </button>
+            )}
+          </div>
+
+          {/* Right: feature bullets */}
+          <div className="lg:w-3/5">
+            <div className="grid sm:grid-cols-2 gap-3">
+              {tier.features.map((feature) => (
+                <div key={feature.key} className="flex items-start gap-2.5 p-3 rounded-xl bg-white/60 dark:bg-slate-900/40 border border-rose-100 dark:border-rose-900/20">
+                  <div className={`w-5 h-5 rounded-full ${tier.iconBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                    <Check className={`w-3 h-3 ${tier.iconColor}`} />
+                  </div>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {t(
+                      `landing.pricing.features.${feature.key}` as never,
+                      feature.count ? { count: feature.count } : undefined
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Expandable details */}
+        <div className="mt-6 pt-6 border-t border-rose-100 dark:border-rose-900/20">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-2 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
+          >
+            <KeyRound className="w-4 h-4" />
+            {t(expanded ? 'landing.pricing.showLess' : 'landing.pricing.learnMore')}
+            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
+          </button>
+          <div className={`grid transition-all duration-300 ${expanded ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+            <div className="overflow-hidden">
+              <div className="p-4 rounded-xl bg-rose-50/70 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30">
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
+                  {t('landing.pricing.maestroDetailsTitle')}
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {t('landing.pricing.maestroDetails')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -518,10 +686,15 @@ export default function PricingSection() {
         </div>
 
         {/* Pricing cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20 items-stretch">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 items-stretch">
           {tiers.map((tier, index) => (
             <PricingCard key={tier.name} tier={tier} index={index} isAnnual={isAnnual} />
           ))}
+        </div>
+
+        {/* Maestro horizontal card */}
+        <div className="mb-20">
+          <MaestroCard isAnnual={isAnnual} />
         </div>
 
         {/* Upcoming Features */}

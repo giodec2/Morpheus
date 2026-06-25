@@ -1,4 +1,4 @@
-import { X, ArrowUpRight, BookOpen, Crown, Star, Sparkles, Zap, Loader2 } from 'lucide-react';
+import { X, ArrowUpRight, BookOpen, Crown, Star, Sparkles, Zap, Music, Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
 import { useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
@@ -13,7 +13,7 @@ interface UpgradeModalProps {
   onClose: () => void;
 }
 
-const tierOrder: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'novelist', 'architect'];
+const tierOrder: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'maestro', 'novelist', 'architect'];
 
 const tierMeta: Record<string, {
   name: string;
@@ -70,12 +70,24 @@ const tierMeta: Record<string, {
     dotColor: 'bg-purple-500',
     gradient: 'from-purple-500 to-pink-400',
   },
+  maestro: {
+    name: 'Maestro',
+    icon: Music,
+    color: 'text-rose-600 dark:text-rose-400',
+    accentBg: 'bg-rose-50 dark:bg-rose-900/20',
+    accentBorder: 'border-rose-200 dark:border-rose-800',
+    accentText: 'text-rose-600 dark:text-rose-400',
+    btnBg: 'bg-rose-500 hover:bg-rose-600 text-white',
+    dotColor: 'bg-rose-500',
+    gradient: 'from-rose-500 to-pink-400',
+  },
 };
 
 
 
 const prices: Record<string, { monthly: number; annual: number; annualDiscount: number }> = {
   scribe: { monthly: 9, annual: 96, annualDiscount: 11 },
+  maestro: { monthly: 14, annual: 120, annualDiscount: 29 },
   novelist: { monthly: 19, annual: 192, annualDiscount: 16 },
   architect: { monthly: 49, annual: 468, annualDiscount: 20 },
 };
@@ -97,6 +109,12 @@ export default function UpgradeModal({ currentTier, currentCount, maxCount, onCl
       t('upgrade.benefits.allStandardModels'),
     ],
     scribe: [
+      t('upgrade.features.unlimitedBooks'),
+      t('upgrade.features.allFeatures'),
+      t('upgrade.features.tokens250k'),
+      t('upgrade.features.byok'),
+    ],
+    maestro: [
       t('upgrade.benefits.upTo10Books'),
       t('upgrade.features.tokens1M'),
       t('upgrade.benefits.premiumModelsIncluded'),

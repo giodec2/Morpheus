@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'wouter';
-import { Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload, ExternalLink } from 'lucide-react';
+import { Plus, BookOpen, Clock, Trash2, FileText, Moon, Sun, KeyRound, ArrowRight, ArrowUpRight, Cloud, CloudOff, Loader2, Crown, Eye, EyeOff, Pencil, Trash, AlertTriangle, Upload, ExternalLink, HelpCircle } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/common/Toast';
@@ -8,6 +8,7 @@ const AuthModal = lazy(() => import('@/components/Auth/AuthModal'));
 const UpgradeModal = lazy(() => import('@/components/common/UpgradeModal'));
 const TierSelectorModal = lazy(() => import('@/components/common/TierSelectorModal'));
 const ConfirmModal = lazy(() => import('@/components/common/ConfirmModal'));
+const OpenRouterTutorialModal = lazy(() => import('@/components/Dashboard/OpenRouterTutorialModal'));
 import { getAllBooks, createBook, deleteBook, putBook, updateBook } from '@/db/books';
 import { TIER_DEFAULTS } from '@/services/auth';
 import { getCustomerPortalUrl } from '@/services/billing';
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [showKey, setShowKey] = useState(false);
   const [isEditingKey, setIsEditingKey] = useState(false);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
+  const [showOpenRouterTutorial, setShowOpenRouterTutorial] = useState(false);
   const isDark = theme === 'dark';
 
   const handleManageSubscription = async () => {
@@ -332,6 +334,13 @@ export default function DashboardPage() {
                   {t('dashboard.byokActive')}
                 </p>
               </div>
+              <button
+                onClick={() => setShowOpenRouterTutorial(true)}
+                className="p-2 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-800/40 transition-colors text-emerald-600 dark:text-emerald-400"
+                title={t('dashboard.openRouterTutorial.title')}
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
               <div className="flex items-center gap-2">
                 <code className="text-xs font-mono bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1.5 rounded-lg text-emerald-700 dark:text-emerald-300 select-all">
                   {showKey ? openRouterKey : maskedKey(openRouterKey)}
@@ -414,9 +423,18 @@ export default function DashboardPage() {
                 <KeyRound className="w-6 h-6 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-1">
-                  {t('dashboard.welcome')}
-                </h3>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-300 mb-1">
+                    {t('dashboard.welcome')}
+                  </h3>
+                  <button
+                    onClick={() => setShowOpenRouterTutorial(true)}
+                    className="p-2 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-800/50 transition-colors text-primary-600 dark:text-primary-400 -mt-2 -mr-2"
+                    title={t('dashboard.openRouterTutorial.title')}
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </button>
+                </div>
                 <p className="text-sm text-primary-700 dark:text-primary-400 mb-4">
                   {t('dashboard.apiKeyRequired')}
                   <a
@@ -459,7 +477,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             {user && profile && profile.subscriptionTier !== 'architect' && (
               (() => {
-                const tierOrder = ['free', 'scribe', 'novelist', 'architect'];
+                const tierOrder = ['free', 'scribe', 'maestro', 'novelist', 'architect'];
                 const nextTier = tierOrder[tierOrder.indexOf(profile.subscriptionTier) + 1];
                 const styles: Record<string, string> = {
                   scribe:    'bg-primary-700 hover:bg-primary-800 text-white shadow-lg shadow-primary-600/30 ring-1 ring-primary-400/50',
@@ -547,6 +565,10 @@ export default function DashboardPage() {
             currentTier={profile.subscriptionTier}
             onClose={() => setShowTierSelector(false)}
           />
+        )}
+
+        {showOpenRouterTutorial && (
+          <OpenRouterTutorialModal onClose={() => setShowOpenRouterTutorial(false)} />
         )}
 
         {bookToDelete && (

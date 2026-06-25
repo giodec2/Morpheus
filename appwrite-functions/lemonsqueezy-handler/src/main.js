@@ -69,6 +69,12 @@ function getVariantTierMap() {
   if (process.env.LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL) {
     map[process.env.LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL] = 'architect';
   }
+  if (process.env.LEMONSQUEEZY_VARIANT_MAESTRO) {
+    map[process.env.LEMONSQUEEZY_VARIANT_MAESTRO] = 'maestro';
+  }
+  if (process.env.LEMONSQUEEZY_VARIANT_MAESTRO_ANNUAL) {
+    map[process.env.LEMONSQUEEZY_VARIANT_MAESTRO_ANNUAL] = 'maestro';
+  }
   return map;
 }
 

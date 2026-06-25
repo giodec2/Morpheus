@@ -12,6 +12,7 @@ export const TIER_DEFAULTS: Record<UserProfile['subscriptionTier'], { maxBooks: 
   scribe: { maxBooks: 3, maxWeeklyTokensStandard: 500_000, maxWeeklyTokensPremium: 0 },
   novelist: { maxBooks: 10, maxWeeklyTokensStandard: 1_000_000, maxWeeklyTokensPremium: 50_000 },
   architect: { maxBooks: Infinity, maxWeeklyTokensStandard: 5_000_000, maxWeeklyTokensPremium: 500_000 },
+  maestro: { maxBooks: Infinity, maxWeeklyTokensStandard: 250_000, maxWeeklyTokensPremium: 0 },
 };
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -29,7 +30,7 @@ function normalizeProfile(profile: UserProfile): UserProfile {
   const effectiveTier = isExplicitlyInactive ? 'free' : tier;
 
   // Sanitize invalid tier values to 'free' to prevent frontend/backend disagreement
-  const validTiers: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'novelist', 'architect'];
+  const validTiers: UserProfile['subscriptionTier'][] = ['free', 'scribe', 'novelist', 'architect', 'maestro'];
   const sanitizedTier = validTiers.includes(effectiveTier) ? effectiveTier : 'free';
 
   if (sanitizedTier !== tier) {

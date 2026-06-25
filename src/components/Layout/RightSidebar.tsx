@@ -52,8 +52,8 @@ export default function RightSidebar({ onCloseMobile }: RightSidebarProps) {
   const { profile } = useAuthStore();
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
-  const canUseGenres = subscriptionTier === 'novelist' || subscriptionTier === 'architect';
-  const canUseEcho = subscriptionTier === 'architect';
+  const canUseGenres = subscriptionTier === 'novelist' || subscriptionTier === 'architect' || subscriptionTier === 'maestro';
+  const canUseEcho = subscriptionTier === 'architect' || subscriptionTier === 'maestro';
 
   const [input, setInput] = useState('');
   const [showModeSelect, setShowModeSelect] = useState(false);

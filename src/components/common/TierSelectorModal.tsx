@@ -1,4 +1,4 @@
-import { X, Crown, Check, Sparkles, Star, Zap, Loader2, ExternalLink } from 'lucide-react';
+import { X, Crown, Check, Sparkles, Star, Zap, Music, Loader2, ExternalLink } from 'lucide-react';
 import type { UserProfile } from '@/stores/authStore';
 import { useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
@@ -101,6 +101,29 @@ export default function TierSelectorModal({ currentTier, onClose }: TierSelector
         t('upgrade.features.cloudSync'),
       ],
       badge: t('states.popular'),
+    },
+    {
+      key: 'maestro',
+      name: 'Maestro',
+      price: 14,
+      annualPrice: 120,
+      annualDiscount: 29,
+      icon: Music,
+      color: 'text-rose-600 dark:text-rose-400',
+      accentBg: 'bg-rose-50 dark:bg-rose-900/20',
+      accentBorder: 'border-rose-200 dark:border-rose-800',
+      accentText: 'text-rose-600 dark:text-rose-400',
+      checkBg: 'bg-rose-100 dark:bg-rose-900/30',
+      checkColor: 'text-rose-600 dark:text-rose-400',
+      btnBg: 'bg-rose-500 hover:bg-rose-600 text-white',
+      badgeBg: 'bg-rose-500',
+      gradient: 'from-rose-500 to-pink-400',
+      features: [
+        t('upgrade.features.unlimitedBooks'),
+        t('upgrade.features.tokens250k'),
+        t('upgrade.features.allFeatures'),
+        t('upgrade.features.byok'),
+      ],
     },
     {
       key: 'novelist',

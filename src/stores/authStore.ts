@@ -21,7 +21,7 @@ export interface UserProfile {
   $id: string;
   email: string;
   name: string;
-  subscriptionTier: 'free' | 'scribe' | 'novelist' | 'architect';
+  subscriptionTier: 'free' | 'scribe' | 'novelist' | 'architect' | 'maestro';
   subscriptionStatus: 'active' | 'cancelled' | 'past_due' | 'expired' | 'on_trial' | 'unpaid' | 'paused' | null;
   subscriptionId: string | null;
   subscriptionRenewsAt: number | null;

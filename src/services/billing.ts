@@ -52,6 +52,10 @@ export const TIER_VARIANT_MAP: Record<string, Record<BillingInterval, string>> =
     monthly: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_ARCHITECT || '',
     annual: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_ARCHITECT_ANNUAL || '',
   },
+  maestro: {
+    monthly: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_MAESTRO || '',
+    annual: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_MAESTRO_ANNUAL || '',
+  },
 };
 
 export function getVariantIdForTier(tier: string, interval: BillingInterval = 'monthly'): string | null {
@@ -97,6 +101,8 @@ export function isBillingConfigured(): boolean {
     TIER_VARIANT_MAP.novelist.monthly &&
     TIER_VARIANT_MAP.novelist.annual &&
     TIER_VARIANT_MAP.architect.monthly &&
-    TIER_VARIANT_MAP.architect.annual
+    TIER_VARIANT_MAP.architect.annual &&
+    TIER_VARIANT_MAP.maestro.monthly &&
+    TIER_VARIANT_MAP.maestro.annual
   );
 }

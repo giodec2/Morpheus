@@ -31,7 +31,7 @@ export default function ChapterHeader({ chapter, saveStatus, isSummaryOpen, setI
   const [isGenerating, setIsGenerating] = useState(false);
 
   const subscriptionTier = profile?.subscriptionTier || 'free';
-  const canUseEcho = subscriptionTier === 'architect';
+  const canUseEcho = subscriptionTier === 'architect' || subscriptionTier === 'maestro';
   const echoEnabled = adaptiveMemory && canUseEcho;
   const [editTitle, setEditTitle] = useState(chapter.title);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
