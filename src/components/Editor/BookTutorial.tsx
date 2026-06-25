@@ -11,23 +11,23 @@ interface BookTutorialProps {
 const TUTORIAL_STEPS = [
   {
     icon: BookOpen,
-    titleKey: 'editor.tutorial.welcomeTitle',
-    descKey: 'editor.tutorial.welcomeDesc',
+    titleKey: 'app.tutorial.welcomeTitle',
+    descKey: 'app.tutorial.welcomeDesc',
   },
   {
     icon: PenLine,
-    titleKey: 'editor.tutorial.writeTitle',
-    descKey: 'editor.tutorial.writeDesc',
+    titleKey: 'app.tutorial.writeTitle',
+    descKey: 'app.tutorial.writeDesc',
   },
   {
     icon: MessageCircle,
-    titleKey: 'editor.tutorial.chatTitle',
-    descKey: 'editor.tutorial.chatDesc',
+    titleKey: 'app.tutorial.chatTitle',
+    descKey: 'app.tutorial.chatDesc',
   },
   {
     icon: Library,
-    titleKey: 'editor.tutorial.loreTitle',
-    descKey: 'editor.tutorial.loreDesc',
+    titleKey: 'app.tutorial.loreTitle',
+    descKey: 'app.tutorial.loreDesc',
   },
 ] as const;
 
@@ -41,7 +41,7 @@ export default function BookTutorial({ bookTitle, onClose }: BookTutorialProps) 
   const isLast = step === TUTORIAL_STEPS.length - 1;
 
   return (
-    <Modal onClose={onClose} ariaLabel={t('editor.tutorial.title')} className="max-w-md">
+    <Modal onClose={onClose} ariaLabel={t('app.tutorial.title')} className="max-w-md">
       <div className="p-6">
         <div className="flex items-start justify-between mb-6">
           <div className="p-3 bg-primary-100 dark:bg-primary-800/50 rounded-xl">
@@ -73,7 +73,7 @@ export default function BookTutorial({ bookTitle, onClose }: BookTutorialProps) 
                   ? 'bg-primary-500 w-5'
                   : 'bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600'
               }`}
-              aria-label={t('editor.tutorial.step', { number: i + 1 })}
+              aria-label={t('app.tutorial.step', { number: i + 1 })}
             />
           ))}
         </div>
@@ -83,7 +83,7 @@ export default function BookTutorial({ bookTitle, onClose }: BookTutorialProps) 
             onClick={onClose}
             className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
           >
-            {t('editor.tutorial.skip')}
+            {t('app.tutorial.skip')}
           </button>
 
           <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export default function BookTutorial({ bookTitle, onClose }: BookTutorialProps) 
                 className="btn-secondary flex items-center gap-1 text-sm"
               >
                 <ChevronLeft className="w-4 h-4" />
-                {t('editor.tutorial.prev')}
+                {t('app.tutorial.prev')}
               </button>
             )}
             <button
@@ -106,7 +106,7 @@ export default function BookTutorial({ bookTitle, onClose }: BookTutorialProps) 
               }}
               className="btn-primary flex items-center gap-1 text-sm"
             >
-              {isLast ? t('editor.tutorial.startWriting') : t('editor.tutorial.next')}
+              {isLast ? t('app.tutorial.startWriting') : t('app.tutorial.next')}
               {!isLast && <ChevronRight className="w-4 h-4" />}
             </button>
           </div>
