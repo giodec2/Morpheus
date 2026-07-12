@@ -74,17 +74,17 @@ export const DEFAULT_PREMIUM_MODEL = 'deepseek/deepseek-v4-pro';
 
 export const MODEL_DESCRIPTION_KEYS: Record<string, TranslationKey> = {
   // Standard
-  'openai/gpt-5-nano': 'chat.modelDescriptions.openai/gpt-5-nano',
-  'google/gemma-4-26b-a4b-it': 'chat.modelDescriptions.google/gemma-4-26b-a4b-it',
-  'deepseek/deepseek-v4-flash': 'chat.modelDescriptions.deepseek/deepseek-v4-flash',
-  'google/gemini-2.5-flash-lite': 'chat.modelDescriptions.google/gemini-2.5-flash-lite',
-  'qwen/qwen3.5-flash-02-23': 'chat.modelDescriptions.qwen/qwen3.5-flash-02-23',
+  'openai/gpt-5-nano': 'chat.modelDescriptions.gpt5Nano',
+  'google/gemma-4-26b-a4b-it': 'chat.modelDescriptions.gemma4',
+  'deepseek/deepseek-v4-flash': 'chat.modelDescriptions.deepseekV4Flash',
+  'google/gemini-2.5-flash-lite': 'chat.modelDescriptions.geminiFlash',
+  'qwen/qwen3.5-flash-02-23': 'chat.modelDescriptions.qwenFlash',
   // Premium
-  'openai/gpt-5.6-luna': 'chat.modelDescriptions.openai/gpt-5.6-luna',
-  'x-ai/grok-4.3': 'chat.modelDescriptions.x-ai/grok-4.3',
-  'moonshotai/kimi-k2.5': 'chat.modelDescriptions.moonshotai/kimi-k2.5',
-  'z-ai/glm-5.1': 'chat.modelDescriptions.z-ai/glm-5.1',
-  'deepseek/deepseek-v4-pro': 'chat.modelDescriptions.deepseek/deepseek-v4-pro',
+  'openai/gpt-5.6-luna': 'chat.modelDescriptions.gptLuna',
+  'x-ai/grok-4.3': 'chat.modelDescriptions.grok',
+  'moonshotai/kimi-k2.5': 'chat.modelDescriptions.kimi',
+  'z-ai/glm-5.1': 'chat.modelDescriptions.glm',
+  'deepseek/deepseek-v4-pro': 'chat.modelDescriptions.deepseekV4Pro',
 };
 
 export interface LocalizedModelDef {

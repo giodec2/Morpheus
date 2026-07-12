@@ -33,27 +33,27 @@ export const chat = {
         kimi: 'Kimi',
       },
       modelDescriptions: {
-        'openai/gpt-5-nano':
+        gpt5Nano:
           "OpenAI's smallest model. Fast and agile for quick dialogue passes, brainstorming sparks, and iterative drafting. Ideal when you want immediate feedback without overthinking.",
-        'google/gemma-4-26b-a4b-it':
+        gemma4:
           'An incredibly fast and creative model. Strong narrative coherence and natural character voices. A solid daily co-writer for any genre.',
-        'deepseek/deepseek-v4-flash':
+        deepseekV4Flash:
           'A fast model with a huge context window. Perfect for high-volume drafting sessions, honest feedback, and processing long manuscripts in one go.',
-        'google/gemini-2.5-flash-lite':
+        geminiFlash:
           "Google's speed-focused model. Lightning-fast responses ideal for rapid brainstorming; it can also reason quickly, great for when momentum matters.",
-        'qwen/qwen3.5-flash-02-23':
+        qwenFlash:
           'An efficient generalist with strong reasoning. Balanced between creative and analytical tasks — a reliable daily driver.',
-        'openai/gpt-5.4-mini':
+        gpt54Mini:
           "OpenAI's compact reasoning model. Excellent for structured feedback, continuity checking, and precise prose refinement. When reliability is the priority.",
-        'openai/gpt-5.6-luna':
+        gptLuna:
           "OpenAI's Luna model. Balanced creativity and reasoning for long-form drafting, rich dialogue, and detailed scene refinement.",
-        'x-ai/grok-4.3':
+        grok:
           'Fast and decisive, with a bold, distinctive voice. Best for incisive dialogue and irreverent characters rather than delicate prose. Huge context window.',
-        'moonshotai/kimi-k2.5':
+        kimi:
           'A sophisticated generalist with a spark of deep creativity. Great for balancing complex, analytical plots with elegant character dialogue.',
-        'z-ai/glm-5.1':
+        glm:
           'A versatile literary powerhouse. Excels at rich prose, intricate plot development, and long-range narrative planning. Built for ambitious novel writing.',
-        'deepseek/deepseek-v4-pro':
+        deepseekV4Pro:
           'Flagship-level reasoning model. Excels at complex plot analysis, deep character psychology, and multi-level continuity control. For when the story demands nuance.',
       },
       modes: {
@@ -104,27 +104,27 @@ export const chat = {
         kimi: 'Kimi',
       },
       modelDescriptions: {
-        'openai/gpt-5-nano':
+        gpt5Nano:
           "Il modello più piccolo di OpenAI. Veloce e agile per passaggi rapidi di dialogo, spunti creativi e stesura iterativa. Ideale quando vuoi feedback immediato senza pensarci troppo.",
-        'google/gemma-4-26b-a4b-it':
+        gemma4:
           'Modello incredibilmente veloce e creativo. Forte coerenza narrativa e voci di personaggi naturali. Un solido coautore quotidiano per qualsiasi genere.',
-        'deepseek/deepseek-v4-flash':
+        deepseekV4Flash:
           'Modello veloce con una finestra di contesto enorme. Perfetto per sessioni di stesura molto intensive, feedback onesto ed elaborazione di manoscritti lunghi in una sola passata.',
-        'google/gemini-2.5-flash-lite':
+        geminiFlash:
           "Il modello di Google incentrato sulla velocità. Risposte fulminee ideali per brainstorming rapido; sa anche ragionare velocemente, da usare quando conta lo slancio.",
-        'qwen/qwen3.5-flash-02-23':
+        qwenFlash:
           'Un generalista efficiente con un ragionamento solido. Equilibrato tra compiti creativi e analitici — uno strumento quotidiano affidabile.',
-        'openai/gpt-5.4-mini':
+        gpt54Mini:
           "Modello compatto di ragionamento di OpenAI. Eccellente per feedback strutturato, controllo della continuità e rifinitura precisa della prosa. Quando la priorità è l'affidabilità.",
-        'openai/gpt-5.6-luna':
+        gptLuna:
           "Il modello Luna di OpenAI. Equilibrato tra creatività e ragionamento per stesura lunga, dialoghi ricchi e rifinitura dettagliata delle scene.",
-        'x-ai/grok-4.3':
+        grok:
           'Veloce e deciso, con una voce audace e distintiva. Meglio per dialoghi incisivi e personaggi irriverenti che per prosa delicata. Finestra di contesto enorme.',
-        'moonshotai/kimi-k2.5':
+        kimi:
           'Generalista sofisticato con una scintilla di profonda creatività. Ottimo per bilanciare trame complesse e analitiche con dialoghi eleganti tra i personaggi.',
-        'z-ai/glm-5.1':
+        glm:
           'Una potenza letteraria versatile. Eccelle in prosa ricca, sviluppo intricato della trama e pianificazione narrativa a lungo termine. Pensato per la scrittura di romanzi ambiziosi.',
-        'deepseek/deepseek-v4-pro':
+        deepseekV4Pro:
           'Modello di ragionamento di punta. Eccelle in analisi complesse della trama, psicologia profonda dei personaggi e controllo della continuità su più livelli. Per quando la storia richiede sfumature.',
       },
       modes: {
