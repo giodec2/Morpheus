@@ -1,6 +1,6 @@
 # Appwrite Setup Guide for Morpheus
 
-The Appwrite SDK is already installed and configured with your project credentials. Here's what's left for you to do in the Appwrite Console.
+This guide explains how to configure your own Appwrite backend for Morpheus.
 
 ## 1. Enable Authentication
 
@@ -12,14 +12,14 @@ The Appwrite SDK is already installed and configured with your project credentia
 
 1. Go to **Databases**.
 2. Click **Create database**.
-3. Name it `morpheus`.
-4. Copy the Database ID — you'll need it if you ever want to use a `.env` override.
+3. Name it (e.g., `morpheus`).
+4. Copy the Database ID — you will need it for your `.env` file.
 
-## 3. Create Tables
+## 3. Create Collections
 
-Create these **5 tables** inside your `morpheus` database.
+Create these **5 collections** inside your database.
 
-For each table:
+For each collection:
 - Enable **Document Security** (so the app can set per-document permissions).
 - Under **Permissions**, add: `create("users")`, `read("users")`, `update("users")`, `delete("users")`.
 - The app automatically assigns each document to its owner on creation.
@@ -29,9 +29,7 @@ For each table:
 > - **Text** = longer content up to ~65KB (summaries, descriptions, notes)
 > - **Longtext** = very large content up to 4GB (chapter content JSON)
 
----
-
-### Table: `books`
+### Collection: `books`
 
 | Column      | Type      | Size / Default | Required |
 |-------------|-----------|----------------|----------|
@@ -40,9 +38,7 @@ For each table:
 | createdAt   | Integer   | —              | yes      |
 | updatedAt   | Integer   | —              | yes      |
 
----
-
-### Table: `chapters`
+### Collection: `chapters`
 
 | Column             | Type      | Size / Default | Required |
 |--------------------|-----------|----------------|----------|
@@ -60,9 +56,7 @@ For each table:
 > `content` stores TipTap JSON (can get large — use **Longtext**).
 > `taggedCharacterIds` stores a JSON array string.
 
----
-
-### Table: `characters`
+### Collection: `characters`
 
 | Column      | Type      | Size / Default | Required |
 |-------------|-----------|----------------|----------|
@@ -78,9 +72,7 @@ For each table:
 
 > `relations` stores a JSON array string.
 
----
-
-### Table: `lore_bibles`
+### Collection: `lore_bibles`
 
 | Column    | Type      | Size / Default | Required |
 |-----------|-----------|----------------|----------|
@@ -91,9 +83,7 @@ For each table:
 
 > `content` stores TipTap JSON (use **Longtext**).
 
----
-
-### Table: `profiles`
+### Collection: `profiles`
 
 | Column                  | Type      | Size / Default | Required |
 |-------------------------|-----------|----------------|----------|
@@ -127,8 +117,6 @@ For `profiles`, the document ID is set to match the user's Appwrite ID automatic
 | Architect  | `architect`      | ∞        | 5,000,000              | 500,000                |
 | Maestro    | `maestro`        | ∞        | 250,000                | 0                      |
 
----
-
 ## 4. Add Your Platform
 
 1. Go to **Overview → Platforms** (or **Add Platform**).
@@ -140,16 +128,14 @@ For `profiles`, the document ID is set to match the user's Appwrite ID automatic
 
 > **CORS errors?** This step is what prevents them. Make sure both localhost and your production domain are added.
 
----
+## 5. Environment File
 
-## 5. Environment File (Optional)
-
-Your endpoint and project ID are already hardcoded in `src/lib/appwrite.ts`, so the app works without a `.env` file. If you ever want to override them (e.g., switching to a different Appwrite project), create a `.env` in the project root:
+Create a `.env` in the project root and fill in your own values from the Appwrite Console:
 
 ```env
 VITE_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
-VITE_APPWRITE_PROJECT_ID=YOUR_APPWRITE_PROJECT_ID
-VITE_APPWRITE_DATABASE_ID=morpheus
+VITE_APPWRITE_PROJECT_ID=your_project_id_here
+VITE_APPWRITE_DATABASE_ID=your_database_id_here
 VITE_APPWRITE_COLLECTION_BOOKS=books
 VITE_APPWRITE_COLLECTION_CHAPTERS=chapters
 VITE_APPWRITE_COLLECTION_CHARACTERS=characters
@@ -158,8 +144,6 @@ VITE_APPWRITE_COLLECTION_PROFILES=profiles
 ```
 
 Remember to restart the dev server after creating or editing `.env`.
-
----
 
 ## How Sync Works
 

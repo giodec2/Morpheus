@@ -1,5 +1,7 @@
 # Payment Setup
 
+This guide explains how to wire Morpheus to your own LemonSqueezy account and Appwrite functions.
+
 ## 1. Get Credentials from LemonSqueezy Dashboard
 
 | Credential | Where to find it |
@@ -13,7 +15,7 @@
 
 Go to **Appwrite Console** → your project → **Functions** → `lemonsqueezy-handler` → **Settings** → **Variables**
 
-```
+```env
 APPWRITE_FUNCTION_API_ENDPOINT=https://cloud.appwrite.io/v1
 APPWRITE_FUNCTION_PROJECT_ID=your_project_id
 APPWRITE_API_KEY=your_appwrite_api_key
@@ -49,6 +51,7 @@ VITE_APPWRITE_COLLECTION_CHARACTERS=characters
 VITE_APPWRITE_COLLECTION_LORE_BIBLES=lore_bibles
 VITE_APPWRITE_COLLECTION_PROFILES=profiles
 VITE_APPWRITE_FUNCTION_ID=your_function_id
+VITE_APPWRITE_FUNCTION_CREATE_CHECKOUT_ID=your_function_id
 VITE_LEMONSQUEEZY_VARIANT_SCRIBE=your_scribe_monthly_variant_id
 VITE_LEMONSQUEEZY_VARIANT_NOVELIST=your_novelist_monthly_variant_id
 VITE_LEMONSQUEEZY_VARIANT_ARCHITECT=your_architect_monthly_variant_id
@@ -61,7 +64,7 @@ VITE_LEMONSQUEEZY_VARIANT_MAESTRO_ANNUAL=your_maestro_annual_variant_id
 
 ## 4. Webhook URL
 
-In LemonSqueezy Dashboard → Webhooks, set the URL to:
+In LemonSqueezy Dashboard → Webhooks, set the URL to your Appwrite function execution endpoint, for example:
 
 ```
 https://cloud.appwrite.io/v1/functions/lemonsqueezy-handler/executions

@@ -1,9 +1,0 @@
-{
-  "name": "hosted-ai-proxy",
-  "version": "1.0.0",
-  "main": "src/main.js",
-  "type": "module",
-  "dependencies": {
-    "node-appwrite": "^15.0.0"
-  }
-}

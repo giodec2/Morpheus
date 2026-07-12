@@ -34,9 +34,16 @@ dist-ssr
 bfg-*.jar
 morpheus-mirror.git*
 
+# Tool executables / deployment archives at repo root
+/*.jar
+/*.tar.gz
+
 # Embedded repo (accidental)
 /Morpheus/
 
 # Function deployment archives (keep source, not tarballs)
 appwrite-functions/**/*.tar.gz
 appwrite-functions/**/package-lock.json
+
+# Local backup of appwrite-functions source before removal from repo
+appwrite-functions-source-backup/
