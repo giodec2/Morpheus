@@ -51,8 +51,8 @@ export const PREMIUM_MODELS: ModelDef[] = [
     badge: 'chat.models.recommended',
   },
   {
-    value: 'openai/gpt-5.4-mini',
-    label: 'chat.models.gpt54Mini',
+    value: 'openai/gpt-5.6-luna',
+    label: 'chat.models.gptLuna',
     tier: 'premium',
   },
   {
@@ -80,7 +80,7 @@ export const MODEL_DESCRIPTION_KEYS: Record<string, TranslationKey> = {
   'google/gemini-2.5-flash-lite': 'chat.modelDescriptions.google/gemini-2.5-flash-lite',
   'qwen/qwen3.5-flash-02-23': 'chat.modelDescriptions.qwen/qwen3.5-flash-02-23',
   // Premium
-  'openai/gpt-5.4-mini': 'chat.modelDescriptions.openai/gpt-5.4-mini',
+  'openai/gpt-5.6-luna': 'chat.modelDescriptions.openai/gpt-5.6-luna',
   'x-ai/grok-4.3': 'chat.modelDescriptions.x-ai/grok-4.3',
   'moonshotai/kimi-k2.5': 'chat.modelDescriptions.moonshotai/kimi-k2.5',
   'z-ai/glm-5.1': 'chat.modelDescriptions.z-ai/glm-5.1',

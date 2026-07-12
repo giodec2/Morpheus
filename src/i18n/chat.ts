@@ -43,7 +43,7 @@ export const chat = {
         'qwen/qwen3.5-flash-02-23':
           'An efficient generalist with strong reasoning. Balanced between creative and analytical tasks — a reliable daily driver.',
         'openai/gpt-5.4-mini':
-          "OpenAI's frontier all-rounder. Excellent for structured feedback, continuity checking, and precise prose refinement. When reliability is the priority.",
+          "OpenAI's new Luna model. Excellent for structured feedback, continuity checking, and precise prose refinement with new creativity. When reliability is the priority.",
         'x-ai/grok-4.3':
           'Fast and decisive, with a bold, distinctive voice. Best for incisive dialogue and irreverent characters rather than delicate prose. Huge context window.',
         'moonshotai/kimi-k2.5':
