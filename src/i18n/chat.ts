@@ -28,6 +28,7 @@ export const chat = {
         deepseekV4Pro: 'DeepSeek V4 Pro',
         glm: 'GLM',
         gpt54Mini: 'GPT-5.4 Mini',
+        gptLuna: 'GPT-5.6 Luna',
         grok: 'Grok',
         kimi: 'Kimi',
       },
@@ -43,7 +44,9 @@ export const chat = {
         'qwen/qwen3.5-flash-02-23':
           'An efficient generalist with strong reasoning. Balanced between creative and analytical tasks — a reliable daily driver.',
         'openai/gpt-5.4-mini':
-          "OpenAI's new Luna model. Excellent for structured feedback, continuity checking, and precise prose refinement with new creativity. When reliability is the priority.",
+          "OpenAI's compact reasoning model. Excellent for structured feedback, continuity checking, and precise prose refinement. When reliability is the priority.",
+        'openai/gpt-5.6-luna':
+          "OpenAI's Luna model. Balanced creativity and reasoning for long-form drafting, rich dialogue, and detailed scene refinement.",
         'x-ai/grok-4.3':
           'Fast and decisive, with a bold, distinctive voice. Best for incisive dialogue and irreverent characters rather than delicate prose. Huge context window.',
         'moonshotai/kimi-k2.5':
@@ -96,6 +99,7 @@ export const chat = {
         deepseekV4Pro: 'DeepSeek V4 Pro',
         glm: 'GLM',
         gpt54Mini: 'GPT-5.4 Mini',
+        gptLuna: 'GPT-5.6 Luna',
         grok: 'Grok',
         kimi: 'Kimi',
       },
@@ -111,7 +115,9 @@ export const chat = {
         'qwen/qwen3.5-flash-02-23':
           'Un generalista efficiente con un ragionamento solido. Equilibrato tra compiti creativi e analitici — uno strumento quotidiano affidabile.',
         'openai/gpt-5.4-mini':
-          "Modello all'avanguardia e versatile di OpenAI. Eccellente per feedback strutturato, controllo della continuità e rifinitura precisa della prosa. Quando la priorità è l'affidabilità.",
+          "Modello compatto di ragionamento di OpenAI. Eccellente per feedback strutturato, controllo della continuità e rifinitura precisa della prosa. Quando la priorità è l'affidabilità.",
+        'openai/gpt-5.6-luna':
+          "Il modello Luna di OpenAI. Equilibrato tra creatività e ragionamento per stesura lunga, dialoghi ricchi e rifinitura dettagliata delle scene.",
         'x-ai/grok-4.3':
           'Veloce e deciso, con una voce audace e distintiva. Meglio per dialoghi incisivi e personaggi irriverenti che per prosa delicata. Finestra di contesto enorme.',
         'moonshotai/kimi-k2.5':
