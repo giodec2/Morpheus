@@ -91,7 +91,7 @@ export function useOpenRouter() {
       let result = exec;
 
       // Short initial delay to avoid rare race where the execution record isn't immediately queryable
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 1000));
 
       while (
         result.status !== 'completed' &&
@@ -102,11 +102,27 @@ export function useOpenRouter() {
           console.log('[Hosted AI] Polling aborted by user');
           return;
         }
-        result = await functions.getExecution({
-          functionId: HOSTED_AI_FUNCTION_ID,
-          executionId: exec.$id,
-        });
-        console.log('[Hosted AI] Poll status:', result.status);
+
+        try {
+          result = await functions.getExecution({
+            functionId: HOSTED_AI_FUNCTION_ID,
+            executionId: exec.$id,
+          });
+          console.log('[Hosted AI] Poll status:', result.status);
+        } catch (pollErr) {
+          // 404 right after creation is common on Appwrite free tier due to
+          // eventual consistency — the execution record isn't queryable yet.
+          // Keep polling instead of failing.
+          const statusCode = (pollErr as { code?: number }).code;
+          const message = (pollErr as Error).message || '';
+          const isNotFound = statusCode === 404 || message.toLowerCase().includes('could not be found');
+          if (isNotFound) {
+            console.log('[Hosted AI] Execution not queryable yet, retrying...');
+          } else {
+            throw pollErr;
+          }
+        }
+
         if (result.status !== 'completed' && result.status !== 'failed') {
           await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
         }
