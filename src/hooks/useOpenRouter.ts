@@ -56,12 +56,12 @@ export function useOpenRouter() {
     abortRef.current = new AbortController();
 
     try {
-      let jwt: string;
+      let sessionSecret: string;
       try {
-        const jwtResponse = await account.createJWT();
-        jwt = jwtResponse.jwt;
-      } catch (jwtErr) {
-        console.error('[Hosted AI] Failed to create JWT:', jwtErr);
+        const session = await account.getSession('current');
+        sessionSecret = session.secret;
+      } catch (sessionErr) {
+        console.error('[Hosted AI] Failed to get session:', sessionErr);
         onError(t('errors.signInForHostedAI'));
         return;
       }
@@ -70,7 +70,7 @@ export function useOpenRouter() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwt}`,
+          Authorization: `Bearer ${sessionSecret}`,
         },
         body: JSON.stringify({
           model: defaultModel,
