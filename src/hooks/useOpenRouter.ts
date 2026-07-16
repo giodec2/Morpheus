@@ -76,13 +76,22 @@ export function useOpenRouter() {
         method: ExecutionMethod.POST,
       });
 
-      console.log('[Hosted AI] Async execution started:', exec.$id, 'status:', exec.status);
+      console.log('[Hosted AI] Async execution started:', exec.$id, 'status:', exec.status, 'exec:', exec);
+
+      if (!exec.$id) {
+        console.error('[Hosted AI] Execution missing $id:', exec);
+        onError(t('errors.hostedAIRequestFailed', { code: 'missing-exec-id' }));
+        return;
+      }
 
       // Poll until the async function completes or fails
       const POLL_INTERVAL_MS = 1500;
       const MAX_POLL_MS = 5 * 60 * 1000; // 5 minutes
       const startTime = Date.now();
       let result = exec;
+
+      // Short initial delay to avoid rare race where the execution record isn't immediately queryable
+      await new Promise((r) => setTimeout(r, 500));
 
       while (
         result.status !== 'completed' &&
@@ -93,12 +102,14 @@ export function useOpenRouter() {
           console.log('[Hosted AI] Polling aborted by user');
           return;
         }
-        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
         result = await functions.getExecution({
           functionId: HOSTED_AI_FUNCTION_ID,
           executionId: exec.$id,
         });
         console.log('[Hosted AI] Poll status:', result.status);
+        if (result.status !== 'completed' && result.status !== 'failed') {
+          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+        }
       }
 
       if (result.status !== 'completed' && result.status !== 'failed') {
