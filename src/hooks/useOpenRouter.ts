@@ -1,14 +1,11 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
 import OpenAI from 'openai';
-import { ExecutionMethod } from 'appwrite';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
-import { functions } from '@/lib/appwrite';
+import { account } from '@/lib/appwrite';
 import { translate } from '@/i18n/translate';
 
 import type { AIMode } from '@/types';
-
-const HOSTED_AI_FUNCTION_ID = import.meta.env.VITE_APPWRITE_FUNCTION_ID || '';
 
 export function useOpenRouter() {
   const { openRouterKey, defaultModel, temperature, maxTokens, aiMode, uiLocale } = useSettingsStore();
@@ -54,118 +51,55 @@ export function useOpenRouter() {
       onError(t('errors.signInForHostedAI'));
       return;
     }
-    if (!HOSTED_AI_FUNCTION_ID) {
-      onError(t('errors.hostedAINotConfigured'));
-      return;
-    }
 
     setIsStreaming(true);
     abortRef.current = new AbortController();
 
     try {
-      const exec = await functions.createExecution({
-        functionId: HOSTED_AI_FUNCTION_ID,
+      let jwt: string;
+      try {
+        const jwtResponse = await account.createJWT();
+        jwt = jwtResponse.jwt;
+      } catch (jwtErr) {
+        console.error('[Hosted AI] Failed to create JWT:', jwtErr);
+        onError(t('errors.signInForHostedAI'));
+        return;
+      }
+
+      const response = await fetch('/api/ai-proxy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwt}`,
+        },
         body: JSON.stringify({
           model: defaultModel,
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
           temperature,
           maxTokens,
         }),
-        async: true, // async execution to avoid 30s sync timeout
-        xpath: '/',
-        method: ExecutionMethod.POST,
+        signal: abortRef.current.signal,
       });
 
-      console.log('[Hosted AI] Async execution started:', exec.$id, 'status:', exec.status, 'exec:', exec);
-
-      if (!exec.$id) {
-        console.error('[Hosted AI] Execution missing $id:', exec);
-        onError(t('errors.hostedAIRequestFailed', { code: 'missing-exec-id' }));
-        return;
-      }
-
-      // Poll until the async function completes or fails
-      const POLL_INTERVAL_MS = 1500;
-      const MAX_POLL_MS = 5 * 60 * 1000; // 5 minutes
-      const startTime = Date.now();
-      let result = exec;
-
-      // Short initial delay to avoid rare race where the execution record isn't immediately queryable
-      await new Promise((r) => setTimeout(r, 1000));
-
-      while (
-        result.status !== 'completed' &&
-        result.status !== 'failed' &&
-        Date.now() - startTime < MAX_POLL_MS
-      ) {
-        if (abortRef.current?.signal.aborted) {
-          console.log('[Hosted AI] Polling aborted by user');
-          return;
-        }
-
-        try {
-          result = await functions.getExecution({
-            functionId: HOSTED_AI_FUNCTION_ID,
-            executionId: exec.$id,
-          });
-          console.log('[Hosted AI] Poll status:', result.status);
-        } catch (pollErr) {
-          // 404 right after creation is common on Appwrite free tier due to
-          // eventual consistency — the execution record isn't queryable yet.
-          // Keep polling instead of failing.
-          const statusCode = (pollErr as { code?: number }).code;
-          const message = (pollErr as Error).message || '';
-          const isNotFound = statusCode === 404 || message.toLowerCase().includes('could not be found');
-          if (isNotFound) {
-            console.log('[Hosted AI] Execution not queryable yet, retrying...');
-          } else {
-            throw pollErr;
-          }
-        }
-
-        if (result.status !== 'completed' && result.status !== 'failed') {
-          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-        }
-      }
-
-      if (result.status !== 'completed' && result.status !== 'failed') {
-        onError(t('errors.hostedAITimedOut'));
-        return;
-      }
-
-      console.log('[Hosted AI] Execution result:', result);
-
-      if (result.responseStatusCode >= 400) {
-        let errorMsg = t('errors.hostedAIRequestFailed', { code: result.responseStatusCode });
-        const rawBody = result.responseBody || '';
-        try {
-          const errorBody = JSON.parse(rawBody);
-          errorMsg = errorBody.error || errorBody.message || errorMsg;
-        } catch {
-          errorMsg = rawBody ? `${errorMsg} ${rawBody.slice(0, 300)}` : errorMsg;
-        }
-        console.error('[Hosted AI] Function error:', {
-          status: result.responseStatusCode,
-          body: rawBody,
-          parsed: errorMsg,
-          functionId: HOSTED_AI_FUNCTION_ID,
-        });
-        onError(errorMsg);
-        return;
-      }
-
-      let body;
-      const rawResponseBody = result.responseBody || '';
+      let body: {
+        error?: string;
+        content?: string;
+        tokensUsed?: number;
+        weeklyTokensUsed?: number;
+        weeklyTokensUsedPremium?: number;
+      };
       try {
-        body = JSON.parse(rawResponseBody);
+        body = await response.json();
       } catch {
-        console.error('[Hosted AI] Invalid JSON response. Status:', result.responseStatusCode, 'Body:', JSON.stringify(rawResponseBody));
+        console.error('[Hosted AI] Invalid JSON response. Status:', response.status);
         onError(t('errors.invalidAIResponse'));
         return;
       }
 
-      if (body.error) {
-        onError(body.error);
+      if (!response.ok || body.error) {
+        const errorMsg = body.error || t('errors.hostedAIRequestFailed', { code: response.status });
+        console.error('[Hosted AI] Proxy error:', { status: response.status, body });
+        onError(errorMsg);
         return;
       }
 
@@ -193,11 +127,7 @@ export function useOpenRouter() {
     } catch (err) {
       if ((err as Error).name === 'AbortError') return;
       const msg = (err as Error).message || 'Hosted AI request failed.';
-      console.error('[Hosted AI] Exception:', {
-        message: msg,
-        functionId: HOSTED_AI_FUNCTION_ID,
-        error: err,
-      });
+      console.error('[Hosted AI] Exception:', { message: msg, error: err });
       onError(msg);
     } finally {
       setIsStreaming(false);
