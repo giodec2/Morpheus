@@ -124,22 +124,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  // Verify Appwrite session from Authorization header
+  // Verify Appwrite JWT from Authorization header
   const authHeader = req.headers.authorization || '';
-  const sessionSecret = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  if (!sessionSecret) {
+  const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!jwt) {
     res.status(401).json({ error: 'Authentication required' });
     return;
   }
 
   let userId: string;
   try {
-    const sessionClient = new Client().setEndpoint(env.endpoint).setProject(env.projectId).setSession(sessionSecret);
-    const account = new Account(sessionClient);
+    const jwtClient = new Client().setEndpoint(env.endpoint).setProject(env.projectId).setJWT(jwt);
+    const account = new Account(jwtClient);
     const user = await account.get();
     userId = user.$id;
   } catch (err) {
-    console.error(`Session verification failed: ${(err as Error).message || err}`);
+    console.error(`JWT verification failed: ${(err as Error).message || err}`);
     res.status(401).json({ error: 'Invalid or expired session' });
     return;
   }
