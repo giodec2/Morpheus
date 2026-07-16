@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
 import OpenAI from 'openai';
+import { ExecutionMethod } from 'appwrite';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { functions } from '@/lib/appwrite';
@@ -62,15 +63,43 @@ export function useOpenRouter() {
     abortRef.current = new AbortController();
 
     try {
-      const result = await functions.createExecution(
+      const exec = await functions.createExecution(
         HOSTED_AI_FUNCTION_ID,
         JSON.stringify({
           model: defaultModel,
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
           temperature,
           maxTokens,
-        })
+        }),
+        true, // async execution to avoid 30s sync timeout
+        '/',
+        ExecutionMethod.POST
       );
+
+      console.log('[Hosted AI] Async execution started:', exec.$id);
+
+      // Poll until the async function completes or fails
+      const POLL_INTERVAL_MS = 1500;
+      const MAX_POLL_MS = 5 * 60 * 1000; // 5 minutes
+      const startTime = Date.now();
+      let result = exec;
+
+      while (
+        result.status !== 'completed' &&
+        result.status !== 'failed' &&
+        Date.now() - startTime < MAX_POLL_MS
+      ) {
+        if (abortRef.current?.signal.aborted) {
+          return;
+        }
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+        result = await functions.getExecution(HOSTED_AI_FUNCTION_ID, exec.$id);
+      }
+
+      if (result.status !== 'completed' && result.status !== 'failed') {
+        onError(t('errors.hostedAITimedOut'));
+        return;
+      }
 
       console.log('[Hosted AI] Execution result:', result);
 
