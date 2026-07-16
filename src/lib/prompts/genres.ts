@@ -1,4 +1,5 @@
 import type { WritingGenre } from '@/types';
+import type { TranslationKey } from '@/i18n/types';
 import {
   BookOpen,
   Search,
@@ -13,88 +14,88 @@ import {
 
 export interface GenreConfig {
   id: WritingGenre;
-  label: string;
+  label: TranslationKey;
   icon: typeof BookOpen;
   color: string;
-  description: string;
+  description: TranslationKey;
 }
 
 export const GENRES: GenreConfig[] = [
   {
     id: 'general',
-    label: 'Generale',
+    label: 'chat.genres.labels.general',
     icon: BookOpen,
     color: 'text-gray-600 dark:text-gray-400',
-    description: 'Nessuna specializzazione di genere. Morpheus agisce come un assistente versatile per la scrittura creativa.',
+    description: 'chat.genres.descriptions.general',
   },
   {
     id: 'crime',
-    label: 'Giallo e mystery',
+    label: 'chat.genres.labels.crime',
     icon: Search,
     color: 'text-slate-700 dark:text-slate-300',
-    description: 'Ragionamento forense, pista di indizi, falsi indizi, accuratezza procedurale e ritmo investigativo sospeso.',
+    description: 'chat.genres.descriptions.crime',
   },
   {
     id: 'romance',
-    label: 'Romanzo rosa',
+    label: 'chat.genres.labels.romance',
     icon: Heart,
     color: 'text-rose-500 dark:text-rose-400',
-    description: 'Archi emotivi, tensione romantica, dinamiche relazionali, costruzione della chimica e narrazione guidata dal cuore.',
+    description: 'chat.genres.descriptions.romance',
   },
   {
     id: 'thriller',
-    label: 'Thriller e horror',
+    label: 'chat.genres.labels.thriller',
     icon: Flame,
     color: 'text-orange-600 dark:text-orange-400',
-    description: 'Ritmo per inquietudine e suspense, tensione crescente, disagio psicologico e atmosfera viscerale.',
+    description: 'chat.genres.descriptions.thriller',
   },
   {
     id: 'scifi',
-    label: 'Fantascienza',
+    label: 'chat.genres.labels.scifi',
     icon: Rocket,
     color: 'text-cyan-600 dark:text-cyan-400',
-    description: 'Coerenza del world-building, logica speculativa, equilibrio tra tecnologia e narrazione, e immaginazione futurista.',
+    description: 'chat.genres.descriptions.scifi',
   },
   {
     id: 'fantasy',
-    label: 'Fantasy',
+    label: 'chat.genres.labels.fantasy',
     icon: Wand2,
     color: 'text-violet-600 dark:text-violet-400',
-    description: 'Coerenza del sistema magico, integrazione del lore, voce mitica e world-building epico.',
+    description: 'chat.genres.descriptions.fantasy',
   },
   {
     id: 'literary',
-    label: 'Narrativa letteraria',
+    label: 'chat.genres.labels.literary',
     icon: Glasses,
     color: 'text-emerald-600 dark:text-emerald-400',
-    description: 'Simbolismo, sottotesto, profonda interiorità dei personaggi, risonanza tematica e cura della prosa.',
+    description: 'chat.genres.descriptions.literary',
   },
   {
     id: 'historical',
-    label: 'Romanzo storico',
+    label: 'chat.genres.labels.historical',
     icon: Landmark,
     color: 'text-amber-700 dark:text-amber-400',
-    description: 'Voce fedele all\'epoca, attenzione agli anacronismi, dettagli documentati e prosa appropriata al periodo.',
+    description: 'chat.genres.descriptions.historical',
   },
   {
     id: 'youngAdult',
-    label: 'Young Adult',
+    label: 'chat.genres.labels.youngAdult',
     icon: Sunrise,
     color: 'text-sky-500 dark:text-sky-400',
-    description: 'Voce adatta all\'età, tematiche di formazione, prosa accessibile e ritmo emotivamente coinvolgente per lettori più giovani.',
+    description: 'chat.genres.descriptions.youngAdult',
   },
 ];
 
-export const GENRE_DESCRIPTIONS: Record<WritingGenre, string> = {
-  general: 'Nessuna specializzazione di genere. Morpheus agisce come un assistente versatile per la scrittura creativa.',
-  crime: 'Ragionamento forense, pista di indizi, falsi indizi, accuratezza procedurale e ritmo investigativo sospeso.',
-  romance: 'Archi emotivi, tensione romantica, dinamiche relazionali, costruzione della chimica e narrazione guidata dal cuore.',
-  thriller: 'Ritmo per inquietudine e suspense, tensione crescente, disagio psicologico e atmosfera viscerale.',
-  scifi: 'Coerenza del world-building, logica speculativa, equilibrio tra tecnologia e narrazione, e immaginazione futurista.',
-  fantasy: 'Coerenza del sistema magico, integrazione del lore, voce mitica e world-building epico.',
-  literary: 'Simbolismo, sottotesto, profonda interiorità dei personaggi, risonanza tematica e cura della prosa.',
-  historical: 'Voce fedele all\'epoca, attenzione agli anacronismi, dettagli documentati e prosa appropriata al periodo.',
-  youngAdult: 'Voce adatta all\'età, tematiche di formazione, prosa accessibile e ritmo emotivamente coinvolgente per lettori più giovani.',
+export const GENRE_DESCRIPTIONS: Record<WritingGenre, TranslationKey> = {
+  general: 'chat.genres.descriptions.general',
+  crime: 'chat.genres.descriptions.crime',
+  romance: 'chat.genres.descriptions.romance',
+  thriller: 'chat.genres.descriptions.thriller',
+  scifi: 'chat.genres.descriptions.scifi',
+  fantasy: 'chat.genres.descriptions.fantasy',
+  literary: 'chat.genres.descriptions.literary',
+  historical: 'chat.genres.descriptions.historical',
+  youngAdult: 'chat.genres.descriptions.youngAdult',
 };
 
 export const GENRE_PROMPTS: Record<WritingGenre, string> = {

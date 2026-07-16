@@ -31,7 +31,7 @@ export default function GenreSelector({
         className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
       >
         <GenreIcon className={`w-4 h-4 ${activeConfig?.color}`} />
-        <span className="flex-1 text-left">{activeConfig?.label}</span>
+        <span className="flex-1 text-left">{activeConfig ? t(activeConfig.label) : ''}</span>
         {!canUseGenres && <Lock className="w-3 h-3 text-gray-400" />}
         <span className="text-xs text-gray-400">▼</span>
       </button>
@@ -57,7 +57,7 @@ export default function GenreSelector({
                 } ${isLocked ? 'opacity-60' : ''}`}
               >
                 <Icon className={`w-4 h-4 ${genre.color}`} />
-                <div className="text-left font-medium flex-1">{genre.label}</div>
+                <div className="text-left font-medium flex-1">{t(genre.label)}</div>
                 {isLocked && <Lock className="w-3 h-3 text-gray-400" />}
               </button>
             );
@@ -71,7 +71,7 @@ export default function GenreSelector({
           style={{ top: genreDescPos.top, right: genreDescPos.right }}
         >
           <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-            {GENRE_DESCRIPTIONS[hoveredGenre]}
+            {t(GENRE_DESCRIPTIONS[hoveredGenre])}
           </p>
         </div>,
         document.body

@@ -56,6 +56,39 @@ export const chat = {
         deepseekV4Pro:
           'Flagship-level reasoning model. Excels at complex plot analysis, deep character psychology, and multi-level continuity control. For when the story demands nuance.',
       },
+      genres: {
+        labels: {
+          general: 'General',
+          crime: 'Crime & Mystery',
+          romance: 'Romance',
+          thriller: 'Thriller & Horror',
+          scifi: 'Science Fiction',
+          fantasy: 'Fantasy',
+          literary: 'Literary Fiction',
+          historical: 'Historical Fiction',
+          youngAdult: 'Young Adult',
+        },
+        descriptions: {
+          general:
+            'No genre specialization. Morpheus acts as a versatile creative writing assistant.',
+          crime:
+            'Forensic reasoning, clue trails, red herrings, procedural accuracy, and suspenseful investigative pacing.',
+          romance:
+            'Emotional arcs, romantic tension, relationship dynamics, chemistry building, and heart-driven storytelling.',
+          thriller:
+            'Pacing built on unease and suspense, rising tension, psychological discomfort, and visceral atmosphere.',
+          scifi:
+            'Consistent world-building, speculative logic, balance between technology and narrative, and futuristic imagination.',
+          fantasy:
+            'Consistent magic system, lore integration, mythic voice, and epic world-building.',
+          literary:
+            'Symbolism, subtext, deep character interiority, thematic resonance, and careful prose craft.',
+          historical:
+            'Period-accurate voice, anachronism awareness, documented details, and prose appropriate to the era.',
+          youngAdult:
+            'Age-appropriate voice, coming-of-age themes, accessible prose, and emotionally engaging pacing for younger readers.',
+        },
+      },
       modes: {
         companion: 'Writer Companion',
         continuity: 'Continuity Keeper',
@@ -126,6 +159,39 @@ export const chat = {
           'Una potenza letteraria versatile. Eccelle in prosa ricca, sviluppo intricato della trama e pianificazione narrativa a lungo termine. Pensato per la scrittura di romanzi ambiziosi.',
         deepseekV4Pro:
           'Modello di ragionamento di punta. Eccelle in analisi complesse della trama, psicologia profonda dei personaggi e controllo della continuità su più livelli. Per quando la storia richiede sfumature.',
+      },
+      genres: {
+        labels: {
+          general: 'Generale',
+          crime: 'Giallo e mystery',
+          romance: 'Romanzo rosa',
+          thriller: 'Thriller e horror',
+          scifi: 'Fantascienza',
+          fantasy: 'Fantasy',
+          literary: 'Narrativa letteraria',
+          historical: 'Romanzo storico',
+          youngAdult: 'Young Adult',
+        },
+        descriptions: {
+          general:
+            'Nessuna specializzazione di genere. Morpheus agisce come un assistente versatile per la scrittura creativa.',
+          crime:
+            'Ragionamento forense, pista di indizi, falsi indizi, accuratezza procedurale e ritmo investigativo sospeso.',
+          romance:
+            'Archi emotivi, tensione romantica, dinamiche relazionali, costruzione della chimica e narrazione guidata dal cuore.',
+          thriller:
+            'Ritmo per inquietudine e suspense, tensione crescente, disagio psicologico e atmosfera viscerale.',
+          scifi:
+            'Coerenza del world-building, logica speculativa, equilibrio tra tecnologia e narrazione, e immaginazione futurista.',
+          fantasy:
+            'Coerenza del sistema magico, integrazione del lore, voce mitica e world-building epico.',
+          literary:
+            'Simbolismo, sottotesto, profonda interiorità dei personaggi, risonanza tematica e cura della prosa.',
+          historical:
+            "Voce fedele all'epoca, attenzione agli anacronismi, dettagli documentati e prosa appropriata al periodo.",
+          youngAdult:
+            "Voce adatta all'età, tematiche di formazione, prosa accessibile e ritmo emotivamente coinvolgente per lettori più giovani.",
+        },
       },
       modes: {
         companion: 'Compagno dello scrittore',
