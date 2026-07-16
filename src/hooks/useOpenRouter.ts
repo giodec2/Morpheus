@@ -63,20 +63,20 @@ export function useOpenRouter() {
     abortRef.current = new AbortController();
 
     try {
-      const exec = await functions.createExecution(
-        HOSTED_AI_FUNCTION_ID,
-        JSON.stringify({
+      const exec = await functions.createExecution({
+        functionId: HOSTED_AI_FUNCTION_ID,
+        body: JSON.stringify({
           model: defaultModel,
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
           temperature,
           maxTokens,
         }),
-        true, // async execution to avoid 30s sync timeout
-        '/',
-        ExecutionMethod.POST
-      );
+        async: true, // async execution to avoid 30s sync timeout
+        xpath: '/',
+        method: ExecutionMethod.POST,
+      });
 
-      console.log('[Hosted AI] Async execution started:', exec.$id);
+      console.log('[Hosted AI] Async execution started:', exec.$id, 'status:', exec.status);
 
       // Poll until the async function completes or fails
       const POLL_INTERVAL_MS = 1500;
@@ -90,10 +90,15 @@ export function useOpenRouter() {
         Date.now() - startTime < MAX_POLL_MS
       ) {
         if (abortRef.current?.signal.aborted) {
+          console.log('[Hosted AI] Polling aborted by user');
           return;
         }
         await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-        result = await functions.getExecution(HOSTED_AI_FUNCTION_ID, exec.$id);
+        result = await functions.getExecution({
+          functionId: HOSTED_AI_FUNCTION_ID,
+          executionId: exec.$id,
+        });
+        console.log('[Hosted AI] Poll status:', result.status);
       }
 
       if (result.status !== 'completed' && result.status !== 'failed') {
