@@ -155,10 +155,11 @@ export function useOpenRouter() {
       }
 
       let body;
+      const rawResponseBody = result.responseBody || '';
       try {
-        body = JSON.parse(result.responseBody);
+        body = JSON.parse(rawResponseBody);
       } catch {
-        console.error('[Hosted AI] Invalid JSON response:', result.responseBody);
+        console.error('[Hosted AI] Invalid JSON response. Status:', result.responseStatusCode, 'Body:', JSON.stringify(rawResponseBody));
         onError(t('errors.invalidAIResponse'));
         return;
       }
