@@ -1,0 +1,34 @@
+# Morpheus
+
+> Morpheus is a local-first, open-source (AGPL-3.0) AI co-writer for novelists and storytellers. It combines a distraction-free editor with an AI chat that maintains a persistent "lore bible" of your story world — characters, locations, world rules, and plot details — so the AI stays consistent with your universe across every session instead of forgetting it.
+
+## Key facts
+
+- Open source (AGPL-3.0): https://github.com/giodec2/Morpheus
+- Local-first: work is stored in the browser (IndexedDB) and syncs automatically to EU-hosted cloud (Appwrite Cloud) when online; offline writing keeps saving locally until the next connection
+- Persistent story memory: a per-book lore bible (characters, locations, lore, rules) that the AI references in every chat, plus genre-specific writing modes
+- Nine genre modes: General Fiction, Crime & Mystery, Romance, Thriller & Horror, Science Fiction, Fantasy, Literary Fiction, Historical Fiction, Young Adult
+- Model choice: hosted AI, or BYOK (bring your own OpenRouter API key) to use AI features without consuming plan quotas
+- Privacy: AI providers with zero data retention; user content is never used to train models
+- Export: DOCX, PDF, Markdown, plain text; full data export anytime
+- Made by an independent solo developer, based in Rome, Italy (EU)
+
+## Pricing (EUR, weekly AI token quotas)
+
+- Free: €0 — 1 book, 50k standard tokens/week, BYOK, cloud sync
+- Scribe: €9/mo — 3 books, 500k standard tokens/week
+- Novelist: €19/mo — 10 books, 1M standard + 50k premium tokens/week, genre assistance
+- Architect: €49/mo — unlimited books, 5M standard + 500k premium tokens/week, priority support
+- Maestro: €14/mo (€10/mo annual) — unlimited books, 250k standard tokens/week, all features, built for BYOK users
+- Annual billing available at a discount; 7-day free trial on paid plans; payments processed by Lemon Squeezy
+- Token quotas reset weekly; written content in the editor is unlimited on all plans
+
+## Links
+
+- Website: https://morpheusink.com
+- FAQ: https://morpheusink.com/faq
+- Contact: https://morpheusink.com/contact
+- Privacy Policy: https://morpheusink.com/privacy
+- Terms of Service: https://morpheusink.com/terms
+- Refund Policy: https://morpheusink.com/refund
+- Source code: https://github.com/giodec2/Morpheus

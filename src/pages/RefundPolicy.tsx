@@ -2,9 +2,16 @@
 
 import LegalPageLayout from '@/components/Legal/LegalPageLayout';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
 
 export default function RefundPolicy() {
   const { t } = useI18n();
+  useSeo({
+    path: '/refund',
+    title: `${t('legal.refundPolicy.title')} — Morpheus`,
+    description:
+      'Morpheus refund policy: EU 14-day right of withdrawal and fair refunds on unused subscriptions.',
+  });
 
   return (
     <LegalPageLayout title={t('legal.refundPolicy.title')} lastUpdated={t('legal.refundPolicy.lastUpdated')}>

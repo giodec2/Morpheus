@@ -2,9 +2,16 @@
 
 import LegalPageLayout from '@/components/Legal/LegalPageLayout';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
 
 export default function CookiePolicy() {
   const { t } = useI18n();
+  useSeo({
+    path: '/cookies',
+    title: `${t('legal.cookiePolicy.title')} — Morpheus`,
+    description:
+      'How Morpheus uses cookies and similar technologies, and how to manage your cookie preferences.',
+  });
 
   return (
     <LegalPageLayout title={t('legal.cookiePolicy.title')} lastUpdated={t('legal.cookiePolicy.lastUpdated')}>

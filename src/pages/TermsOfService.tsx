@@ -2,9 +2,16 @@
 
 import LegalPageLayout from '@/components/Legal/LegalPageLayout';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
 
 export default function TermsOfService() {
   const { t } = useI18n();
+  useSeo({
+    path: '/terms',
+    title: `${t('legal.termsOfService.title')} — Morpheus`,
+    description:
+      'The terms governing the use of Morpheus, the local-first, open-source AI co-writer for novelists and storytellers.',
+  });
 
   return (
     <LegalPageLayout title={t('legal.termsOfService.title')} lastUpdated={t('legal.termsOfService.lastUpdated')}>

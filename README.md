@@ -2,7 +2,7 @@
 
 ## 🌟 What is Morpheus?
 
-Morpheus is an AI co/writer for everyone. Started as a personal project I decided to build a full app to be available for any writer of any genre. Hope this tool and its fair pricing helps avy aspiring writer overcome its fears and bring their dreams to life.
+Morpheus is an AI co/writer for everyone. Started as a personal project I decided to build a full app to be available for any writer of any genre. Hope this tool and its fair pricing helps any aspiring writer overcome their fears and bring their dreams to life.
 
 ---
 
@@ -21,7 +21,7 @@ Morpheus is an AI co/writer for everyone. Started as a personal project I decide
 
 ---
 
-The app will be available at `https://www.morpheusink.com`.
+The app is available at `https://www.morpheusink.com`.
 
 
 ## 🏗️ Tech Stack
@@ -45,12 +45,15 @@ Morpheus is free to start. Upgrade when you need more.
 
 | Plan | Price | Books | Standard Tokens | Premium Tokens |
 |------|-------|-------|-----------------|----------------|
-| **Free** | $0 | 1 | 100k/week | — |
-| **Scribe** | $9/mo | 3 | 1M/week | — |
-| **Novelist** | $19/mo | 10 | 2M/week | 100k/week |
-| **Architect** | $49/mo | 50 | 10M/week | 1M/week |
+| **Free** | €0 | 1 | 50k/week | — |
+| **Scribe** | €9/mo | 3 | 500k/week | — |
+| **Novelist** | €19/mo | 10 | 1M/week | 50k/week |
+| **Architect** | €49/mo | Unlimited | 5M/week | 500k/week |
+| **Maestro** | €14/mo | Unlimited | 250k/week | — |
 
-🎉 1st week free on any plan!.
+💡 **Maestro** includes all features and is built for BYOK users who bring their own OpenRouter key. Annual billing available at a discount on all paid plans (e.g. Maestro €120/year ≈ €10/mo).
+
+🎉 1st week free on any plan!
 
 ---
 
@@ -68,7 +71,7 @@ Morpheus is free to start. Upgrade when you need more.
 - [x] Cloud sync via Appwrite
 - [x] Landing page with pricing
 - [x] Book limit enforcement
-- [x] Stripe / payment integration
+- [x] Lemon Squeezy payment integration
 - [x] Hosted AI via Appwrite Edge Functions
 - [x] Token tracking & weekly resets
 - [x] Signature finetunes (genre-specific prompts)
@@ -93,6 +96,6 @@ This project is licensed under the [GNU Affero General Public License v3.0](LICE
 ---
 
 ## 🙏 Acknowledgments
-I am the sole developer of this project. I built this for myself and decided to sell it and make it public since the result was impressive and better than most other tools out there. I opted for the fairest price possible. I will do my best to keep this updated and to improve the service for everybody keeping the price aslow as I can. Hope this helps anyh storyteller ready to bring their dreams to life.
+I am the sole developer of this project. I built this for myself and decided to sell it and make it public since the result was impressive and better than most other tools out there. I opted for the fairest price possible. I will do my best to keep this updated and to improve the service for everybody keeping the price as low as I can. Hope this helps any storyteller ready to bring their dreams to life.
 
 *“The universe is made of stories, not of atoms.”* — Muriel Rukeyser

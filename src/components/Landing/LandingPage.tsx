@@ -13,9 +13,14 @@ import Footer from './Footer';
 import AuthModal from '@/components/Auth/AuthModal';
 import { useLocation } from 'wouter';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
+import { buildLandingFaqJsonLd } from '@/lib/faqSchema';
+
+const landingFaqJsonLd = buildLandingFaqJsonLd();
 
 export default function LandingPage() {
   const { t } = useI18n();
+  useSeo({ path: '/', jsonLd: landingFaqJsonLd });
   const [showAuth, setShowAuth] = useState(false);
   const [, navigate] = useLocation();
 

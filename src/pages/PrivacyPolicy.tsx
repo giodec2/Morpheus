@@ -2,9 +2,16 @@
 
 import LegalPageLayout from '@/components/Legal/LegalPageLayout';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
 
 export default function PrivacyPolicy() {
   const { t } = useI18n();
+  useSeo({
+    path: '/privacy',
+    title: `${t('legal.privacyPolicy.title')} — Morpheus`,
+    description:
+      'How Morpheus collects, uses, and protects your personal data. GDPR-compliant, EU-based, and your writing is never used to train AI.',
+  });
 
   return (
     <LegalPageLayout title={t('legal.privacyPolicy.title')} lastUpdated={t('legal.privacyPolicy.lastUpdated')}>

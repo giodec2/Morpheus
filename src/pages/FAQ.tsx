@@ -5,6 +5,10 @@ import LandingNavbar from '@/components/Landing/LandingNavbar';
 import Footer from '@/components/Landing/Footer';
 import { useInView } from '@/hooks/useInView';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
+import { buildFullFaqJsonLd } from '@/lib/faqSchema';
+
+const fullFaqJsonLd = buildFullFaqJsonLd();
 
 interface FAQItemData {
   question: string;
@@ -72,6 +76,12 @@ function AnimatedFAQItem({ faq, index, isOpen, onToggle }: {
 
 export default function FAQ() {
   const { t } = useI18n();
+  useSeo({
+    path: '/faq',
+    title: `${t('legal.faq.title')} — Morpheus`,
+    description: t('legal.faq.intro'),
+    jsonLd: fullFaqJsonLd,
+  });
   const [activeCategory, setActiveCategory] = useState('all');
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const { ref: headerRef, isInView: headerInView } = useInView<HTMLDivElement>({ threshold: 0.2 });

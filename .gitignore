@@ -108,3 +108,6 @@ appwrite-functions/
 
 # Local backup of appwrite-functions source before removal from repo
 appwrite-functions-source-backup/
+
+# Marketing drafts (articles, SEO content) — dev-only, never committed
+marketing/

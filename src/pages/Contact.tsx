@@ -1,9 +1,15 @@
 import { Mail, MessageSquare, Clock, MapPin } from 'lucide-react';
 import LegalPageLayout from '@/components/Legal/LegalPageLayout';
 import { useI18n } from '@/i18n/useI18n';
+import { useSeo } from '@/lib/seo';
 
 export default function Contact() {
   const { t } = useI18n();
+  useSeo({
+    path: '/contact',
+    title: `${t('legal.contact.title')} — Morpheus`,
+    description: t('legal.contact.intro'),
+  });
 
   return (
     <LegalPageLayout title={t('legal.contact.title')} lastUpdated={t('legal.contact.lastUpdated')}>
