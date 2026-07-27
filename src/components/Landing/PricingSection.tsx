@@ -1,24 +1,47 @@
-import { Check, X, Sparkles, Star, Crown, Zap, Music, Loader2, Languages, Gift, BarChart3, Share2, ChevronDown, KeyRound } from 'lucide-react';
-import { useInView } from '@/hooks/useInView';
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { Check, X, ChevronDown, KeyRound, Loader2, Zap, Sparkles, Star, Crown, Music } from 'lucide-react';
+import { useLocation } from 'wouter';
+import { useI18n } from '@/i18n/useI18n';
 import { useAuthStore } from '@/stores/authStore';
 import { useLemonSqueezy } from '@/hooks/useLemonSqueezy';
 import { createCheckout, getVariantIdForTier } from '@/services/billing';
 import { toast } from '@/components/common/Toast';
-import { useLocation } from 'wouter';
-import { useI18n } from '@/i18n/useI18n';
+import Reveal from './Reveal';
 
-const tiers = [
+interface TierFeature {
+  key: string;
+  count?: string;
+  included: boolean;
+}
+
+interface TierAccent {
+  icon: typeof Zap;
+  iconBg: string;
+  iconColor: string;
+  topBar: string;
+  checkBg: string;
+  checkColor: string;
+  cta: string;
+  nameColor: string;
+  border: string;
+  /** Subtle card background wash — light mode only. */
+  gradient: string;
+}
+
+// Tier definitions, prices and per-tier accents for the pricing chapter.
+const tiers: {
+  name: string;
+  price: number;
+  annualPrice?: number;
+  annualDiscount?: number;
+  descKey: string;
+  badge?: 'popular';
+  features: TierFeature[];
+}[] = [
   {
     name: 'Free',
     price: 0,
-    badge: null,
-    gradient: 'from-gray-100 to-gray-50 dark:from-slate-800 dark:to-slate-900',
-    border: 'border-gray-200 dark:border-slate-700',
-    accent: 'text-gray-600 dark:text-gray-400',
-    iconBg: 'bg-gray-100 dark:bg-slate-800',
-    iconColor: 'text-gray-500 dark:text-gray-400',
-    ctaBg: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
+    descKey: 'landing.pricing.tierFreeDesc',
     features: [
       { key: 'oneBook', included: true },
       { key: 'bringYourOwnKey', included: true },
@@ -37,13 +60,7 @@ const tiers = [
     price: 9,
     annualPrice: 96,
     annualDiscount: 11,
-    badge: null,
-    gradient: 'from-primary-50 to-white dark:from-slate-800 dark:to-slate-900',
-    border: 'border-primary-300 dark:border-primary-700',
-    accent: 'text-primary-600 dark:text-primary-400',
-    iconBg: 'bg-primary-100 dark:bg-primary-900/30',
-    iconColor: 'text-primary-600 dark:text-primary-400',
-    ctaBg: 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40',
+    descKey: 'landing.pricing.tierScribeDesc',
     features: [
       { key: 'upToBooks', count: '3', included: true },
       { key: 'bringYourOwnKey', included: true },
@@ -61,13 +78,8 @@ const tiers = [
     price: 19,
     annualPrice: 192,
     annualDiscount: 16,
-    badge: 'Popular',
-    gradient: 'from-amber-50 to-white dark:from-slate-800 dark:to-slate-900',
-    border: 'border-amber-200 dark:border-amber-800',
-    accent: 'text-amber-600 dark:text-amber-400',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    ctaBg: 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40',
+    descKey: 'landing.pricing.tierNovelistDesc',
+    badge: 'popular',
     features: [
       { key: 'upToBooks', count: '10', included: true },
       { key: 'bringYourOwnKey', included: true },
@@ -79,20 +91,13 @@ const tiers = [
       { key: 'echoBeta', included: false },
       { key: 'prioritySupport', included: false },
     ],
-    highlight: true,
   },
   {
     name: 'Architect',
     price: 49,
     annualPrice: 468,
     annualDiscount: 20,
-    badge: 'Best Value',
-    gradient: 'from-purple-100 to-white dark:from-slate-800 dark:to-slate-900',
-    border: 'border-purple-400 dark:border-purple-500',
-    accent: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    ctaBg: 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40',
+    descKey: 'landing.pricing.tierArchitectDesc',
     features: [
       { key: 'unlimitedBooks', included: true },
       { key: 'bringYourOwnKey', included: true },
@@ -107,25 +112,67 @@ const tiers = [
   },
 ];
 
-const maestroTier = {
-  name: 'Maestro',
-  price: 14,
-  annualPrice: 120,
-  annualDiscount: 29,
-  gradient: 'from-rose-50 to-white dark:from-slate-800 dark:to-slate-900',
-  border: 'border-rose-300 dark:border-rose-700',
-  accent: 'text-rose-600 dark:text-rose-400',
+const tierOrder = ['free', 'scribe', 'novelist', 'architect'];
+
+const accents: Record<string, TierAccent> = {
+  Free: {
+    icon: Zap,
+    iconBg: 'bg-gray-100 dark:bg-slate-800',
+    iconColor: 'text-gray-500 dark:text-gray-400',
+    topBar: 'from-gray-300 to-gray-400',
+    checkBg: 'bg-gray-100 dark:bg-slate-800',
+    checkColor: 'text-gray-500 dark:text-gray-400',
+    cta: 'bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300',
+    nameColor: 'text-gray-700 dark:text-gray-300',
+    border: 'border-gray-200 dark:border-slate-800',
+    gradient: 'from-gray-100 to-gray-50',
+  },
+  Scribe: {
+    icon: Sparkles,
+    iconBg: 'bg-primary-100 dark:bg-primary-900/30',
+    iconColor: 'text-primary-600 dark:text-primary-400',
+    topBar: 'from-primary-400 via-teal-400 to-primary-500',
+    checkBg: 'bg-primary-100 dark:bg-primary-900/30',
+    checkColor: 'text-primary-600 dark:text-primary-400',
+    cta: 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25',
+    nameColor: 'text-primary-600 dark:text-primary-400',
+    border: 'border-primary-300 dark:border-primary-700',
+    gradient: 'from-primary-50 to-white',
+  },
+  Novelist: {
+    icon: Star,
+    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    topBar: 'from-amber-400 via-orange-400 to-amber-500',
+    checkBg: 'bg-amber-100 dark:bg-amber-900/30',
+    checkColor: 'text-amber-600 dark:text-amber-400',
+    cta: 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/25',
+    nameColor: 'text-amber-600 dark:text-amber-400',
+    border: 'border-amber-300 dark:border-amber-600',
+    gradient: 'from-amber-50 to-white',
+  },
+  Architect: {
+    icon: Crown,
+    iconBg: 'bg-purple-100 dark:bg-purple-900/30',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    topBar: 'from-purple-400 via-pink-400 to-purple-500',
+    checkBg: 'bg-purple-100 dark:bg-purple-900/30',
+    checkColor: 'text-purple-600 dark:text-purple-400',
+    cta: 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25',
+    nameColor: 'text-purple-600 dark:text-purple-400',
+    border: 'border-purple-300 dark:border-purple-700',
+    gradient: 'from-purple-100 to-white',
+  },
+};
+
+const maestroAccent = {
   iconBg: 'bg-rose-100 dark:bg-rose-900/30',
   iconColor: 'text-rose-600 dark:text-rose-400',
-  ctaBg: 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40',
-  features: [
-    { key: 'unlimitedBooks', included: true },
-    { key: 'bringYourOwnKey', included: true },
-    { key: 'tokensStandard', count: '250k', included: true },
-    { key: 'allFeatures', included: true },
-    { key: 'newFeaturesFirst', included: true },
-    { key: 'prioritySupport', included: true },
-  ],
+  topBar: 'from-rose-400 via-pink-400 to-rose-500',
+  cta: 'bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/25',
+  nameColor: 'text-rose-600 dark:text-rose-400',
+  border: 'border-rose-300 dark:border-rose-700',
+  gradient: 'from-rose-50 to-white',
 };
 
 function useTierCheckout(tierName: string) {
@@ -136,11 +183,7 @@ function useTierCheckout(tierName: string) {
   const [, setLocation] = useLocation();
 
   const handleCheckout = async (isAnnual: boolean) => {
-    if (tierName === 'Free') {
-      setLocation('/app');
-      return;
-    }
-    if (!user) {
+    if (tierName === 'Free' || !user) {
       setLocation('/app');
       return;
     }
@@ -163,336 +206,7 @@ function useTierCheckout(tierName: string) {
   return { isLoading, handleCheckout };
 }
 
-function PricingCard({ tier, index, isAnnual }: { tier: typeof tiers[0]; index: number; isAnnual: boolean }) {
-  const { t } = useI18n();
-  const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
-  const [hovered, setHovered] = useState(false);
-  const [entered, setEntered] = useState(false);
-  const { isLoading, handleCheckout } = useTierCheckout(tier.name);
-
-  const tierDescKey: Record<string, string> = {
-    Free: 'landing.pricing.tierFreeDesc',
-    Scribe: 'landing.pricing.tierScribeDesc',
-    Novelist: 'landing.pricing.tierNovelistDesc',
-    Architect: 'landing.pricing.tierArchitectDesc',
-  };
-
-  const { profile } = useAuthStore();
-  const currentTier = profile?.subscriptionTier ?? 'free';
-  const cardTier = tier.name.toLowerCase();
-  const tierOrder = ['free', 'scribe', 'novelist', 'architect'];
-  const currentIdx = tierOrder.indexOf(currentTier);
-  const cardIdx = tierOrder.indexOf(cardTier);
-  const isCurrent = cardTier === currentTier;
-  const isIncluded = cardIdx < currentIdx;
-  const isSuggested = cardTier === 'novelist' && (
-    !profile || (currentTier !== 'novelist' && currentTier !== 'architect')
-  );
-
-  const tierIcons: Record<string, typeof Sparkles> = {
-    Free: Zap,
-    Scribe: Sparkles,
-    Novelist: Star,
-    Architect: Crown,
-  };
-  const TierIcon = tierIcons[tier.name] || Zap;
-
-  useEffect(() => {
-    if (isInView && !entered) {
-      const timer = setTimeout(() => setEntered(true), index * 150);
-      return () => clearTimeout(timer);
-    }
-    if (!isInView && entered) {
-      setEntered(false);
-    }
-  }, [isInView, entered, index]);
-
-  const isPaid = tier.price > 0;
-  const hoverLift = 'hover:-translate-y-1';
-  const hoverShadow = isPaid
-    ? 'hover:shadow-lg hover:shadow-gray-400/10 dark:hover:shadow-black/30'
-    : 'hover:shadow-md hover:shadow-gray-400/10 dark:hover:shadow-black/30';
-
-  return (
-    <div className="relative h-full">
-      {/* Badge — outside card so it can exceed bounds */}
-      {tier.badge && (
-        <div className={`absolute -top-2.5 -right-2.5 z-30 ${
-          tier.name === 'Novelist'
-            ? 'bg-amber-400 shadow-md shadow-amber-500/20'
-            : 'bg-purple-400 shadow-md shadow-purple-500/20'
-        } text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg ring-2 ring-white dark:ring-slate-900`}>
-          {t(tier.badge === 'Popular' ? 'states.popular' : 'states.bestValue')}
-        </div>
-      )}
-
-      <div
-        ref={ref}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={`relative flex flex-col h-full rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
-          isCurrent
-            ? `border-emerald-500 dark:border-emerald-600 ${hoverLift} ${hoverShadow}`
-            : isSuggested
-            ? `border-amber-400 dark:border-amber-500 ${hoverLift} ${hoverShadow}`
-            : `${tier.border} ${hoverLift} ${hoverShadow}`
-        } ${isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-      >
-
-      {/* Top gradient glow */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
-        tier.name === 'Free' ? 'from-gray-300 to-gray-400' :
-        tier.name === 'Scribe' ? 'from-primary-400 via-teal-400 to-primary-500' :
-        tier.name === 'Novelist' ? 'from-amber-400 via-orange-400 to-amber-500' :
-        'from-purple-400 via-pink-400 to-purple-500'
-      }`} />
-
-      {/* Background gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-b ${tier.gradient} opacity-60`} />
-
-      <div className={`relative flex flex-col flex-1 ${isSuggested ? 'p-8' : 'p-7'}`}>
-        {/* Icon + Name */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className={`w-10 h-10 rounded-xl ${tier.iconBg} flex items-center justify-center`}>
-            <TierIcon className={`w-5 h-5 ${tier.iconColor}`} />
-          </div>
-          <div>
-            <h3 className={`text-lg font-bold ${tier.accent}`}>{tier.name}</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{t(tierDescKey[tier.name] as never)}</p>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="mb-6">
-          {tier.price > 0 ? (
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span
-                  key={isAnnual ? 'annual' : 'monthly'}
-                  className="text-4xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums transition-all duration-300 animate-in fade-in zoom-in-95"
-                >
-                  €{isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price}
-                </span>
-                <span className="text-sm text-gray-400 font-medium transition-all duration-300">
-                  {t('landing.pricing.perMonth')}
-                </span>
-                <span
-                  className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
-                    isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
-                  }`}
-                >
-                  {t('landing.pricing.save', { percent: tier.annualDiscount ?? 0 })}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-1.5 transition-all duration-300">
-                {isAnnual
-                  ? t('landing.pricing.billedAnnually', { price: tier.annualPrice ?? 0 })
-                  : t('landing.pricing.billedMonthly')}
-              </p>
-            </div>
-          ) : (
-            <div>
-              <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">{t('landing.pricing.freeLabel')}</span>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">{t('landing.pricing.foreverFree')}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Features */}
-        <ul className="space-y-2 mb-8 flex-1">
-          {tier.features.map((feature) => (
-            <li key={feature.key} className="flex items-start gap-2.5">
-              {feature.included ? (
-                <div className={`w-5 h-5 rounded-full ${tier.iconBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                  <Check className={`w-3 h-3 ${tier.iconColor}`} />
-                </div>
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <X className="w-3 h-3 text-gray-300 dark:text-gray-600" />
-                </div>
-              )}
-              <span
-                className={`text-sm ${
-                  feature.included
-                    ? 'text-gray-700 dark:text-gray-300'
-                    : 'text-gray-400 dark:text-gray-600'
-                }`}
-              >
-                {t(
-                  `landing.pricing.features.${feature.key}` as never,
-                  feature.count ? { count: feature.count } : undefined
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA */}
-        {isCurrent ? (
-          <div className="w-full py-3 rounded-xl text-sm font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
-            <Check className="w-4 h-4" />
-            {t('landing.pricing.currentPlan')}
-          </div>
-        ) : isIncluded ? (
-          <div className="w-full py-3 rounded-xl text-sm font-bold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
-            {t('landing.pricing.included')}
-          </div>
-        ) : (
-          <button
-            disabled={isLoading}
-            onClick={() => handleCheckout(isAnnual)}
-            className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} ${
-              hovered && tier.price > 0 ? 'scale-[1.02]' : ''
-            } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-          >
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : tier.price === 0 ? t('landing.pricing.startFree') : t('landing.pricing.startTrial')}
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-  );
-}
-
-function MaestroCard({ isAnnual }: { isAnnual: boolean }) {
-  const { t } = useI18n();
-  const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
-  const [entered, setEntered] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const { isLoading, handleCheckout } = useTierCheckout('Maestro');
-  const { profile } = useAuthStore();
-  const currentTier = profile?.subscriptionTier ?? 'free';
-  const isCurrent = currentTier === 'maestro';
-
-  useEffect(() => {
-    if (isInView && !entered) {
-      const timer = setTimeout(() => setEntered(true), tiers.length * 150);
-      return () => clearTimeout(timer);
-    }
-    if (!isInView && entered) {
-      setEntered(false);
-    }
-  }, [isInView, entered]);
-
-  const tier = maestroTier;
-  const price = isAnnual ? Math.round((tier.annualPrice || 0) / 12) : tier.price;
-
-  return (
-    <div
-      ref={ref}
-      className={`relative rounded-2xl border-2 ${tier.border} overflow-hidden transition-all duration-500 ${
-        isInView && entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-      }`}
-    >
-      {/* Top gradient */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 via-pink-400 to-rose-500" />
-      <div className={`absolute inset-0 bg-gradient-to-br ${tier.gradient} opacity-60`} />
-
-      <div className="relative p-6 md:p-8">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-          {/* Left: headline + price + CTA */}
-          <div className="lg:w-2/5 flex flex-col">
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`w-12 h-12 rounded-xl ${tier.iconBg} flex items-center justify-center`}>
-                <Music className={`w-6 h-6 ${tier.iconColor}`} />
-              </div>
-              <div>
-                <h3 className={`text-2xl font-bold ${tier.accent}`}>{tier.name}</h3>
-                <p className="text-xs font-semibold uppercase tracking-wider text-rose-500 dark:text-rose-400">
-                  {t('landing.pricing.maestroLabel')}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-5 flex-1">
-              {t('landing.pricing.maestroShortDesc')}
-            </p>
-
-            <div className="mb-5">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums">
-                  €{price}
-                </span>
-                <span className="text-sm text-gray-400 font-medium">{t('landing.pricing.perMonth')}</span>
-                <span
-                  className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
-                    isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
-                  }`}
-                >
-                  {t('landing.pricing.save', { percent: tier.annualDiscount ?? 0 })}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {isAnnual
-                  ? t('landing.pricing.billedAnnually', { price: tier.annualPrice ?? 0 })
-                  : t('landing.pricing.billedMonthly')}
-              </p>
-            </div>
-
-            {isCurrent ? (
-              <div className="w-full py-3 rounded-xl text-sm font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
-                <Check className="w-4 h-4" />
-                {t('landing.pricing.currentPlan')}
-              </div>
-            ) : (
-              <button
-                disabled={isLoading}
-                onClick={() => handleCheckout(isAnnual)}
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 ${tier.ctaBg} disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-              >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('landing.pricing.startTrial')}
-              </button>
-            )}
-          </div>
-
-          {/* Right: feature bullets */}
-          <div className="lg:w-3/5">
-            <div className="grid sm:grid-cols-2 gap-3">
-              {tier.features.map((feature) => (
-                <div key={feature.key} className="flex items-start gap-2.5 p-3 rounded-xl bg-white/60 dark:bg-slate-900/40 border border-rose-100 dark:border-rose-900/20">
-                  <div className={`w-5 h-5 rounded-full ${tier.iconBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                    <Check className={`w-3 h-3 ${tier.iconColor}`} />
-                  </div>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {t(
-                      `landing.pricing.features.${feature.key}` as never,
-                      feature.count ? { count: feature.count } : undefined
-                    )}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Expandable details */}
-        <div className="mt-6 pt-6 border-t border-rose-100 dark:border-rose-900/20">
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-2 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
-          >
-            <KeyRound className="w-4 h-4" />
-            {t(expanded ? 'landing.pricing.showLess' : 'landing.pricing.learnMore')}
-            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
-          </button>
-          <div className={`grid transition-all duration-300 ${expanded ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
-            <div className="overflow-hidden">
-              <div className="p-4 rounded-xl bg-rose-50/70 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30">
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2">
-                  {t('landing.pricing.maestroDetailsTitle')}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {t('landing.pricing.maestroDetails')}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+/** Animated monthly/annual toggle — sliding pill measured from the active button. */
 function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v: boolean) => void }) {
   const { t } = useI18n();
   const monthlyRef = useRef<HTMLButtonElement>(null);
@@ -500,48 +214,43 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
   const containerRef = useRef<HTMLDivElement>(null);
   const [pillStyle, setPillStyle] = useState({ width: 0, left: 0 });
 
-  const measure = () => {
+  const measure = useCallback(() => {
     const active = isAnnual ? annualRef.current : monthlyRef.current;
     const parent = containerRef.current;
     if (active && parent) {
       const parentRect = parent.getBoundingClientRect();
       const activeRect = active.getBoundingClientRect();
-      setPillStyle({
-        width: activeRect.width,
-        left: activeRect.left - parentRect.left,
-      });
+      setPillStyle({ width: activeRect.width, left: activeRect.left - parentRect.left });
     }
-  };
+  }, [isAnnual]);
 
   useLayoutEffect(() => {
     measure();
-  }, [isAnnual]);
+  }, [measure]);
 
-  // Also measure on mount and window resize
   useEffect(() => {
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, []);
+  }, [measure]);
 
   return (
-    <div ref={containerRef} className="relative inline-flex items-center p-1 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-      {/* Sliding background pill */}
+    <div
+      ref={containerRef}
+      className="relative inline-flex items-center p-1 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700"
+    >
       <div
         className={`absolute top-1 bottom-1 rounded-lg transition-all duration-300 ease-out ${
           isAnnual
-            ? 'bg-purple-600 dark:bg-purple-500 shadow-lg shadow-purple-500/50'
+            ? 'bg-primary-600 dark:bg-primary-500 shadow-lg shadow-primary-500/40'
             : 'bg-white dark:bg-slate-700 shadow-sm'
         }`}
-        style={{
-          width: pillStyle.width,
-          left: pillStyle.left,
-        }}
+        style={{ width: pillStyle.width, left: pillStyle.left }}
       />
       <button
         ref={monthlyRef}
         onClick={() => onChange(false)}
-        className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 whitespace-nowrap ${
+        className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 whitespace-nowrap cursor-pointer ${
           !isAnnual
             ? 'text-gray-900 dark:text-white'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -552,7 +261,7 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
       <button
         ref={annualRef}
         onClick={() => onChange(true)}
-        className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center gap-2 whitespace-nowrap ${
+        className={`relative z-10 px-5 py-2 rounded-lg text-sm font-semibold transition-colors duration-300 whitespace-nowrap cursor-pointer ${
           isAnnual
             ? 'text-white'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -564,142 +273,299 @@ function BillingToggle({ isAnnual, onChange }: { isAnnual: boolean; onChange: (v
   );
 }
 
-const upcomingFeatures = [
-  { icon: Gift, key: 'referral', eta: 'Q3 2026' },
-  { icon: BarChart3, key: 'analytics', eta: 'Q4 2026' },
-  { icon: Share2, key: 'betaSharing', eta: 'Q4 2026' },
-  { icon: Languages, key: 'translations', eta: 'Q1 2027' },
-];
-
-function UpcomingFeaturesSection() {
+function Price({
+  price,
+  annualPrice,
+  annualDiscount,
+  isAnnual,
+}: {
+  price: number;
+  annualPrice?: number;
+  annualDiscount?: number;
+  isAnnual: boolean;
+}) {
   const { t } = useI18n();
-  const { ref, isInView } = useInView<HTMLDivElement>({ threshold: 0.1 });
-
-  return (
-    <div ref={ref} className="relative">
-      <div
-        className={`text-center max-w-2xl mx-auto mb-14 transition-all duration-1000 ${
-          isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}
-      >
-        <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-          {t('landing.pricing.roadmap.label')}
+  if (price === 0) {
+    return (
+      <div>
+        <span className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+          {t('landing.pricing.freeLabel')}
         </span>
-        <h3 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 leading-tight">
-          {t('landing.pricing.roadmap.titlePrefix')}{' '}
-          <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-            {t('landing.pricing.roadmap.titleHighlight')}
-          </span>
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 text-lg">
-          {t('landing.pricing.roadmap.intro')}
-        </p>
+        <p className="text-[11px] text-gray-400 mt-1">{t('landing.pricing.foreverFree')}</p>
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
-        {upcomingFeatures.map((feature, index) => {
-          const Icon = feature.icon;
-          return (
-            <div
-              key={feature.key}
-              className={`transition-[opacity,transform] duration-500 ${
-                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <div className="group relative h-full min-h-[300px] flex flex-col rounded-2xl border border-gray-300 dark:border-slate-700 bg-gradient-to-br from-primary-50/60 via-white to-white dark:from-primary-900/20 dark:via-slate-900 dark:to-slate-900 p-7 shadow-sm shadow-gray-200/60 dark:shadow-black/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary-500/20 dark:hover:shadow-primary-900/30 hover:border-primary-300 dark:hover:border-primary-600 overflow-hidden ring-1 ring-transparent group-hover:ring-primary-500/10">
-                {/* Animated top accent line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-teal-400 to-primary-500 opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-
-                {/* Pulsing live indicator */}
-                <div className="absolute top-4 right-4">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-40" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500 shadow-sm shadow-primary-500/50" />
-                  </span>
-                </div>
-
-                <div className="flex items-start justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-200 to-primary-100 dark:from-primary-800/40 dark:to-primary-900/20 flex items-center justify-center shadow-sm shadow-primary-200/50 dark:shadow-primary-900/20">
-                    <Icon className="w-6 h-6 text-primary-700 dark:text-primary-300" />
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800 shadow-sm shadow-primary-100/50 dark:shadow-primary-900/20">
-                    {feature.eta}
-                  </span>
-                </div>
-                <h4 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2">
-                  {t(`landing.pricing.roadmap.${feature.key}Title` as never)}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed flex-1">
-                  {t(`landing.pricing.roadmap.${feature.key}Desc` as never)}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+    );
+  }
+  return (
+    <div>
+      <div className="flex items-baseline gap-1.5 flex-wrap">
+        <span
+          key={isAnnual ? 'annual' : 'monthly'}
+          className="text-3xl font-black tracking-tight text-gray-900 dark:text-white tabular-nums animate-in fade-in zoom-in-95 duration-300"
+        >
+          €{isAnnual ? Math.round((annualPrice ?? 0) / 12) : price}
+        </span>
+        <span className="text-sm text-gray-400">{t('landing.pricing.perMonth')}</span>
+        <span
+          className={`text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full transition-all duration-300 ${
+            isAnnual ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+          }`}
+        >
+          {t('landing.pricing.save', { percent: annualDiscount ?? 0 })}
+        </span>
       </div>
+      <p className="text-[11px] text-gray-400 mt-1">
+        {isAnnual
+          ? t('landing.pricing.billedAnnually', { price: annualPrice ?? 0 })
+          : t('landing.pricing.billedMonthly')}
+      </p>
     </div>
   );
 }
 
+function FeatureList({ features, accent }: { features: TierFeature[]; accent: TierAccent }) {
+  const { t } = useI18n();
+  return (
+    <ul className="space-y-1.5 mb-4 flex-1">
+      {features.map((f) => (
+        <li key={f.key} className="flex items-start gap-2">
+          {f.included ? (
+            <span className={`w-[18px] h-[18px] rounded-full ${accent.checkBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+              <Check className={`w-3 h-3 ${accent.checkColor}`} />
+            </span>
+          ) : (
+            <span className="w-[18px] h-[18px] rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <X className="w-3 h-3 text-gray-300 dark:text-gray-600" />
+            </span>
+          )}
+          <span className={`text-[13px] leading-snug ${f.included ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+            {t(`landing.pricing.features.${f.key}` as never, f.count ? { count: f.count } : undefined)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function TierCard({ tier, isAnnual, delay }: { tier: (typeof tiers)[number]; isAnnual: boolean; delay: number }) {
+  const { t } = useI18n();
+  const { isLoading, handleCheckout } = useTierCheckout(tier.name);
+  const { profile } = useAuthStore();
+  const currentTier = profile?.subscriptionTier ?? 'free';
+  const isCurrent = tier.name.toLowerCase() === currentTier;
+  const isIncluded = tierOrder.indexOf(tier.name.toLowerCase()) < tierOrder.indexOf(currentTier);
+  const accent = accents[tier.name];
+
+  return (
+    <Reveal delay={delay} className="h-full">
+      <div className="relative h-full">
+        {tier.badge === 'popular' && (
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 bg-amber-400 shadow-md shadow-amber-500/20 text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full whitespace-nowrap">
+            {t('states.popular')}
+          </span>
+        )}
+        <div
+          className={`relative flex flex-col h-full rounded-2xl border-2 bg-gradient-to-b ${accent.gradient} dark:bg-none dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-900/5 dark:hover:shadow-black/30 ${
+            isCurrent ? 'border-emerald-500 dark:border-emerald-600' : accent.border
+          }`}
+        >
+          <div className={`h-1 bg-gradient-to-r ${accent.topBar}`} />
+
+          <div className="flex flex-col flex-1 p-5">
+            {/* Icon + name */}
+            <div className="flex items-center gap-2.5 mb-3.5">
+              <span className={`w-9 h-9 rounded-xl ${accent.iconBg} flex items-center justify-center flex-shrink-0`}>
+                <accent.icon className={`w-[18px] h-[18px] ${accent.iconColor}`} />
+              </span>
+              <div>
+                <h3 className={`font-serif text-lg font-semibold leading-tight ${accent.nameColor}`}>{tier.name}</h3>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500">{t(tier.descKey as never)}</p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <Price
+                price={tier.price}
+                annualPrice={tier.annualPrice}
+                annualDiscount={tier.annualDiscount}
+                isAnnual={isAnnual}
+              />
+            </div>
+
+            <FeatureList features={tier.features} accent={accent} />
+
+            {isCurrent ? (
+              <div className="w-full py-2 rounded-lg text-sm font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800">
+                <Check className="w-4 h-4" />
+                {t('landing.pricing.currentPlan')}
+              </div>
+            ) : isIncluded ? (
+              <div className="w-full py-2 rounded-lg text-sm font-semibold bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 text-center">
+                {t('landing.pricing.included')}
+              </div>
+            ) : (
+              <button
+                onClick={() => handleCheckout(isAnnual)}
+                disabled={isLoading}
+                className={`w-full py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${accent.cta}`}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : tier.price > 0 ? (
+                  t('landing.pricing.startTrial')
+                ) : (
+                  t('landing.pricing.startFree')
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function MaestroCard({ isAnnual, delay }: { isAnnual: boolean; delay: number }) {
+  const { t } = useI18n();
+  const { isLoading, handleCheckout } = useTierCheckout('Maestro');
+  const { profile } = useAuthStore();
+  const isCurrent = (profile?.subscriptionTier ?? 'free') === 'maestro';
+  const [expanded, setExpanded] = useState(false);
+  const accent = maestroAccent;
+  const price = 14;
+  const annualPrice = 120;
+  const annualDiscount = 29;
+
+  return (
+    <Reveal delay={delay}>
+      <div className="relative">
+        <span className="absolute -top-3 right-6 z-10 bg-rose-400 shadow-md shadow-rose-500/20 text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full whitespace-nowrap">
+          {t('states.bestValue')}
+        </span>
+
+        <div
+          className={`relative rounded-2xl border-2 bg-gradient-to-br ${accent.gradient} dark:bg-none dark:bg-slate-900 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-gray-900/5 dark:hover:shadow-black/30 ${
+            isCurrent ? 'border-emerald-500 dark:border-emerald-600' : accent.border
+          }`}
+        >
+          <div className={`h-1 bg-gradient-to-r ${accent.topBar}`} />
+
+          <div className="p-5 sm:px-8 sm:py-6">
+            {/* Header row: identity left, price right */}
+            <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className={`w-10 h-10 rounded-xl ${accent.iconBg} flex items-center justify-center flex-shrink-0`}>
+                  <Music className={`w-5 h-5 ${accent.iconColor}`} />
+                </span>
+                <div className="min-w-0">
+                  <div className="flex items-baseline gap-2.5 flex-wrap">
+                    <h3 className={`font-serif text-xl font-semibold ${accent.nameColor}`}>Maestro</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+                      {t('landing.pricing.maestroLabel')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('landingV2.pricing.maestroSub')}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <Price price={price} annualPrice={annualPrice} annualDiscount={annualDiscount} isAnnual={isAnnual} />
+              </div>
+            </div>
+
+            {/* One-line value prop + CTA row */}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+              <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <KeyRound className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                {t('landingV2.pricing.maestroStrip')}
+              </p>
+              <div className="flex items-center gap-4">
+                {isCurrent ? (
+                  <div className="px-6 py-2 rounded-lg text-sm font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
+                    <Check className="w-4 h-4" />
+                    {t('landing.pricing.currentPlan')}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleCheckout(isAnnual)}
+                    disabled={isLoading}
+                    className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${accent.cta}`}
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('landing.pricing.startTrial')}
+                  </button>
+                )}
+                <button
+                  onClick={() => setExpanded((e) => !e)}
+                  aria-expanded={expanded}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors cursor-pointer"
+                >
+                  {t(expanded ? 'landing.pricing.showLess' : 'landing.pricing.learnMore')}
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Expandable details */}
+          <div
+            className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+              expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="px-5 sm:px-8 pb-6">
+                <div className="rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 p-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-400 mb-2">
+                    {t('landing.pricing.maestroDetailsTitle')}
+                  </p>
+                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                    {t('landing.pricing.maestroDetails')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+/**
+ * Chapter IV — pricing: tier cards with per-tier accent identities,
+ * animated billing toggle, and Lemon Squeezy checkout.
+ */
 export default function PricingSection() {
   const { t } = useI18n();
-  const { ref: titleRef, isInView: titleInView } = useInView<HTMLDivElement>({ threshold: 0.3 });
   const [isAnnual, setIsAnnual] = useState(true);
 
   return (
-    <section id="pricing" className="py-28 md:py-36 relative">
-      {/* Top divider */}
-      <div
-        className="absolute top-0 left-0 w-full h-px"
-        style={{
-          background: 'linear-gradient(90deg, transparent 0%, rgba(20,184,166,0.25) 25%, rgba(245,158,11,0.2) 50%, rgba(20,184,166,0.25) 75%, transparent 100%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer 10s linear infinite',
-        }}
-      />
-
-      <div className="max-w-7xl mx-auto px-6">
-        <div
-          ref={titleRef}
-          className={`text-center max-w-2xl mx-auto mb-12 transition-all duration-1000 ${
-            titleInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary-600 dark:text-primary-400 mb-4">
-            {t('landing.pricing.label')}
-          </span>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-5 leading-tight">
-            {t('landing.pricing.titlePrefix')}{' '}
-            <span className="bg-gradient-to-r from-primary-600 to-teal-500 bg-clip-text text-transparent">
-              {t('landing.pricing.titleHighlight')}
-            </span>
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
-            {t('landing.pricing.intro')}
-          </p>
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
+        <div className="max-w-xl">
+          <Reveal>
+            <h2 className="font-serif text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900 dark:text-white">
+              {t('landingV2.pricing.title')}
+            </h2>
+          </Reveal>
+          <Reveal delay={80}>
+            <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">{t('landing.pricing.intro')}</p>
+          </Reveal>
         </div>
-
-        {/* Annual/Monthly toggle — sliding pill */}
-        <div className="flex justify-center mb-14">
+        <Reveal delay={120}>
           <BillingToggle isAnnual={isAnnual} onChange={setIsAnnual} />
-        </div>
-
-        {/* Pricing cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 items-stretch">
-          {tiers.map((tier, index) => (
-            <PricingCard key={tier.name} tier={tier} index={index} isAnnual={isAnnual} />
-          ))}
-        </div>
-
-        {/* Maestro horizontal card */}
-        <div className="mb-20">
-          <MaestroCard isAnnual={isAnnual} />
-        </div>
-
-        {/* Upcoming Features */}
-        <UpcomingFeaturesSection />
+        </Reveal>
       </div>
-    </section>
+
+      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 pt-3">
+        {tiers.map((tier, idx) => (
+          <TierCard key={tier.name} tier={tier} isAnnual={isAnnual} delay={idx * 60} />
+        ))}
+      </div>
+
+      <div className="mt-5">
+        <MaestroCard isAnnual={isAnnual} delay={150} />
+      </div>
+    </div>
   );
 }

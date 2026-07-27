@@ -1,5 +1,6 @@
 import { common } from './common';
 import { landing } from './landing';
+import { landingV2 } from './landingV2';
 import { app } from './app';
 import { settings } from './settings';
 import { legal } from './legal';
@@ -10,6 +11,7 @@ import type { UILocale } from './types';
 const en = {
   ...common.en,
   ...landing.en,
+  ...landingV2.en,
   ...app.en,
   ...settings.en,
   ...legal.en,
@@ -20,6 +22,7 @@ const en = {
 const it = {
   ...common.it,
   ...landing.it,
+  ...landingV2.it,
   ...app.it,
   ...settings.it,
   ...legal.it,

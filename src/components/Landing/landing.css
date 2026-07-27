@@ -1,0 +1,118 @@
+/* Landing page scoped styles — imported only by LandingPage.
+   Everything here lives alongside the landing components. */
+
+/* ── Scroll reveals ── */
+.lv2-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
+  will-change: opacity, transform;
+}
+.lv2-reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Typewriter caret ── */
+@keyframes lv2-caret-blink {
+  0%, 45% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+}
+.lv2-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: lv2-caret-blink 1s steps(1) infinite;
+}
+
+/* ── Entity marks inside demo prose ── */
+.lv2-entity {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--color-primary-500);
+  transition: background-color 0.25s ease-out, color 0.25s ease-out,
+    text-decoration-color 0.25s ease-out;
+  border-radius: 3px;
+}
+.lv2-entity-active {
+  text-decoration-style: solid;
+  background-color: color-mix(in srgb, var(--color-primary-500) 14%, transparent);
+}
+
+/* ── Lore card glow when its entity is active ── */
+.lv2-lore-card {
+  transition: border-color 0.25s ease-out, box-shadow 0.25s ease-out,
+    transform 0.25s ease-out, opacity 0.25s ease-out;
+}
+.lv2-lore-card-active {
+  border-color: var(--color-primary-500) !important;
+  box-shadow: 0 0 0 1px var(--color-primary-500),
+    0 12px 32px -12px color-mix(in srgb, var(--color-primary-600) 45%, transparent);
+  transform: translateY(-2px);
+}
+.lv2-lore-card-dim {
+  opacity: 0.55;
+}
+
+/* ── Chapter progress dots ── */
+.lv2-chapter-dot {
+  transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+}
+.lv2-chapter-label {
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+.lv2-chapter-item:hover .lv2-chapter-label,
+.lv2-chapter-item:focus-visible .lv2-chapter-label,
+.lv2-chapter-item-active .lv2-chapter-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Manuscript paper texture (light) / ink wash (dark) ── */
+.lv2-paper {
+  background-color: var(--color-paper-50);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-primary-900) 5%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+.dark .lv2-paper {
+  background-color: var(--color-slate-950);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-primary-300) 6%, transparent) 1px,
+    transparent 1px
+  );
+}
+
+/* ── Genre quote card ── */
+.lv2-quote-mark {
+  font-family: var(--font-serif);
+  line-height: 0;
+  user-select: none;
+}
+
+/* ── Reduced motion: show everything, stop the caret blink ── */
+@media (prefers-reduced-motion: reduce) {
+  .lv2-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lv2-caret {
+    animation: none;
+  }
+  .lv2-entity,
+  .lv2-lore-card,
+  .lv2-chapter-dot,
+  .lv2-chapter-label {
+    transition: none;
+  }
+}
